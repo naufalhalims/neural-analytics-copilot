@@ -8,7 +8,7 @@ from sqlglot import exp
 from typing import Dict, Any, List
 
 class SQLEngine:
-    def __init__(self, parquet_path: str = "data/transactions_100k.parquet"):
+    def __init__(self, parquet_path: str = "data/transactions_5m.parquet"):
         self.parquet_path = parquet_path
         # Buat koneksi in-memory DuckDB
         self.conn = duckdb.connect(":memory:")

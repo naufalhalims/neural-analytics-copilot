@@ -26,7 +26,7 @@ app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), na
 templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 # Inisialisasi engine-engine mandiri
-DATA_PATH = os.path.join(BASE_DIR, "data", "transactions_100k.parquet")
+DATA_PATH = os.path.join(BASE_DIR, "data", "transactions_5m.parquet")
 sql_engine = SQLEngine(parquet_path=DATA_PATH)
 anomaly_engine = AnomalyEngine(parquet_path=DATA_PATH)
 rag_engine = RAGEngine(db_path=os.path.join(BASE_DIR, "data", "qdrant_db"))
@@ -103,8 +103,19 @@ async def chat_handler(payload: ChatRequest):
     
     # --- JALUR A: SQL & ANOMALI ---
     if is_sql_question or is_why_question:
-        # A.1. Data Exploration & Volume
-        if "distribusi" in lower_query or "status" in lower_query:
+        # Jika ada pertanyaan tentang kenaikan, masalah, atau perbandingan bulan, sertakan drill-down kanal otomatis
+        if "september" in lower_query or "kenaikan" in lower_query or "meningkat" in lower_query or is_why_question:
+            sql = "SELECT channel, COUNT(*) as total_tx, SUM(CASE WHEN status='FAILED' THEN 1 ELSE 0 END) as failed_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct, ROUND(SUM(amount)/1000000000, 2) as volume_miliar FROM transactions WHERE strftime(timestamp, '%Y-%m') = '2026-09' GROUP BY channel ORDER BY fail_rate_pct DESC"
+            sql_result = sql_engine.execute_query(sql)
+            if sql_result["success"]:
+                chart_payload = {
+                    "type": "bar",
+                    "title": "Drill-Down Kegagalan Kanal September 2026 (%)",
+                    "labels": [r["channel"] for r in sql_result["data"]],
+                    "data": [r["fail_rate_pct"] for r in sql_result["data"]],
+                    "label": "Failure Rate (%)"
+                }
+        elif "distribusi" in lower_query or "status" in lower_query:
             sql = "SELECT status, COUNT(*) as count, ROUND(SUM(amount), 2) as total_volume FROM transactions GROUP BY status"
             sql_result = sql_engine.execute_query(sql)
             if sql_result["success"]:
@@ -156,13 +167,21 @@ async def chat_handler(payload: ChatRequest):
 
     # 2. Susun System Prompt & Context untuk LLM Synthesis
     system_prompt = """Kamu adalah Senior AI Data & Operational Analytics Specialist di PT Neural Technologies Indonesia.
-Jawab pertanyaan pengguna dengan gaya bahasa profesional, lugas, berbasis bukti empiris, dan langsung pada kesimpulan analitik.
+Jawab pertanyaan pengguna secara proaktif, analitis mendalam, dan komprehensif layaknya Senior AI Engineering Consultant.
 
-ATURAN STRICT ANALITIK:
-1. Hubungkan fakta data terstruktur (SQL) dengan fakta dokumen (SOP / Insiden) HANYA jika tanggal, kanal, dan kode errornya cocok.
-2. Jika ada anomali lonjakan data, sebutkan angka persentase kenaikan, kanal yang terdampak, tanggal kejadian, dan nomor tiket insiden resmi.
-3. Sebutkan kutipan nama dokumen dan bagian prosedur jika merujuk pada SOP.
-4. Gunakan format Markdown yang rapi dengan bullet points untuk memudahkan pemahaman eksekutif bisnis."""
+PANDUAN SINTESIS MULTI-ENGINE:
+1. Kamu dibekali 3 sumber bukti valid di bawah: (A) SQL Query terverifikasi DuckDB, (B) Deteksi Anomali Z-score Machine Learning, dan (C) Dokumen SOP / Postmortem Incident Log dari Qdrant.
+2. JANGAN PERNAH menyimpulkan bahwa data drill-down tidak tersedia jika bukti SQL, Anomali, atau Dokumen sudah melampirkan kanal dan angka terkait!
+3. Jika ditanya mengenai lonjakan/kegagalan/kenaikan September:
+   - Sebutkan total metrik MoM.
+   - Lakukan drill-down langsung ke kanal utama penyumbang masalah (misal VA_BCA dengan failure rate tertinggi).
+   - Tunjukkan tanggal kejadian anomali dan Z-score (12-15 September 2026, Z-score > 4.0).
+   - Kaitkan dengan tiket resmi (#INC-20260912-BCA), penyebab teknis switch data center, kode error ERR_GATEWAY_TIMEOUT, dan SOP mitigasi dari dokumen resmi.
+4. Gunakan format Markdown yang indah dan mudah dibaca:
+   - Heading terstruktur (#, ##)
+   - Tabel perbandingan jika relevan
+   - Bullet point penjelas & badge kode (misal `ERR_GATEWAY_TIMEOUT`)
+   - Rekomendasi aksi mitigasi perbankan."""
 
     context_str = "=== KONTEKS DATA & PENGETAHUAN TERSEDIA ===\n"
     if sql_result and sql_result["success"]:

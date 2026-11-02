@@ -9,7 +9,7 @@ import pandas as pd
 from typing import Dict, Any, List
 
 class AnomalyEngine:
-    def __init__(self, parquet_path: str = "data/transactions_100k.parquet"):
+    def __init__(self, parquet_path: str = "data/transactions_5m.parquet"):
         self.parquet_path = parquet_path
         self.conn = duckdb.connect(":memory:")
         self.conn.execute(f"CREATE VIEW transactions AS SELECT * FROM read_parquet('{self.parquet_path}')")

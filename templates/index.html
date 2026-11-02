@@ -6,6 +6,8 @@
     <title>Neural Analytics Copilot — PT Neural Technologies Indonesia</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Marked.js for Markdown Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Cytoscape.js CDN (Graph Visualizer) -->
@@ -41,6 +43,52 @@
             border: 1px solid var(--border-color);
             border-radius: 12px;
             backdrop-filter: blur(8px);
+        }
+
+        /* Markdown Content Styling */
+        .prose-dark h1, .prose-dark h2, .prose-dark h3 {
+            color: #F8FAFC;
+            font-weight: 700;
+            margin-top: 0.75rem;
+            margin-bottom: 0.35rem;
+        }
+        .prose-dark h1 { font-size: 1.15rem; }
+        .prose-dark h2 { font-size: 1.05rem; }
+        .prose-dark h3 { font-size: 0.95rem; }
+        .prose-dark p {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+        .prose-dark ul, .prose-dark ol {
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .prose-dark ul { list-style-type: disc; }
+        .prose-dark ol { list-style-type: decimal; }
+        .prose-dark li { margin-bottom: 0.2rem; }
+        .prose-dark table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.6rem 0;
+            font-size: 0.8rem;
+        }
+        .prose-dark th, .prose-dark td {
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 0.4rem 0.6rem;
+            text-align: left;
+        }
+        .prose-dark th {
+            background: rgba(15, 23, 42, 0.8);
+            color: #38BDF8;
+            font-weight: 600;
+        }
+        .prose-dark code {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(15, 23, 42, 0.8);
+            color: #38BDF8;
+            padding: 0.15rem 0.35rem;
+            border-radius: 4px;
+            font-size: 0.85em;
         }
 
         /* Custom Scrollbar */
@@ -393,17 +441,17 @@
                 });
                 const data = await res.json();
                 
-                // Update respon bot
+                // Update respon bot dengan Markdown parser
                 const msgEl = document.getElementById(botMsgId);
-                const formattedReply = data.reply.replace(/\n/g, '<br>');
+                const parsedHtml = (typeof marked !== 'undefined') ? marked.parse(data.reply) : data.reply.replace(/\n/g, '<br>');
                 msgEl.innerHTML = `
                     <div class="w-7 h-7 rounded-lg bg-blue-600/30 flex items-center justify-center shrink-0 border border-blue-500/30 text-blue-400">
                         <i data-lucide="bot" class="w-4 h-4"></i>
                     </div>
-                    <div class="space-y-2 flex-1 bg-slate-900/70 p-3.5 rounded-xl border border-slate-800 text-slate-200 leading-relaxed">
-                        <div>${formattedReply}</div>
+                    <div class="space-y-2 flex-1 bg-slate-900/70 p-3.5 rounded-xl border border-slate-800 text-slate-200 leading-relaxed prose-dark text-xs md:text-sm">
+                        <div>${parsedHtml}</div>
                         ${data.citations && data.citations.length ? `
-                            <div class="pt-2 border-t border-slate-800/80 flex flex-wrap gap-1.5">
+                            <div class="pt-2 border-t border-slate-800/80 flex flex-wrap gap-1.5 not-prose">
                                 ${data.citations.map(c => `<span class="text-[10px] mono px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 border border-blue-800/60">📄 ${c.title} (${c.section})</span>`).join('')}
                             </div>
                         ` : ''}
@@ -428,17 +476,14 @@
                     `).join('');
                 }
 
-                // Update Graph Highlight jika ada investigasi spike
-                if(data.target_channel) {
-                    initGraph(data.target_channel);
-                    document.getElementById('graph-tag').innerText = `Highlight: ${data.target_channel}`;
-                    switchTab('graph');
-                }
-
                 // Update Chart jika ada data visualisasi
                 if(data.chart_payload) {
                     renderChart(data.chart_payload);
                     switchTab('chart');
+                } else if(data.target_channel) {
+                    initGraph(data.target_channel);
+                    document.getElementById('graph-tag').innerText = `Incident Highlight: ${data.target_channel}`;
+                    switchTab('graph');
                 }
 
             } catch(e) {
@@ -454,19 +499,43 @@
 
             const isDonut = payload.type === 'doughnut';
             
+            // Palet Warna Cyber Gradient ala finance.naufalhal.tech
+            let gradient = null;
+            if(!isDonut) {
+                gradient = ctx.createLinearGradient(0, 0, 0, 320);
+                gradient.addColorStop(0, 'rgba(59, 130, 246, 0.7)');   // Blue 500
+                gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.4)'); // Violet 500
+                gradient.addColorStop(1, 'rgba(11, 16, 32, 0.05)');    // Transparan
+            }
+
+            const donutColors = [
+                '#22C55E', // Green
+                '#EF4444', // Red
+                '#F59E0B', // Amber
+                '#8B5CF6', // Violet
+                '#06B6D4'  // Cyan
+            ];
+
             myChart = new Chart(ctx, {
                 type: payload.type,
                 data: {
                     labels: payload.labels,
                     datasets: [{
-                        label: payload.label || 'Jumlah',
+                        label: payload.label || 'Nilai',
                         data: payload.data,
                         backgroundColor: isDonut 
-                            ? ['#22C55E', '#EF4444', '#F59E0B'] 
-                            : 'rgba(59, 130, 246, 0.7)',
+                            ? donutColors.slice(0, payload.labels.length) 
+                            : (payload.type === 'line' ? gradient : 'rgba(59, 130, 246, 0.65)'),
                         borderColor: isDonut ? '#0B1020' : '#3B82F6',
-                        borderWidth: 1.5,
-                        tension: 0.3
+                        borderWidth: 2,
+                        fill: payload.type === 'line',
+                        tension: 0.35,
+                        pointBackgroundColor: '#60A5FA',
+                        pointBorderColor: '#0B1020',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        borderRadius: payload.type === 'bar' ? 6 : 0
                     }]
                 },
                 options: {
@@ -474,12 +543,41 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            labels: { color: '#94A3B8', font: { family: 'Plus Jakarta Sans', size: 11 } }
+                            display: isDonut,
+                            position: 'bottom',
+                            labels: { 
+                                color: '#94A3B8', 
+                                font: { family: 'Plus Jakarta Sans', size: 11, weight: '500' },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#0F172A',
+                            titleColor: '#F8FAFC',
+                            bodyColor: '#38BDF8',
+                            borderColor: 'rgba(148, 163, 184, 0.2)',
+                            borderWidth: 1,
+                            padding: 10,
+                            titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '600' },
+                            bodyFont: { family: 'JetBrains Mono', size: 12 }
                         }
                     },
                     scales: isDonut ? {} : {
-                        x: { ticks: { color: '#94A3B8', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
-                        y: { ticks: { color: '#94A3B8', font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: 'rgba(148, 163, 184, 0.1)' } }
+                        x: { 
+                            ticks: { 
+                                color: '#94A3B8', 
+                                font: { family: 'JetBrains Mono', size: 10 } 
+                            }, 
+                            grid: { color: 'rgba(148, 163, 184, 0.08)' } 
+                        },
+                        y: { 
+                            ticks: { 
+                                color: '#94A3B8', 
+                                font: { family: 'JetBrains Mono', size: 10 } 
+                            }, 
+                            grid: { color: 'rgba(148, 163, 184, 0.08)' } 
+                        }
                     }
                 }
             });
