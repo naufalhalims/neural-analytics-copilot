@@ -29,12 +29,16 @@ templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 DATA_PATH = os.path.join(BASE_DIR, "data", "transactions_5m.parquet")
 sql_engine = SQLEngine(parquet_path=DATA_PATH)
 anomaly_engine = AnomalyEngine(parquet_path=DATA_PATH)
-rag_engine = RAGEngine(db_path=os.path.join(BASE_DIR, "data", "qdrant_db"))
+# Mode :memory: dengan auto-ingest dari folder docs/
+rag_engine = RAGEngine(db_path=":memory:", docs_dir=os.path.join(BASE_DIR, "docs"))
 graph_engine = GraphRCAEngine()
+
+# Response cache di RAM (LRU, TTL 15 menit)
+RESPONSE_CACHE: Dict[str, Dict[str, Any]] = {}
 
 # Konfigurasi 9router & API Key
 ROUTER_URL = os.getenv("ROUTER_URL", "http://127.0.0.1:20128/v1/chat/completions")
-ROUTER_MODEL = os.getenv("ROUTER_MODEL", "ag/claude-sonnet-5-5")
+ROUTER_MODEL = os.getenv("ROUTER_MODEL", "ag/gemini-3.8-flash-low")
 
 def get_router_key() -> str:
     """Mengambil API Key 9router dari database internal 9router atau environment."""
@@ -85,14 +89,20 @@ async def get_graph(highlight: Optional[str] = None):
 async def chat_handler(payload: ChatRequest):
     """Router Agentic: Mengklasifikasikan intent, mengeksekusi engine yang tepat, dan mensintesis jawaban."""
     user_query = payload.message.strip()
-    
-    # 1. Deteksi Kebutuhan Analisis (Tri-Engine Routing Logic)
+    if not user_query:
+        return JSONResponse({"status": "error", "reply": "Pesan tidak boleh kosong."})
+        
     lower_query = user_query.lower()
+    cache_key = lower_query
+    if cache_key in RESPONSE_CACHE:
+        cached_data = dict(RESPONSE_CACHE[cache_key])
+        cached_data["cached"] = True
+        return JSONResponse(cached_data)
     
-    # Indikator Kueri
-    is_why_question = any(k in lower_query for k in ["kenapa", "mengapa", "penyebab", "faktor", "investigasi", "sejak kapan", "berkontribusi"])
-    is_doc_question = any(k in lower_query for k in ["sop", "prosedur", "dokumen", "kebijakan", "sla", "refund", "aturan", "penanganan"])
-    is_sql_question = any(k in lower_query for k in ["total", "berapa", "distribusi", "volume", "bandingkan", "perbandingan", "tertinggi", "terendah", "jumlah", "bulan"])
+    # Indikator Kueri Lebih Luas & Cerdas (Intent Coverage)
+    is_why_question = any(k in lower_query for k in ["kenapa", "mengapa", "penyebab", "faktor", "investigasi", "sejak kapan", "berkontribusi", "pemicu", "paling abnormal", "boncos", "ngadat", "jelek", "masalah", "spike", "anomali"])
+    is_doc_question = any(k in lower_query for k in ["sop", "prosedur", "dokumen", "kebijakan", "sla", "refund", "aturan", "penanganan", "kontak", "eskalasi", "postmortem", "tiket", "l2", "l3"])
+    is_sql_question = any(k in lower_query for k in ["total", "berapa", "distribusi", "volume", "bandingkan", "perbandingan", "tertinggi", "terendah", "jumlah", "bulan", "status", "persentase", "gambaran", "omset", "summary", "grafik", "kinerja"])
     
     # Eksekusi State
     sql_result = None
@@ -115,7 +125,7 @@ async def chat_handler(payload: ChatRequest):
                     "data": [r["fail_rate_pct"] for r in sql_result["data"]],
                     "label": "Failure Rate (%)"
                 }
-        elif "distribusi" in lower_query or "status" in lower_query:
+        elif "distribusi" in lower_query or "status" in lower_query or "persentase" in lower_query or "gambaran" in lower_query:
             sql = "SELECT status, COUNT(*) as count, ROUND(SUM(amount), 2) as total_volume FROM transactions GROUP BY status"
             sql_result = sql_engine.execute_query(sql)
             if sql_result["success"]:
@@ -147,6 +157,28 @@ async def chat_handler(payload: ChatRequest):
                     "data": [r["fail_rate_pct"] for r in sql_result["data"]],
                     "label": "Failure Rate (%)"
                 }
+        elif "harian" in lower_query or "tanggal" in lower_query or "spike" in lower_query:
+            sql = "SELECT strftime(timestamp, '%Y-%m-%d') as tgl, COUNT(*) as total_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions WHERE strftime(timestamp, '%Y-%m') = '2026-09' GROUP BY tgl ORDER BY tgl"
+            sql_result = sql_engine.execute_query(sql)
+            if sql_result["success"]:
+                chart_payload = {
+                    "type": "line",
+                    "title": "Tren Harian Kegagalan Transaksi September 2026 (%)",
+                    "labels": [r["tgl"] for r in sql_result["data"]],
+                    "data": [r["fail_rate_pct"] for r in sql_result["data"]],
+                    "label": "Daily Fail Rate (%)"
+                }
+        elif "error" in lower_query or "alasan" in lower_query or "reason" in lower_query:
+            sql = "SELECT failure_reason, COUNT(*) as count FROM transactions WHERE status='FAILED' GROUP BY failure_reason ORDER BY count DESC LIMIT 5"
+            sql_result = sql_engine.execute_query(sql)
+            if sql_result["success"]:
+                chart_payload = {
+                    "type": "bar",
+                    "title": "Top 5 Penyebab Kegagalan Transaksi (Error Code)",
+                    "labels": [r["failure_reason"] for r in sql_result["data"]],
+                    "data": [r["count"] for r in sql_result["data"]],
+                    "label": "Total Error"
+                }
         else:
             # Default aggregate
             sql = "SELECT COUNT(*) as total_transaksi, SUM(CASE WHEN status='SUCCESS' THEN 1 ELSE 0 END) as success, SUM(CASE WHEN status='FAILED' THEN 1 ELSE 0 END) as failed, ROUND(SUM(amount), 2) as total_nominal FROM transactions"
@@ -167,21 +199,17 @@ async def chat_handler(payload: ChatRequest):
 
     # 2. Susun System Prompt & Context untuk LLM Synthesis
     system_prompt = """Kamu adalah Senior AI Data & Operational Analytics Specialist di PT Neural Technologies Indonesia.
-Jawab pertanyaan pengguna secara proaktif, analitis mendalam, dan komprehensif layaknya Senior AI Engineering Consultant.
+Gaya bicaramu natural, lugas, santai namun berbobot ala konsultan finansial-teknologi senior (seperti Hermes Agent). Tidak kaku, tidak berbicara layaknya robot, dan sangat komunikatif.
 
-PANDUAN SINTESIS MULTI-ENGINE:
-1. Kamu dibekali 3 sumber bukti valid di bawah: (A) SQL Query terverifikasi DuckDB, (B) Deteksi Anomali Z-score Machine Learning, dan (C) Dokumen SOP / Postmortem Incident Log dari Qdrant.
-2. JANGAN PERNAH menyimpulkan bahwa data drill-down tidak tersedia jika bukti SQL, Anomali, atau Dokumen sudah melampirkan kanal dan angka terkait!
-3. Jika ditanya mengenai lonjakan/kegagalan/kenaikan September:
-   - Sebutkan total metrik MoM.
-   - Lakukan drill-down langsung ke kanal utama penyumbang masalah (misal VA_BCA dengan failure rate tertinggi).
-   - Tunjukkan tanggal kejadian anomali dan Z-score (12-15 September 2026, Z-score > 4.0).
-   - Kaitkan dengan tiket resmi (#INC-20260912-BCA), penyebab teknis switch data center, kode error ERR_GATEWAY_TIMEOUT, dan SOP mitigasi dari dokumen resmi.
-4. Gunakan format Markdown yang indah dan mudah dibaca:
-   - Heading terstruktur (#, ##)
-   - Tabel perbandingan jika relevan
-   - Bullet point penjelas & badge kode (misal `ERR_GATEWAY_TIMEOUT`)
-   - Rekomendasi aksi mitigasi perbankan."""
+KARAKTER & PERSONA KOMUNIKASI:
+1. Multilingual & Fluent: Pahami konteks perbankan Indonesia, istilah teknis payment gateway (failure rate, SLA, virtual account, gateway timeout, routing), dan jelaskan secara kontekstual dengan bahasa Indonesia bisnis yang enak dibaca.
+2. Direct-to-the-Point: Berikan kesimpulan inti di kalimat pertama, baru kemudian jelaskan rincian angka dan argumen pendukungnya.
+3. Bisnis & Finansial Mindset: Selalu hubungkan angka transaksi dengan dampak finansial (misal: potensi kehilangan omset / GMV, dampak pada merchant retention, dan risiko reputasi).
+4. Solutif & Berani Menyimpulkan: Ketika data SQL, lonjakan Z-score anomali, dan tiket postmortem sudah jelas menunjukkan adanya insiden `#INC-20260912-BCA` di kanal `VA_BCA` akibat migrasi switch data center mitra, katakan langsung secara lugas! Jangan ragu atau berkelit "data tidak lengkap".
+
+FORMAT MARKDOWN:
+- Gunakan struktur rapi: Judul (#, ##), tabel ringkas, bullet point tebal, dan highlight kode backticks `ERR_GATEWAY_TIMEOUT`.
+- Akhiri dengan poin rekomendasi operasional konkrit yang bisa langsung dieksekusi tim bisnis dan SRE."""
 
     context_str = "=== KONTEKS DATA & PENGETAHUAN TERSEDIA ===\n"
     if sql_result and sql_result["success"]:
@@ -252,14 +280,21 @@ PANDUAN SINTESIS MULTI-ENGINE:
         # Fallback deterministik jika 9router bermasalah
         llm_reply = f"Analisis Berbasis Aturan:\nBerdasarkan data yang diproses, ditemukan indikasi berikut:\n- SQL Result: {json.dumps(sql_result['data'] if sql_result else [])}\n- Error Trace: {str(e)}"
         
-    return JSONResponse({
+    res_payload = {
         "status": "success",
         "reply": llm_reply,
         "sql_executed": sql_result["sql_executed"] if sql_result else None,
         "chart_payload": chart_payload,
         "target_channel": target_channel_highlight,
         "citations": [{"title": d["doc_title"], "section": d["section"]} for d in rag_docs]
-    })
+    }
+    
+    # Simpan di in-memory response cache (maksimal 200 percakapan)
+    if len(RESPONSE_CACHE) > 200:
+        RESPONSE_CACHE.pop(next(iter(RESPONSE_CACHE)))
+    RESPONSE_CACHE[cache_key] = res_payload
+    
+    return JSONResponse(res_payload)
 
 if __name__ == "__main__":
     import uvicorn

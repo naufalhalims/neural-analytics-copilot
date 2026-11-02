@@ -1,0 +1,309 @@
+{
+  "confidence_level": 100.0,
+  "grounding_accuracy": 100.0,
+  "visual_alignment": 100.0,
+  "avg_latency": 10.599771766662597,
+  "p95_latency": 14.60099482536316,
+  "details": [
+    {
+      "iteration": 1,
+      "query": "Bro tolong ringkas performa pembayaran kita kuartal ini, berapa omset dan tingkat kegagalannya?",
+      "latency": 8.410871982574463,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 2,
+      "query": "Bulan September kemarin performa gimana? Ada penurunan revenue atau kenaikan komplain?",
+      "latency": 11.089604139328003,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 3,
+      "query": "Kanal mana yang paling bikin boncos dan nurunin transaksi di September?",
+      "latency": 11.711251974105835,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 4,
+      "query": "Berapa total volume uang yang berhasil diproses sistem sejauh ini?",
+      "latency": 7.473744869232178,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 5,
+      "query": "Performa antar bulan membaik atau memburuk dari Juli ke September?",
+      "latency": 9.633873701095581,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 6,
+      "query": "Kanal pembayaran mana yang failure rate-nya paling abnormal di September 2026?",
+      "latency": 10.646769285202026,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 7,
+      "query": "Ada lonjakan error ERR_GATEWAY_TIMEOUT gak di periode September kemarin?",
+      "latency": 11.116748332977295,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 8,
+      "query": "Apa penyebab utama lonjakan transaksi gagal di virtual account BCA?",
+      "latency": 7.552375555038452,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 9,
+      "query": "Nomor tiket insiden apa yang mencatat gangguan switch data center mitra?",
+      "latency": 5.3445329666137695,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 10,
+      "query": "Sejak tanggal berapa lonjakan failure rate di kanal VA BCA mulai terjadi?",
+      "latency": 10.343714714050293,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 11,
+      "query": "Pelanggan komplain transaksi BCA mereka pending dan gagal, SOP refund-nya gimana?",
+      "latency": 9.766245126724243,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 12,
+      "query": "Kalau user kena error timeout tapi saldo terpotong, berapa lama batas waktu pengembalian dana?",
+      "latency": 13.186612367630005,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 13,
+      "query": "Siapa contact person atau tim eskalasi bank jika VA BCA bermasalah?",
+      "latency": 9.050187349319458,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 14,
+      "query": "Kapan insiden BCA dinyatakan resolved dan status transaksi normal kembali?",
+      "latency": 12.70206332206726,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 15,
+      "query": "Dokumen SOP penanganan insiden transaksi mengatur apa saja untuk refund nasabah?",
+      "latency": 9.419052124023438,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 16,
+      "query": "halo bro, mau nanya dong transaksi bulan ini aman gak sih?",
+      "latency": 10.206402063369751,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 17,
+      "query": "kemarin bca sempet ngadat ya pas september? kok rame di komplain user?",
+      "latency": 14.60099482536316,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 18,
+      "query": "kenapa sih va bca sering banget gagal dibanding mandiri atau qris?",
+      "latency": 14.743981122970581,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 19,
+      "query": "ada catatan postmortem gak soal insiden jaringan kemarin?",
+      "latency": 12.064123153686523,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 20,
+      "query": "kok transaksi september jelek banget ya bro? pemicunya apaan?",
+      "latency": 13.512164115905762,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 21,
+      "query": "total transaksi status",
+      "latency": 8.788277864456177,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 22,
+      "query": "bca fail rate september",
+      "latency": 13.02773380279541,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 23,
+      "query": "kenapa september jelek",
+      "latency": 13.45611047744751,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 24,
+      "query": "sop timeout transaksi",
+      "latency": 7.291607141494751,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    },
+    {
+      "iteration": 25,
+      "query": "sla refund transaksi",
+      "latency": 9.855251789093018,
+      "status": "PASS",
+      "eval": {
+        "is_coherent": true,
+        "no_latex_spam": true,
+        "grounded_facts": true,
+        "visual_aligned": true
+      }
+    }
+  ]
+}

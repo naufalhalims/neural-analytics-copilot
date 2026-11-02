@@ -167,7 +167,10 @@
                     <i data-lucide="message-square" class="w-4 h-4 text-blue-400"></i>
                     <span class="text-xs font-semibold text-slate-200">Interactive Analyst Session</span>
                 </div>
-                <span class="text-[10px] text-slate-500 mono">Model: Claude 3.5 Sonnet / Argon</span>
+                <span class="text-[10px] text-emerald-400 mono flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Model: Gemini Flash 3.8 (Ultra-Fast)
+                </span>
             </div>
 
             <!-- Chat Stream Message Container -->
@@ -219,56 +222,47 @@
             </div>
         </div>
 
-        <!-- Right Panel: Analytics & Graph Console (Col 12 to 7) -->
+        <!-- Right Panel: Analytics & Metrics Console (Col 12 to 7) -->
         <div class="lg:col-span-7 card flex flex-col h-full border-slate-800 overflow-hidden">
             <!-- Tabs Header -->
             <div class="p-2 border-b border-slate-800 flex items-center justify-between bg-slate-900/40">
                 <div class="flex gap-2">
-                    <button id="tab-btn-graph" onclick="switchTab('graph')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition flex items-center gap-1.5">
-                        <i data-lucide="git-branch" class="w-3.5 h-3.5"></i>
-                        <span>Root Cause Graph</span>
-                    </button>
-                    <button id="tab-btn-chart" onclick="switchTab('chart')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                    <button id="tab-btn-chart" onclick="switchTab('chart')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition flex items-center gap-1.5 shadow-lg shadow-blue-500/20">
                         <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
-                        <span>Charts & Metrics</span>
+                        <span>Visualisasi Interaktif</span>
                     </button>
                     <button id="tab-btn-sql" onclick="switchTab('sql')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-1.5">
                         <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
                         <span>SQL & Citations</span>
                     </button>
                 </div>
-                <span class="text-[11px] text-slate-400 mono pr-2" id="console-status">Graph: Ready</span>
+                <span class="text-[11px] text-slate-400 mono pr-2" id="console-status">Console: Active</span>
             </div>
 
             <!-- Tab Content Container -->
             <div class="flex-1 p-4 overflow-y-auto min-h-0 flex flex-col">
                 
-                <!-- Tab 1: Graph RCA View -->
-                <div id="tab-content-graph" class="h-full flex flex-col gap-2">
-                    <div class="flex items-center justify-between text-xs text-slate-400 pb-1">
-                        <span>Multi-hop Relational Path (Channel → Vendor → Incident → SOP)</span>
-                        <span class="text-[10px] mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-rose-400 font-semibold" id="graph-tag">Node Normal</span>
-                    </div>
-                    <div id="cy" class="flex-1 border border-slate-800/80"></div>
-                    <div class="flex flex-wrap gap-3 text-[11px] text-slate-400 pt-1">
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Channel</span>
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-900"></span> Vendor</span>
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-red-600"></span> Incident Postmortem</span>
-                        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> SOP Mitigasi</span>
-                    </div>
-                </div>
-
-                <!-- Tab 2: Chart Analytics View -->
-                <div id="tab-content-chart" class="h-full hidden flex-col justify-center items-center p-2">
+                <!-- Tab 1: Chart Analytics View (Primary Default) -->
+                <div id="tab-content-chart" class="h-full flex flex-col justify-between items-center p-2">
                     <div class="w-full flex justify-between items-center mb-2">
-                        <h3 class="text-xs font-semibold text-slate-200" id="chart-title">Visualisasi Data</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="p-1 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                                <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+                            </span>
+                            <h3 class="text-xs font-semibold text-slate-200" id="chart-title">Visualisasi Data (Cyber Dark Theme)</h3>
+                        </div>
+                        <span class="text-[10px] text-slate-400 mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Chart.js Engine</span>
                     </div>
-                    <div class="w-full flex-1 max-h-[350px] flex items-center justify-center">
+                    <div class="w-full flex-1 max-h-[420px] flex items-center justify-center">
                         <canvas id="activeChart"></canvas>
                     </div>
+                    <div class="w-full pt-2 flex items-center justify-between text-[11px] text-slate-500 mono border-t border-slate-800/60">
+                        <span>Dynamic Content-Driven Analytics</span>
+                        <span>5M Parquet Rows In-Memory</span>
+                    </div>
                 </div>
 
-                <!-- Tab 3: SQL Inspector & Citations -->
+                <!-- Tab 2: SQL Inspector & Citations -->
                 <div id="tab-content-sql" class="h-full hidden flex-col gap-4">
                     <div>
                         <span class="text-xs font-semibold text-slate-300 block mb-1">AST-Validated SQL Query (DuckDB)</span>
@@ -374,25 +368,20 @@
         }
 
         function switchTab(tab) {
-            document.getElementById('tab-content-graph').classList.add('hidden');
             document.getElementById('tab-content-chart').classList.add('hidden');
             document.getElementById('tab-content-sql').classList.add('hidden');
             
-            document.getElementById('tab-btn-graph').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-1.5";
             document.getElementById('tab-btn-chart').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-1.5";
             document.getElementById('tab-btn-sql').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-1.5";
 
-            if(tab === 'graph') {
-                document.getElementById('tab-content-graph').classList.remove('hidden');
-                document.getElementById('tab-btn-graph').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition flex items-center gap-1.5";
-                if(cy) cy.resize();
-            } else if(tab === 'chart') {
+            if(tab === 'chart') {
                 document.getElementById('tab-content-chart').classList.remove('hidden');
                 document.getElementById('tab-content-chart').classList.add('flex');
-                document.getElementById('tab-btn-chart').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition flex items-center gap-1.5";
+                document.getElementById('tab-btn-chart').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition flex items-center gap-1.5 shadow-lg shadow-blue-500/20";
+                if(myChart) myChart.resize();
             } else if(tab === 'sql') {
                 document.getElementById('tab-content-sql').classList.remove('hidden');
-                document.getElementById('tab-btn-sql').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition flex items-center gap-1.5";
+                document.getElementById('tab-btn-sql').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition flex items-center gap-1.5 shadow-lg shadow-blue-500/20";
             }
         }
 
@@ -586,7 +575,14 @@
         // On Load
         window.addEventListener('DOMContentLoaded', () => {
             loadKPIs();
-            initGraph();
+            // Default render tren bulanan di awal
+            renderChart({
+                type: 'line',
+                title: 'Tren Tingkat Kegagalan MoM (Juli - September 2026)',
+                labels: ['2026-07', '2026-08', '2026-09'],
+                data: [3.51, 3.48, 4.29],
+                label: 'Failure Rate (%)'
+            });
         });
     </script>
 </body>

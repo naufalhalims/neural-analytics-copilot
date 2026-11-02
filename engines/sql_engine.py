@@ -14,6 +14,8 @@ class SQLEngine:
         self.conn = duckdb.connect(":memory:")
         # Registrasikan file parquet sebagai view 'transactions'
         self.conn.execute(f"CREATE VIEW transactions AS SELECT * FROM read_parquet('{self.parquet_path}')")
+        # In-memory query result cache
+        self._cache: Dict[str, Dict[str, Any]] = {}
         
     def validate_and_sanitize(self, raw_sql: str) -> str:
         """Memeriksa integritas keamanan kueri SQL menggunakan Abstract Syntax Tree (AST)."""
@@ -57,13 +59,16 @@ class SQLEngine:
         """Mengeksekusi SQL yang sudah divalidasi dan mengembalikan hasil dalam dictionary."""
         try:
             sanitized_sql = self.validate_and_sanitize(sql_query)
+            if sanitized_sql in self._cache:
+                return self._cache[sanitized_sql]
+                
             df = self.conn.execute(sanitized_sql).df()
             
             # Format datetime ke string ISO agar serializable ke JSON
             for col in df.select_dtypes(include=['datetime64', 'datetimetz']).columns:
                 df[col] = df[col].astype(str)
                 
-            return {
+            res = {
                 "success": True,
                 "sql_executed": sanitized_sql,
                 "row_count": len(df),
@@ -71,6 +76,10 @@ class SQLEngine:
                 "data": df.to_dict(orient="records"),
                 "error": None
             }
+            if len(self._cache) > 100:
+                self._cache.pop(next(iter(self._cache)))
+            self._cache[sanitized_sql] = res
+            return res
         except Exception as e:
             return {
                 "success": False,

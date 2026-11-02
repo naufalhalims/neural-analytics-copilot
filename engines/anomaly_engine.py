@@ -14,8 +14,13 @@ class AnomalyEngine:
         self.conn = duckdb.connect(":memory:")
         self.conn.execute(f"CREATE VIEW transactions AS SELECT * FROM read_parquet('{self.parquet_path}')")
         
+        # Caching hasil Z-score agar tidak scan 5 juta data berulang-ulang di setiap request
+        self._cached_spikes = None
+        
     def detect_channel_spikes(self, z_threshold: float = 2.5) -> List[Dict[str, Any]]:
         """Mendeteksi tanggal dan kanal yang mengalami lonjakan tingkat kegagalan secara statistik."""
+        if self._cached_spikes is not None:
+            return self._cached_spikes
         query = """
         SELECT 
             strftime(timestamp, '%Y-%m-%d') as tx_date,
@@ -77,4 +82,5 @@ class AnomalyEngine:
                 
         # Urutkan berdasarkan z_score tertinggi
         anomalies.sort(key=lambda x: x['z_score'], reverse=True)
+        self._cached_spikes = anomalies
         return anomalies
