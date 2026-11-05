@@ -22,7 +22,7 @@ pip install -r requirements.txt -q
 pip install pytest httpx -q
 
 # 3. Jalankan Verification Test Suite
-echo "🧪 [4/5] Menjalankan Test Suite (21 Verification Tests)..."
+echo "🧪 [4/5] Menjalankan Test Suite (23 Automated Verification Tests)..."
 python3 -m pytest tests/ -v
 
 # 4. Jalankan Aplikasi

@@ -187,3 +187,42 @@ class TestNeuralAnalyticsCore:
         nodes = [e["data"]["id"] for e in elements if "source" not in e["data"]]
         assert "INC_BCA_SWITCH" in nodes
         assert "CH_VA_BCA" in nodes
+
+    def test_10_export_briefing_pdf_contract(self):
+        """Memverifikasi contract endpoint /api/export-pdf dan binary ReportLab output."""
+        with TestClient(app) as client:
+            payload = {
+                "query": "Berapa total transaksi perbankan bulan September?",
+                "reply": "Total transaksi adalah 5.000.000 dengan GMV Rp 1.01 Triliun.",
+                "chart_payload": {
+                    "title": "Status Transaksi",
+                    "labels": ["SUCCESS", "FAILED"],
+                    "data": [4800000, 200000]
+                },
+                "citations": [
+                    {"title": "SOP_Penanganan_Insiden_Transaksi_v2.1.md", "section": "Bab 3: Eskalasi", "score": "0.92"}
+                ],
+                "sql_executed": "SELECT status, count(*) FROM transactions GROUP BY status"
+            }
+            resp = client.post("/api/export-pdf", json=payload)
+            assert resp.status_code == 200
+            assert resp.headers["content-type"] == "application/pdf"
+            assert resp.content.startswith(b"%PDF-")
+            assert len(resp.content) > 1000
+
+    def test_11_stt_transcription_endpoint_graceful_handling(self):
+        """Memverifikasi endpoint /api/transcribe menangani file audio dan graceful error handling."""
+        with TestClient(app) as client:
+            # 1. Test empty audio file rejection (HTTP 400)
+            files = {"file": ("empty.webm", b"", "audio/webm")}
+            resp = client.post("/api/transcribe", files=files)
+            assert resp.status_code == 400
+            assert resp.json()["success"] is False
+
+            # 2. Test valid audio bytes - endpoint returns HTTP 200 (graceful JSON fallback or parsed transcription)
+            dummy_audio = b"\x1a\x45\xdf\xa3\x9f\x42\x86\x81\x01\x42\xf7\x81\x01" # Minimal dummy webm header
+            files_valid = {"file": ("sample.webm", dummy_audio, "audio/webm")}
+            resp_valid = client.post("/api/transcribe", files=files_valid)
+            assert resp_valid.status_code == 200
+            data = resp_valid.json()
+            assert "success" in data

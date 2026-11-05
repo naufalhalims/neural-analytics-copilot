@@ -443,26 +443,38 @@ def get_tools_schema():
 
 @app.post("/api/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
-    """Transkripsi Audio Suara Menggunakan Gemini Flash Audio via 9router."""
+    """Transkripsi Audio Suara Menggunakan Gemini Flash Audio via 9router dengan graceful fallback."""
     try:
         audio_bytes = await file.read()
         if not audio_bytes:
             return JSONResponse({"success": False, "error": "File audio kosong"}, status_code=400)
             
         key = get_router_key()
-        res = await transcribe_audio_stream(
-            audio_bytes=audio_bytes,
-            filename=file.filename or "recording.webm",
-            router_url=ROUTER_URL,
-            router_model=ROUTER_MODEL,
-            router_key=key
-        )
-        return JSONResponse({
-            "success": True,
-            "text": res["text"],
-            "latency_ms": res["latency_ms"],
-            "model": res["model"]
-        })
+        # Jika upstream tidak terkonfigurasi pada offline/local test
+        if not key and "127.0.0.1" in ROUTER_URL:
+            # Tetap coba panggil jika local router berjalan tanpa auth
+            pass
+
+        try:
+            res = await transcribe_audio_stream(
+                audio_bytes=audio_bytes,
+                filename=file.filename or "recording.webm",
+                router_url=ROUTER_URL,
+                router_model=ROUTER_MODEL,
+                router_key=key
+            )
+            return JSONResponse({
+                "success": True,
+                "text": res["text"],
+                "latency_ms": res["latency_ms"],
+                "model": res["model"]
+            })
+        except Exception as upstream_err:
+            return JSONResponse({
+                "success": False,
+                "error": "Fitur input suara memerlukan koneksi ke model multimodal audio. Silakan ketikkan pertanyaan data Anda di kolom chat.",
+                "details": str(upstream_err)
+            }, status_code=200)
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 

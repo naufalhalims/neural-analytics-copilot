@@ -3,7 +3,7 @@
 > *Production-Grade Architecture: Vectorized DuckDB (5M Rows), Hybrid RAG (Qdrant + BM25 RRF), Strict AST Guardrail, Dynamic RCA Subgraph, Hermes-Inspired Turn Context Compaction (TCC), and Pointer-Based Vault Memory.*
 
 [![Demo](https://img.shields.io/badge/Live_Showcase-neural--demo.naufalhal.tech-blue?style=flat&logo=cloudflare)](https://neural-demo.naufalhal.tech)
-[![Tests](https://img.shields.io/badge/Tests-21%20Passed-brightgreen)](https://github.com/naufalhalims/neural-analytics-copilot)
+[![Tests](https://img.shields.io/badge/Tests-23%20Passed-brightgreen)](https://github.com/naufalhalims/neural-analytics-copilot)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 🌐 **Live Interactive Showcase Application:**  
@@ -35,7 +35,7 @@
 ## 🚀 Panduan Menjalankan Sistem (Zero-Setup & One-Command Runner)
 
 ### Opsi A: One-Command Instant Runner (Paling Cepat & Otomatis)
-Cukup jalankan script launcher otomatis (akan setup venv, install dependensi, run 21 unit tests, dan launch server):
+Cukup jalankan script launcher otomatis (akan setup venv, install dependensi, run 23 unit tests, dan launch server):
 ```bash
 ./quick_start.sh
 ```
@@ -62,7 +62,7 @@ cp .env.example .env
 # 2. Opsional: Hubungkan ke Upstream LLM (OpenAI, Groq, OpenRouter, atau biarkan default untuk deterministik fallback)
 # Edit .env sesuai provider Anda
 
-# 3. Jalankan Verification Test Suite (21 Tests)
+# 3. Jalankan Verification Test Suite (23 Tests)
 pytest tests/ -v
 
 # 4. Jalankan Server
@@ -74,7 +74,7 @@ python3 run_server.py
 ## 🧪 Menjalankan Automated Quality Gate & Benchmark Suite
 Seluruh fungsionalitas inti telah diproteksi oleh automated testing terotomatisasi serta suite evaluasi berkala:
 ```bash
-# 1. Menjalankan CI Pipeline, TCC Compactor, & Domain Integrity Unit Tests (21 Tests Passed)
+# 1. Menjalankan CI Pipeline, TCC Compactor, PDF & STT Contracts, & Domain Integrity Unit Tests (23 Tests Passed)
 ./venv/bin/pytest tests/ -v
 
 # 2. Menjalankan Autonomous Adversarial Benchmark & GPU Harness Audit
