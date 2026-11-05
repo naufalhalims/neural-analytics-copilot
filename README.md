@@ -32,11 +32,18 @@
 
 ---
 
-## 🚀 Panduan Menjalankan Sistem (Zero-Setup)
+## 🚀 Panduan Menjalankan Sistem (Zero-Setup & One-Command Runner)
 
-### Opsi A: Menggunakan Docker Compose (Direkomendasikan)
+### Opsi A: One-Command Instant Runner (Paling Cepat & Otomatis)
+Cukup jalankan script launcher otomatis (akan setup venv, install dependensi, run 21 unit tests, dan launch server):
 ```bash
-# Build dan jalankan container secara terisolasi
+./quick_start.sh
+```
+Akses dashboard di: `http://localhost:8508` (atau langsung coba di cloud: `https://neural-demo.naufalhal.tech`).
+
+### Opsi B: Menggunakan Docker Compose
+```bash
+# Build dan jalankan container secara terisolasi (dataset auto-seeded saat startup)
 docker compose up -d --build
 
 # Periksa status container & healthcheck
@@ -44,22 +51,22 @@ docker compose ps
 ```
 Akses dashboard di: `http://localhost:8508`
 
-### Opsi B: Menjalankan Langsung via Python Virtualenv
+### Opsi C: Menjalankan Manual via Python Virtualenv
 ```bash
-# 1. Masuk ke direktori proyek
-cd apps/neural-analytics-chatbot
-
-# 2. Siapkan virtual environment & install dependensi
+# 1. Siapkan virtual environment & install dependensi
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
 
-# 3. Generate dataset transaksi (jika file parquet belum ada)
-python3 scripts/seed_data.py --rows 5000000 --out data/transactions_5m.parquet
+# 2. Opsional: Hubungkan ke Upstream LLM (OpenAI, Groq, OpenRouter, atau biarkan default untuk deterministik fallback)
+# Edit .env sesuai provider Anda
 
-# 4. Jalankan server Uvicorn
-uvicorn app:app --host 0.0.0.0 --port 8508
+# 3. Jalankan Verification Test Suite (21 Tests)
+pytest tests/ -v
+
+# 4. Jalankan Server
+python3 run_server.py
 ```
 
 ---
