@@ -227,7 +227,7 @@ DOMAIN_DATASETS = {
         "id": "klinik",
         "title": "Klinik Pratama Cash POS (25k Rows)",
         "subtitle": "25.000 Transaksi Kasir Fisik Tunai (Strict Cash-Only)",
-        "parquet_path": os.path.join(BASE_DIR, "data", "test_datasets", "handayani_wismajaya_pos.parquet"),
+        "parquet_path": os.path.join(BASE_DIR, "data", "test_datasets", "klinik_pratama_pos.parquet"),
         "badge": "🩺 Klinik Kasir 25k",
         "description": "25k Rekapitulasi Kasir Fisik Laci & Tindakan Kebidanan"
     }
@@ -820,7 +820,7 @@ async def chat_handler(payload: ChatRequest):
     # 0. Cross-Domain Leakage Detection & Guardrail
     cross_domain_redirect = None
     fintech_keywords = ["virtual account", "va_bca", "va bca", "va mandiri", "va bri", "qris", "kartu kredit", "gopay", "payment gateway", "gmv", "omset"]
-    bpjs_keywords = ["ina-cbg", "ina cbg", "klaim rs", "cuci darah", "hemodialisa", "nefrologi", "fornas", "koder medis", "rawat inap", "los exceeded", "sardjito", "handayani pratama", "mitra keluarga"]
+    bpjs_keywords = ["ina-cbg", "ina cbg", "klaim rs", "cuci darah", "hemodialisa", "nefrologi", "fornas", "koder medis", "rawat inap", "los exceeded", "sardjito", "klinik pratama", "mitra keluarga"]
     saas_keywords = ["api gateway", "rate limit", "throttling", "endpoint", "tenant b2b", "http 429", "http 504", "latency api"]
     klinik_keywords = ["kasir klinik", "petugas bidan", "uang fisik", "pecahan uang", "setoran fisik", "kasir tunai"]
 
