@@ -59,7 +59,7 @@ uvicorn app:app --host 0.0.0.0 --port 8508
 ## 🧪 Menjalankan Automated Quality Gate & Benchmark Suite
 Seluruh fungsionalitas inti telah diproteksi oleh automated testing terotomatisasi serta suite evaluasi berkala:
 ```bash
-# 1. Menjalankan CI Pipeline & Domain Integrity Unit Tests (14 Tests Passed)
+# 1. Menjalankan CI Pipeline, TCC Compactor, & Domain Integrity Unit Tests (21 Tests Passed)
 ./venv/bin/pytest tests/ -v
 
 # 2. Menjalankan Autonomous Adversarial Benchmark & Multi-Turn Stress Fleet
