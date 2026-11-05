@@ -114,7 +114,9 @@ class VastAdversarialOrchestrator:
                     time.sleep(20)
                     
                     # Verifikasi SSH connection dengan retry loop
-                    ssh_key_path = "/home/ubuntu/.ssh/id_vault"
+                    ssh_key_path = os.environ.get("SSH_KEY_PATH", os.path.expanduser("~/.ssh/id_rsa"))
+                    if not os.path.exists(ssh_key_path) and os.path.exists(os.path.expanduser("~/.ssh/id_vault")):
+                        ssh_key_path = os.path.expanduser("~/.ssh/id_vault")
                     for attempt in range(6):
                         check_cmd = [
                             "ssh", "-i", ssh_key_path,
@@ -169,7 +171,9 @@ class VastAdversarialOrchestrator:
             ssh_host = inst_data["ssh_host"]
             ssh_port = inst_data["ssh_port"]
             ssh_target = f"root@{ssh_host}"
-            ssh_key_path = "/home/ubuntu/.ssh/id_vault"
+            ssh_key_path = os.environ.get("SSH_KEY_PATH", os.path.expanduser("~/.ssh/id_rsa"))
+            if not os.path.exists(ssh_key_path) and os.path.exists(os.path.expanduser("~/.ssh/id_vault")):
+                ssh_key_path = os.path.expanduser("~/.ssh/id_vault")
             ssh_opts = ["-i", ssh_key_path, "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", "-p", str(ssh_port)]
 
             # 1. Salin script worker ke container remote
