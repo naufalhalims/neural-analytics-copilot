@@ -25,6 +25,7 @@ data/**/*.parquet
 data/*.db
 data/*.sqlite
 data/qdrant_db/
+data/monte_carlo_results.json
 
 # OS & IDE
 .DS_Store
