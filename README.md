@@ -199,8 +199,8 @@ Sistem analitik cerdas ini dirancang untuk melayani kebutuhan analitik data skal
    - Audit klaim rumah sakit berbasis kode tarif INA-CBG, diagnosa ICD-10, serta verifikasi rasio *pending* dan *dispute*.
 3. **Audit Log & Throttling API (B2B SaaS Gateway — 100k Baris)**:
    - Investigasi performa microservices, error code `HTTP 429` (Rate Limit) vs `HTTP 504` (Gateway Timeout), dan penagihan biaya API per tenant enterprise.
-4. **Operasional Kasir & Rekonsiliasi Tunai (Klinik Handayani Pratama — 25k Baris)**:
-   - Analisis setoran uang fisik tunai, audit selisih struk pembayaran per shift bidan/petugas, serta pelaporan kasir offline-first.
+4. **Operasional Kasir & Rekonsiliasi Tunai (Klinik Pratama — 25k Baris)**:
+   - Analisis setoran uang fisik tunai, audit selisih struk pembayaran per shift petugas, serta pelaporan kasir offline-first.
 5. **Interactive Root Cause Analysis (RCA) Graph Explorer**:
    - Visualisasi graf dependensi insiden secara real-time via Cytoscape.js. Mengisolasi simpul terdampak (subgraph projection) saat anomali kanal terdeteksi.
 6. **Zero-Hallucination & AST Defense Shield**:
