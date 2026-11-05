@@ -21,6 +21,8 @@ from engines.anomaly_engine import AnomalyEngine
 from engines.rag_engine import RAGEngine
 from engines.graph_engine import GraphRCAEngine
 from engines.jev_router import JevDecisionEngine
+from engines.pdf_exporter import generate_executive_briefing_pdf
+from engines.stt_engine import transcribe_audio_stream
 from engines.context_compactor import ContextCompactor, MemoryStore
 
 app = FastAPI(title="Neural Analytics Chatbot", version="1.0.0")
@@ -441,69 +443,25 @@ def get_tools_schema():
 
 @app.post("/api/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
-    """Transkripsi Audio Suara Menggunakan Gemini 3.8 Flash Native Audio via 9router."""
+    """Transkripsi Audio Suara Menggunakan Gemini Flash Audio via 9router."""
     try:
         audio_bytes = await file.read()
         if not audio_bytes:
             return JSONResponse({"success": False, "error": "File audio kosong"}, status_code=400)
             
-        ext = file.filename.split(".")[-1].lower() if file.filename and "." in file.filename else "webm"
-        if ext in ["weba", "webm"]:
-            format_type = "webm"
-        elif ext in ["ogg", "oga"]:
-            format_type = "ogg"
-        elif ext in ["wav"]:
-            format_type = "wav"
-        elif ext in ["mp3"]:
-            format_type = "mp3"
-        elif ext in ["m4a", "mp4"]:
-            format_type = "mp4"
-        else:
-            format_type = "webm"
-            
-        b64_audio = base64.b64encode(audio_bytes).decode("ascii")
         key = get_router_key()
-        
-        stt_prompt = (
-            "Transkripsikan rekaman suara percakapan ini ke dalam teks secara presisi (Bahasa Indonesia atau English). "
-            "Penting: Pertahankan keakuratan istilah pembayaran, nama kanal, dan metrik sistem perbankan: "
-            "VA BCA, Mandiri, BRI, BNI, GoPay, OVO, QRIS, Indomaret, Alfamart, failure rate, GMV, settlement, gantung, "
-            "refund, timeout, ERR_GATEWAY_TIMEOUT, ERR_SYSTEM_MALFUNCTION, Z-score, postmortem, SOP, DuckDB, Parquet, Qdrant. "
-            "HANYA hasilkan kalimat teks transkripsi murni tanpa tanda petik, tanpa kalimat pembuka/penjelas, dan tanpa komentar percakapan."
+        res = await transcribe_audio_stream(
+            audio_bytes=audio_bytes,
+            filename=file.filename or "recording.webm",
+            router_url=ROUTER_URL,
+            router_model=ROUTER_MODEL,
+            router_key=key
         )
-        
-        payload = {
-            "model": ROUTER_MODEL,
-            "messages": [{
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": stt_prompt},
-                    {"type": "input_audio", "input_audio": {"data": b64_audio, "format": format_type}}
-                ]
-            }],
-            "stream": False
-        }
-        
-        t0 = time.time()
-        async with httpx.AsyncClient(timeout=25.0) as client:
-            resp = await client.post(
-                ROUTER_URL,
-                json=payload,
-                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-            )
-            
-        if resp.status_code != 200:
-            return JSONResponse({"success": False, "error": f"9router error {resp.status_code}: {resp.text[:120]}"}, status_code=500)
-            
-        data = resp.json()
-        transcribed_text = data["choices"][0]["message"]["content"].strip()
-        latency_ms = round((time.time() - t0) * 1000)
-        
         return JSONResponse({
             "success": True,
-            "text": transcribed_text,
-            "latency_ms": latency_ms,
-            "model": f"{ROUTER_MODEL} (Gemini Flash Audio STT)"
+            "text": res["text"],
+            "latency_ms": res["latency_ms"],
+            "model": res["model"]
         })
     except Exception as e:
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
@@ -512,170 +470,9 @@ async def transcribe_audio(file: UploadFile = File(...)):
 async def export_briefing_pdf(payload: Dict[str, Any]):
     """Menghasilkan Executive Briefing PDF Dossier dari hasil investigasi/analisis terkini."""
     try:
-        from reportlab.lib.pagesizes import A4
-        from reportlab.lib import colors
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        import io
-
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(
-            buffer,
-            pagesize=A4,
-            rightMargin=36,
-            leftMargin=36,
-            topMargin=36,
-            bottomMargin=36
-        )
-
-        styles = getSampleStyleSheet()
-        title_style = ParagraphStyle(
-            'DocTitle',
-            parent=styles['Heading1'],
-            fontName='Helvetica-Bold',
-            fontSize=16,
-            leading=20,
-            textColor=colors.HexColor('#0F172A'),
-            spaceAfter=4
-        )
-        subtitle_style = ParagraphStyle(
-            'DocSub',
-            parent=styles['Normal'],
-            fontName='Helvetica',
-            fontSize=9,
-            leading=12,
-            textColor=colors.HexColor('#64748B'),
-            spaceAfter=14
-        )
-        section_style = ParagraphStyle(
-            'DocSec',
-            parent=styles['Heading2'],
-            fontName='Helvetica-Bold',
-            fontSize=11,
-            leading=15,
-            textColor=colors.HexColor('#1E293B'),
-            spaceBefore=10,
-            spaceAfter=6
-        )
-        body_style = ParagraphStyle(
-            'DocBody',
-            parent=styles['Normal'],
-            fontName='Helvetica',
-            fontSize=9,
-            leading=13,
-            textColor=colors.HexColor('#334155')
-        )
-        code_style = ParagraphStyle(
-            'DocCode',
-            parent=styles['Normal'],
-            fontName='Courier',
-            fontSize=8,
-            leading=10,
-            textColor=colors.HexColor('#0284C7')
-        )
-
-        elements = []
-
-        # Header Dokumen
-        elements.append(Paragraph("PT NEURAL TECHNOLOGIES INDONESIA", title_style))
-        elements.append(Paragraph("EXECUTIVE OPERATIONAL BRIEFING & INCIDENT INVESTIGATION REPORT", subtitle_style))
-        elements.append(Spacer(1, 4))
-
-        # Metadata Kotak
-        meta_data = [
-            [
-                Paragraph("<b>Waktu Audit:</b> " + time.strftime("%Y-%m-%d %H:%M:%S WIB"), body_style),
-                Paragraph("<b>Status Sistem:</b> OPERATIONAL VERIFIED", body_style)
-            ],
-            [
-                Paragraph("<b>Kueri Pengguna:</b> " + str(payload.get("query", "-")[:80]), body_style),
-                Paragraph("<b>Engine:</b> DuckDB 5M + Qdrant RAG + Jev", body_style)
-            ]
-        ]
-        t_meta = Table(meta_data, colWidths=[260, 260])
-        t_meta.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F8FAFC')),
-            ('BOX', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E1')),
-            ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E2E8F0')),
-            ('TOPPADDING', (0,0), (-1,-1), 5),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-            ('LEFTPADDING', (0,0), (-1,-1), 8),
-            ('RIGHTPADDING', (0,0), (-1,-1), 8),
-        ]))
-        elements.append(t_meta)
-        elements.append(Spacer(1, 10))
-
-        # Ringkasan Narasi
-        elements.append(Paragraph("1. RINGKASAN EKSEKUTIF & TEMUAN UTAMA", section_style))
-        raw_reply = str(payload.get("reply", "Tidak ada narasi analitik."))
-        # Bersihkan format markdown dan tag HTML/XML berbahaya agar ReportLab tidak crash
-        clean_reply = (
-            raw_reply.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("### ", "")
-            .replace("## ", "")
-            .replace("**", "")
-        )
-        # Ambil max 1200 karakter agar rapi 1 lembar
-        if len(clean_reply) > 1200:
-            clean_reply = clean_reply[:1200] + "..."
-        elements.append(Paragraph(clean_reply.replace("\n", "<br/>"), body_style))
-        elements.append(Spacer(1, 10))
-
-        # Rincian Metrik & Tabel
-        chart_p = payload.get("chart_payload")
-        if chart_p and chart_p.get("labels") and chart_p.get("data"):
-            elements.append(Paragraph("2. DATA PENDUKUNG (" + str(chart_p.get("title", "Rekap Angka")) + ")", section_style))
-            table_rows = [["Kategori / Kanal", str(chart_p.get("label", "Nilai"))]]
-            labels = chart_p.get("labels", [])
-            data_vals = chart_p.get("data", [])
-            for idx in range(min(6, len(labels))):
-                val = data_vals[idx]
-                val_str = f"{val:,.2f}" if isinstance(val, (int, float)) else str(val)
-                table_rows.append([str(labels[idx]), val_str])
-            
-            t_data = Table(table_rows, colWidths=[300, 220])
-            t_data.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1E293B')),
-                ('TEXTCOLOR', (0,0), (-1,0), colors.white),
-                ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0,0), (-1,0), 8),
-                ('BOTTOMPADDING', (0,0), (-1,0), 4),
-                ('TOPPADDING', (0,0), (-1,0), 4),
-                ('BACKGROUND', (0,1), (-1,-1), colors.HexColor('#F8FAFC')),
-                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E1')),
-                ('FONTNAME', (0,1), (-1,-1), 'Helvetica'),
-                ('FONTSIZE', (0,1), (-1,-1), 8),
-                ('TOPPADDING', (0,1), (-1,-1), 3),
-                ('BOTTOMPADDING', (0,1), (-1,-1), 3),
-            ]))
-            elements.append(t_data)
-            elements.append(Spacer(1, 10))
-
-        # Rujukan Regulasi & SQL
-        elements.append(Paragraph("3. VERIFIKASI BUKTI DOKUMEN & AUDIT TRAIL SQL", section_style))
-        cits = payload.get("citations", [])
-        if cits:
-            cit_texts = []
-            for c in cits:
-                t_c = str(c.get('title', 'Dokumen')).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-                s_c = str(c.get('section', '-')).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-                cit_texts.append(f"• <b>{t_c}</b> — Bab: {s_c} (Relevance: {c.get('score', '-')})")
-            elements.append(Paragraph("<br/>".join(cit_texts), body_style))
-        else:
-            elements.append(Paragraph("• Terverifikasi terhadap dataset 5.000.000 transaksi pembayaran Parquet.", body_style))
-
-        sql_q = str(payload.get("sql_executed", "")).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-        if sql_q:
-            elements.append(Spacer(1, 4))
-            elements.append(Paragraph("<b>AST Guardrail Verified SQL:</b>", body_style))
-            elements.append(Paragraph(sql_q, code_style))
-
-        doc.build(elements)
-        buffer.seek(0)
+        pdf_bytes = generate_executive_briefing_pdf(payload)
         return Response(
-            content=buffer.getvalue(),
+            content=pdf_bytes,
             media_type="application/pdf",
             headers={"Content-Disposition": f"attachment; filename=Executive_Briefing_Report_{int(time.time())}.pdf"}
         )

@@ -77,8 +77,8 @@ Seluruh fungsionalitas inti telah diproteksi oleh automated testing terotomatisa
 # 1. Menjalankan CI Pipeline, TCC Compactor, & Domain Integrity Unit Tests (21 Tests Passed)
 ./venv/bin/pytest tests/ -v
 
-# 2. Menjalankan Autonomous Adversarial Benchmark & Multi-Turn Stress Fleet
-./venv/bin/python3 scripts/run_neural_adversarial_harness.py
+# 2. Menjalankan Autonomous Adversarial Benchmark & GPU Harness Audit
+./venv/bin/python3 scripts/vast_adversarial_orchestrator.py --dry-run
 
 # 3. Menjalankan Evaluasi Berkala Retrieval & Graph RCA (Standar FinanceBench & RCAEval)
 ./venv/bin/python3 scripts/run_periodic_retrieval_benchmark.py
