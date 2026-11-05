@@ -56,3 +56,38 @@ Dokumen ini menetapkan panduan baku bagi seluruh tim operasional, *customer supp
 
 ### 5. DOKUMENTASI DAN POST-MORTEM
 Setiap insiden dengan tingkat keparahan **P1 (Kritis)** di mana volume kegagalan transaksi mencapai >1.000 transaksi atau kerugian potensial > Rp 500.000.000 wajib dibuatkan dokumen *Postmortem Incident Log* paling lambat **2x24 jam** setelah status insiden dinyatakan `RESOLVED`.
+
+---
+
+### 6. MATRIKS PERBEDAAN PROSEDUR PENANGANAN PER JENIS KEGAGALAN (ERROR CODE)
+
+Berikut adalah panduan operasional perlakuan khusus untuk setiap jenis kegagalan transaksi:
+
+1. **ERR_GATEWAY_TIMEOUT (Waktu Tunggu Bank Habis):**
+   - **Karakteristik**: Koneksi ke server mitra perbankan terputus atau tidak merespons dalam 15 detik.
+   - **Prosedur**:
+     a. Lakukan polling status callback transaksi selama 15 menit.
+     b. Jika kegagalan >5%, aktifkan Circuit Breaker L2 dan alihkan (*reroute*) trafik ke secondary switcher.
+     c. Tiket P1 dibuka ke Technical Account Manager (TAM) Bank mitra.
+     d. Jangan minta user mengulang transaksi segera guna menghindari *double deduction*.
+
+2. **ERR_INSUFFICIENT_FUNDS (Saldo Tidak Mencukupi):**
+   - **Karakteristik**: Kegagalan dari sisi pengguna (user-side business validation).
+   - **Prosedur**:
+     a. **Tidak memerlukan eskalasi teknis / SRE**.
+     b. Sistem langsung mengembalikan pesan ramah kepada pelanggan di aplikasi kasir/checkout agar memeriksa saldo dompet/rekening.
+     c. Menawarkan metode pembayaran alternatif (misal: ganti dari QRIS ke Kartu Debit/VA).
+
+3. **ERR_SYSTEM_MALFUNCTION / INTERNAL_ERROR (Gangguan Sistem Internal):**
+   - **Karakteristik**: Service backend lokal (pod microservice transaksi) mengalami panic, OOM, atau crash internal.
+   - **Prosedur**:
+     a. Segera periksa log service via Kubernetes/container manager.
+     b. Lakukan auto-restart pod worker dan periksa kapasitas thread pool koneksi database.
+     c. Eskalasi Level 3 (L3) ke On-Call Core Engineering dalam waktu <5 menit.
+
+4. **ERR_INVALID_MERCHANT / FRAUD_BLOCKED (Pemblokiran Risiko & Kepatuhan):**
+   - **Karakteristik**: Transaksi ditolak oleh Risk & Fraud Engine atau merchant ID dibekukan.
+   - **Prosedur**:
+     a. Freeze sementara token sesi transaksi.
+     b. Teruskan tiket ke Tim Fraud & Compliance Operasional untuk verifikasi identitas KYC.
+     c. CS memberikan respon netral: "Transaksi sedang dalam peninjauan keamanan".

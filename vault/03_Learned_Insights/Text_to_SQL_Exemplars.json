@@ -1,0 +1,330 @@
+{
+  "version": "1.0.0",
+  "last_backtest_timestamp": "2026-11-02 18:43:04 WIB",
+  "dataset_rows": 5000000,
+  "accuracy_pct": 100.0,
+  "avg_latency_ms": 90.81,
+  "exemplars": [
+    {
+      "id": "TC01",
+      "intent": "AGG_VOLUME",
+      "question": "Berapa total transaksi dan ringkasan status pembayaran bulan ini?",
+      "verified_sql": "SELECT status, COUNT(*) as total_tx, ROUND(SUM(amount)/1e12, 4) as volume_triliun FROM transactions GROUP BY status",
+      "avg_latency_ms": 50.92,
+      "row_count": 2,
+      "columns": [
+        "status",
+        "total_tx",
+        "volume_triliun"
+      ]
+    },
+    {
+      "id": "TC02",
+      "intent": "AGG_GMV",
+      "question": "Berapa total nilai GMV kuartal ini dan rata-rata per transaksi?",
+      "verified_sql": "SELECT ROUND(SUM(amount)/1e12, 4) as gmv_triliun, COUNT(*) as total_tx, ROUND(AVG(amount), 0) as avg_amount FROM transactions WHERE status='SUCCESS'",
+      "avg_latency_ms": 33.51,
+      "row_count": 1,
+      "columns": [
+        "gmv_triliun",
+        "total_tx",
+        "avg_amount"
+      ]
+    },
+    {
+      "id": "TC03",
+      "intent": "CHANNEL_DIST",
+      "question": "Tampilkan distribusi volume transaksi per kanal pembayaran",
+      "verified_sql": "SELECT channel, COUNT(*) as total_tx, ROUND(SUM(amount)/1e9, 2) as volume_miliar, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions GROUP BY channel ORDER BY total_tx DESC",
+      "avg_latency_ms": 88.41,
+      "row_count": 5,
+      "columns": [
+        "channel",
+        "total_tx",
+        "volume_miliar",
+        "fail_rate_pct"
+      ]
+    },
+    {
+      "id": "TC04",
+      "intent": "MERCHANT_CAT",
+      "question": "Kategori bisnis apa yang memiliki volume transaksi terbanyak?",
+      "verified_sql": "SELECT merchant_category, COUNT(*) as total_tx, ROUND(SUM(amount)/1e9, 2) as volume_miliar FROM transactions GROUP BY merchant_category ORDER BY volume_miliar DESC",
+      "avg_latency_ms": 71.44,
+      "row_count": 4,
+      "columns": [
+        "merchant_category",
+        "total_tx",
+        "volume_miliar"
+      ]
+    },
+    {
+      "id": "TC05",
+      "intent": "RATIO_SUCCESS",
+      "question": "Berapa success rate vs failure rate secara keseluruhan?",
+      "verified_sql": "SELECT status, COUNT(*) as total_tx, ROUND(COUNT(*)*100.0/5000000, 2) as percentage FROM transactions GROUP BY status",
+      "avg_latency_ms": 32.87,
+      "row_count": 2,
+      "columns": [
+        "status",
+        "total_tx",
+        "percentage"
+      ]
+    },
+    {
+      "id": "TC06",
+      "intent": "TREND_MOM",
+      "question": "Bagaimana tren transaksi per bulan dari Juli sampai September 2026?",
+      "verified_sql": "SELECT strftime(timestamp, '%Y-%m') as bulan, COUNT(*) as total_tx, ROUND(SUM(amount)/1e12, 4) as volume_triliun FROM transactions GROUP BY bulan ORDER BY bulan",
+      "avg_latency_ms": 255.12,
+      "row_count": 3,
+      "columns": [
+        "bulan",
+        "total_tx",
+        "volume_triliun"
+      ]
+    },
+    {
+      "id": "TC07",
+      "intent": "DAILY_TIMELINE",
+      "question": "Tunjukkan linimasa transaksi harian khusus kanal VA BCA di bulan September 2026",
+      "verified_sql": "SELECT strftime(timestamp, '%Y-%m-%d') as tgl, COUNT(*) as total_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions WHERE channel='VA_BCA' AND strftime(timestamp, '%Y-%m')='2026-09' GROUP BY tgl ORDER BY tgl",
+      "avg_latency_ms": 153.94,
+      "row_count": 30,
+      "columns": [
+        "tgl",
+        "total_tx",
+        "fail_rate_pct"
+      ]
+    },
+    {
+      "id": "TC08",
+      "intent": "HOURLY_PATTERN",
+      "question": "Pada jam berapa tingkat kegagalan transaksi paling tinggi terjadi?",
+      "verified_sql": "SELECT EXTRACT(hour FROM timestamp) as jam, COUNT(*) as total_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions GROUP BY jam ORDER BY fail_rate_pct DESC LIMIT 10",
+      "avg_latency_ms": 116.68,
+      "row_count": 10,
+      "columns": [
+        "jam",
+        "total_tx",
+        "fail_rate_pct"
+      ]
+    },
+    {
+      "id": "TC09",
+      "intent": "WEEKEND_VS_WEEKDAY",
+      "question": "Bandingkan volume transaksi hari kerja vs akhir pekan",
+      "verified_sql": "SELECT CASE WHEN EXTRACT(dow FROM timestamp) IN (0, 6) THEN 'Weekend' ELSE 'Weekday' END as day_type, COUNT(*) as total_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions GROUP BY day_type",
+      "avg_latency_ms": 103.49,
+      "row_count": 2,
+      "columns": [
+        "day_type",
+        "total_tx",
+        "fail_rate_pct"
+      ]
+    },
+    {
+      "id": "TC10",
+      "intent": "RECENT_7D",
+      "question": "Bagaimana performa metode pembayaran 7 hari terakhir bulan September?",
+      "verified_sql": "SELECT channel, COUNT(*) as total_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions WHERE strftime(timestamp, '%Y-%m-%d') >= '2026-09-24' GROUP BY channel ORDER BY fail_rate_pct DESC",
+      "avg_latency_ms": 249.74,
+      "row_count": 5,
+      "columns": [
+        "channel",
+        "total_tx",
+        "fail_rate_pct"
+      ]
+    },
+    {
+      "id": "TC11",
+      "intent": "FAILURE_LEADER",
+      "question": "Kanal pembayaran mana yang memiliki failure rate tertinggi?",
+      "verified_sql": "SELECT channel, COUNT(*) as total_tx, SUM(CASE WHEN status='FAILED' THEN 1 ELSE 0 END) as failed_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions GROUP BY channel ORDER BY fail_rate_pct DESC",
+      "avg_latency_ms": 51.83,
+      "row_count": 5,
+      "columns": [
+        "channel",
+        "total_tx",
+        "failed_tx",
+        "fail_rate_pct"
+      ]
+    },
+    {
+      "id": "TC12",
+      "intent": "ERROR_BREAKDOWN",
+      "question": "Apa saja rincian kode error penyebab kegagalan transaksi pada VA BCA?",
+      "verified_sql": "SELECT failure_code, COUNT(*) as total_failed FROM transactions WHERE channel='VA_BCA' AND status='FAILED' GROUP BY failure_code ORDER BY total_failed DESC",
+      "avg_latency_ms": 32.64,
+      "row_count": 4,
+      "columns": [
+        "failure_code",
+        "total_failed"
+      ]
+    },
+    {
+      "id": "TC13",
+      "intent": "SPIKE_PERIOD",
+      "question": "Kapan spike kegagalan tertinggi terjadi pada VA BCA?",
+      "verified_sql": "SELECT strftime(timestamp, '%Y-%m-%d') as tgl, COUNT(*) as failed_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions WHERE channel='VA_BCA' GROUP BY tgl ORDER BY fail_rate_pct DESC LIMIT 5",
+      "avg_latency_ms": 157.89,
+      "row_count": 5,
+      "columns": [
+        "tgl",
+        "failed_tx",
+        "fail_rate_pct"
+      ]
+    },
+    {
+      "id": "TC14",
+      "intent": "TIMEOUT_IMPACT",
+      "question": "Berapa total nominal transaksi yang mengalami timeout ERR_GATEWAY_TIMEOUT?",
+      "verified_sql": "SELECT COUNT(*) as total_timeout, ROUND(SUM(amount)/1e9, 2) as total_nominal_miliar FROM transactions WHERE failure_code='ERR_GATEWAY_TIMEOUT'",
+      "avg_latency_ms": 28.52,
+      "row_count": 1,
+      "columns": [
+        "total_timeout",
+        "total_nominal_miliar"
+      ]
+    },
+    {
+      "id": "TC15",
+      "intent": "CARD_ANOMALY",
+      "question": "Apa penyebab utama kegagalan transaksi kartu kredit di akhir pekan?",
+      "verified_sql": "SELECT failure_code, COUNT(*) as count FROM transactions WHERE channel='CREDIT_CARD' AND status='FAILED' AND EXTRACT(dow FROM timestamp) IN (0, 6) GROUP BY failure_code ORDER BY count DESC",
+      "avg_latency_ms": 85.05,
+      "row_count": 4,
+      "columns": [
+        "failure_code",
+        "count"
+      ]
+    },
+    {
+      "id": "TC16",
+      "intent": "HIGH_VALUE_RISK",
+      "question": "Berapa transaksi gagal dengan nominal di atas 10 juta rupiah?",
+      "verified_sql": "SELECT channel, COUNT(*) as high_val_failures, ROUND(SUM(amount)/1e9, 2) as nominal_miliar FROM transactions WHERE amount >= 10000000 AND status='FAILED' GROUP BY channel ORDER BY high_val_failures DESC",
+      "avg_latency_ms": 26.09,
+      "row_count": 5,
+      "columns": [
+        "channel",
+        "high_val_failures",
+        "nominal_miliar"
+      ]
+    },
+    {
+      "id": "TC17",
+      "intent": "CAT_FAILURE_RATE",
+      "question": "Kategori merchant mana yang memiliki rasio kegagalan transaksi tertinggi?",
+      "verified_sql": "SELECT merchant_category, COUNT(*) as total_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions GROUP BY merchant_category ORDER BY fail_rate_pct DESC",
+      "avg_latency_ms": 39.71,
+      "row_count": 4,
+      "columns": [
+        "merchant_category",
+        "total_tx",
+        "fail_rate_pct"
+      ]
+    },
+    {
+      "id": "TC18",
+      "intent": "MANDIRI_SETTLEMENT",
+      "question": "Berapa volume transaksi berstatus FAILED pada Bank Mandiri?",
+      "verified_sql": "SELECT COUNT(*) as total_failed, ROUND(SUM(amount)/1e9, 2) as failed_volume_miliar FROM transactions WHERE channel='VA_MANDIRI' AND status='FAILED'",
+      "avg_latency_ms": 38.82,
+      "row_count": 1,
+      "columns": [
+        "total_failed",
+        "failed_volume_miliar"
+      ]
+    },
+    {
+      "id": "TC19",
+      "intent": "QRIS_PERF",
+      "question": "Bagaimana performa transaksi QRIS Gopay dibandingkan e-wallet lainnya?",
+      "verified_sql": "SELECT channel, COUNT(*) as total_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions WHERE channel IN ('QRIS_GOPAY', 'EWALLET_OVO') GROUP BY channel",
+      "avg_latency_ms": 54.18,
+      "row_count": 2,
+      "columns": [
+        "channel",
+        "total_tx",
+        "fail_rate_pct"
+      ]
+    },
+    {
+      "id": "TC20",
+      "intent": "TOP_MERCHANTS_VOL",
+      "question": "Urutkan merchant category berdasarkan total nominal perputaran uang",
+      "verified_sql": "SELECT merchant_category, ROUND(SUM(amount)/1e12, 4) as gmv_triliun, COUNT(*) as total_tx FROM transactions GROUP BY merchant_category ORDER BY gmv_triliun DESC",
+      "avg_latency_ms": 48.78,
+      "row_count": 4,
+      "columns": [
+        "merchant_category",
+        "gmv_triliun",
+        "total_tx"
+      ]
+    },
+    {
+      "id": "TC21",
+      "intent": "MULTI_SLICE_BCA_SEPT",
+      "question": "Berapa transaksi VA BCA yang gagal dengan status ERR_GATEWAY_TIMEOUT antara tanggal 12 dan 15 September 2026?",
+      "verified_sql": "SELECT strftime(timestamp, '%Y-%m-%d') as tgl, COUNT(*) as timeout_tx, ROUND(SUM(amount)/1e9, 2) as volume_miliar FROM transactions WHERE channel='VA_BCA' AND failure_code='ERR_GATEWAY_TIMEOUT' AND strftime(timestamp, '%Y-%m-%d') BETWEEN '2026-09-12' AND '2026-09-15' GROUP BY tgl ORDER BY tgl",
+      "avg_latency_ms": 107.64,
+      "row_count": 4,
+      "columns": [
+        "tgl",
+        "timeout_tx",
+        "volume_miliar"
+      ]
+    },
+    {
+      "id": "TC22",
+      "intent": "DAILY_FAILURE_VOL",
+      "question": "Tampilkan 5 tanggal dengan nilai transaksi gagal terbesar dalam rupiah",
+      "verified_sql": "SELECT strftime(timestamp, '%Y-%m-%d') as tgl, ROUND(SUM(amount)/1e9, 2) as failed_miliar, COUNT(*) as failed_count FROM transactions WHERE status='FAILED' GROUP BY tgl ORDER BY failed_miliar DESC LIMIT 5",
+      "avg_latency_ms": 89.72,
+      "row_count": 5,
+      "columns": [
+        "tgl",
+        "failed_miliar",
+        "failed_count"
+      ]
+    },
+    {
+      "id": "TC23",
+      "intent": "SUCCESS_VOLUME_BY_CAT",
+      "question": "Berapa total GMV sukses untuk masing-masing kategori bisnis?",
+      "verified_sql": "SELECT merchant_category, ROUND(SUM(amount)/1e12, 4) as success_triliun FROM transactions WHERE status='SUCCESS' GROUP BY merchant_category ORDER BY success_triliun DESC",
+      "avg_latency_ms": 54.76,
+      "row_count": 4,
+      "columns": [
+        "merchant_category",
+        "success_triliun"
+      ]
+    },
+    {
+      "id": "TC24",
+      "intent": "CHANNEL_SHARE_PCT",
+      "question": "Berapa pangsa pasar persentase volume tiap kanal terhadap total transaksi?",
+      "verified_sql": "SELECT channel, ROUND(COUNT(*)*100.0/5000000, 2) as tx_share_pct, ROUND(SUM(amount)*100.0/1014758721700.0, 2) as vol_share_pct FROM transactions GROUP BY channel ORDER BY tx_share_pct DESC",
+      "avg_latency_ms": 47.39,
+      "row_count": 5,
+      "columns": [
+        "channel",
+        "tx_share_pct",
+        "vol_share_pct"
+      ]
+    },
+    {
+      "id": "TC25",
+      "intent": "FAILED_RATIO_SEPT",
+      "question": "Berapa persentase kegagalan transaksi harian selama bulan September 2026?",
+      "verified_sql": "SELECT strftime(timestamp, '%Y-%m-%d') as tgl, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions WHERE strftime(timestamp, '%Y-%m')='2026-09' GROUP BY tgl ORDER BY tgl",
+      "avg_latency_ms": 251.1,
+      "row_count": 30,
+      "columns": [
+        "tgl",
+        "fail_rate_pct"
+      ]
+    }
+  ]
+}

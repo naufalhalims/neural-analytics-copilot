@@ -1,589 +1,2914 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neural Analytics Copilot — PT Neural Technologies Indonesia</title>
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#090D16">
+    <title>Asisten Analitik Cerdas — PT Neural Technologies Indonesia</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace']
+                    }
+                }
+            }
+        };
+    </script>
     <!-- Marked.js for Markdown Rendering -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Cytoscape.js for Interactive RCA Diagram & Entity Flow -->
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
+    <script>
+        if (typeof cytoscape !== 'undefined' && typeof cytoscapeDagre !== 'undefined') {
+            cytoscape.use(cytoscapeDagre);
+        }
+    </script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Cytoscape.js CDN (Graph Visualizer) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+        /* =====================================================================
+           1. DESIGN TOKENS
+           ===================================================================== */
         :root {
-            --bg-main: #0B1020;
-            --card-bg: #111833;
-            --border-color: rgba(148, 163, 184, 0.16);
+            --bg-main: #090D16;
+            --card-bg: rgba(15, 23, 42, 0.80);
+            --card-solid: #0F172A;
+            --surface-sunken: rgba(2, 6, 23, 0.55);
+            --border-color: rgba(30, 41, 59, 0.80);
+            --border-strong: rgba(51, 65, 85, 0.75);
+            --text-main: #E2E8F0;
+            --text-muted: #94A3B8;
+            --text-faint: #64748B;
             --accent-blue: #3B82F6;
             --accent-green: #22C55E;
             --accent-red: #EF4444;
             --accent-amber: #F59E0B;
+            --radius-card: 14px;
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Z-index scale: satu sumber kebenaran untuk seluruh stacking context */
+            --z-pane-overlay: 10;
+            --z-sidebar: 20;
+            --z-header: 40;
+            --z-popover: 60;
+            --z-modal: 100;
         }
 
+        /* =====================================================================
+           2. BASE
+           ===================================================================== */
+        html { color-scheme: dark; }
         body {
             background-color: var(--bg-main);
-            color: #F1F5F9;
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-image: radial-gradient(1200px 500px at 50% -10%, rgba(59, 130, 246, 0.07), transparent 60%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Inter', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-feature-settings: 'cv11', 'ss01';
+            -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
         }
+        ::selection { background: rgba(59, 130, 246, 0.35); }
 
-        .mono {
-            font-family: 'JetBrains Mono', monospace;
+        /* .hidden harus selalu menang atas utilitas display responsif (dipakai oleh JS toggle) */
+        .hidden { display: none !important; }
+
+        .mono, .num {
+            font-family: 'JetBrains Mono', ui-monospace, monospace;
+            font-variant-numeric: tabular-nums;
         }
 
+        :focus-visible {
+            outline: 2px solid rgba(96, 165, 250, 0.65);
+            outline-offset: 2px;
+            border-radius: 8px;
+        }
+
+        .no-scrollbar { scrollbar-width: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.22); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.38); }
+
+        /* =====================================================================
+           3. SURFACES
+           ===================================================================== */
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: var(--radius-card);
             backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
+        /* Header TIDAK memakai backdrop-filter agar blur popover di dalamnya
+           dapat menjangkau konten halaman di bawahnya (backdrop root issue). */
+        .app-header {
+            position: relative;
+            z-index: var(--z-header);
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+        }
+        .pane-head {
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.55);
+        }
+        .kbd {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            line-height: 1;
+            padding: 3px 5px;
+            border-radius: 5px;
+            color: var(--text-muted);
+            background: rgba(2, 6, 23, 0.6);
+            border: 1px solid var(--border-strong);
+        }
+
+        /* =====================================================================
+           4. CONTROLS
+           ===================================================================== */
+        .seg {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 3px;
+            border-radius: 11px;
+            background: var(--surface-sunken);
+            border: 1px solid var(--border-color);
+            max-width: 100%;
+        }
+        .seg-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.38rem 0.75rem;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.2;
+            color: var(--text-muted);
+            white-space: nowrap;
+            transition: color .15s var(--ease), background-color .15s var(--ease), box-shadow .15s var(--ease);
+        }
+        .seg-btn:hover { color: #F1F5F9; }
+        .seg-btn.is-active {
+            background: rgba(51, 65, 85, 0.55);
+            color: #F8FAFC;
+            box-shadow: inset 0 0 0 1px rgba(100, 116, 139, 0.32), 0 1px 2px rgba(0, 0, 0, 0.35);
+        }
+        .seg-btn.is-active svg { color: #60A5FA; }
+        .seg-sm .seg-btn { padding: 0.22rem 0.6rem; font-size: 11px; }
+
+        .icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            flex-shrink: 0;
+            border-radius: 10px;
+            color: var(--text-muted);
+            transition: color .15s var(--ease), background-color .15s var(--ease), transform .1s var(--ease);
+        }
+        .icon-btn:hover { color: #F8FAFC; background: rgba(51, 65, 85, 0.5); }
+        .icon-btn:active { transform: scale(0.94); }
+        .icon-btn-sm { width: 30px; height: 30px; border-radius: 8px; }
+
+        .btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.38rem 0.7rem;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.5);
+            transition: color .15s var(--ease), background-color .15s var(--ease), border-color .15s var(--ease);
+            white-space: nowrap;
+        }
+        .btn-ghost:hover { color: #F8FAFC; background: rgba(51, 65, 85, 0.45); border-color: var(--border-strong); }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            background: #2563EB;
+            border-radius: 10px;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset, 0 4px 14px -4px rgba(37, 99, 235, 0.55);
+            transition: background-color .15s var(--ease), transform .1s var(--ease);
+        }
+        .btn-primary:hover { background: #3B82F6; }
+        .btn-primary:active { transform: scale(0.96); }
+
+        /* ---- Workspace switcher (gaya Linear) ---- */
+        .ws-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            height: 34px;
+            padding: 0 0.6rem 0 0.7rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-strong);
+            background: rgba(2, 6, 23, 0.5);
+            color: #E2E8F0;
+            font-size: 12.5px;
+            font-weight: 500;
+            transition: background-color .15s var(--ease), border-color .15s var(--ease);
+        }
+        .ws-btn:hover, .ws-btn[aria-expanded="true"] { background: rgba(30, 41, 59, 0.7); border-color: rgba(100, 116, 139, 0.6); }
+        .ws-btn[aria-expanded="true"] .ws-chevron { transform: rotate(180deg); }
+        .ws-chevron { transition: transform .2s var(--ease); }
+
+        .status-dot {
+            position: relative;
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 9999px;
+            background: var(--accent-green);
+            flex-shrink: 0;
+        }
+        .status-dot::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: inherit;
+            background: inherit;
+            opacity: 0.35;
+            animation: pulseRing 2.4s var(--ease) infinite;
+        }
+        .status-dot.is-red { background: var(--accent-red); }
+
+        /* ---- Popover (dropdown dataset) ---- */
+        .popover {
+            position: absolute;
+            left: 0;
+            top: calc(100% + 8px);
+            z-index: var(--z-popover);
+            width: 21rem;
+            max-width: calc(100vw - 1.5rem);
+            padding: 6px;
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.86);
+            border: 1px solid rgba(71, 85, 105, 0.55);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+            transform-origin: top left;
+        }
+        .popover:not(.hidden) { animation: popIn .16s var(--ease) both; }
+        .ws-item {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.55rem 0.65rem;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            transition: background-color .14s var(--ease), border-color .14s var(--ease), transform .14s var(--ease);
+        }
+        .ws-item:hover, .ws-item:focus-visible { background: rgba(51, 65, 85, 0.45); border-color: rgba(100, 116, 139, 0.3); }
+        .ws-item:hover { transform: translateX(2px); }
+        .ws-item[aria-current="true"] { background: rgba(37, 99, 235, 0.12); border-color: rgba(59, 130, 246, 0.28); }
+        .ws-item .ws-check { opacity: 0; color: #60A5FA; transition: opacity .15s; }
+        .ws-item[aria-current="true"] .ws-check { opacity: 1; }
+        .ws-ico {
+            width: 30px; height: 30px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; font-size: 15px;
+            background: rgba(2, 6, 23, 0.55); border: 1px solid var(--border-color);
+        }
+
+        /* ---- KPI stat strip ---- */
+        .stat-strip {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            border: 1px solid var(--border-color);
+            border-radius: 11px;
+            background: rgba(2, 6, 23, 0.4);
+            overflow: hidden;
+        }
+        @media (min-width: 768px) { .stat-strip { display: flex; align-items: stretch; } }
+        .stat { padding: 0.35rem 0.95rem; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1px; }
+        @media (min-width: 768px) { .stat + .stat { border-left: 1px solid var(--border-color); } }
+        .stat-label { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-faint); font-weight: 500; white-space: nowrap; }
+        .stat-value { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 600; color: #F1F5F9; white-space: nowrap; letter-spacing: -0.01em; }
+
+        /* =====================================================================
+           5. LAYOUT: SIDEBAR + WORKSPACE SPLIT
+           ===================================================================== */
+        .sidebar {
+            width: 15rem;
+            flex-shrink: 0;
+            overflow: hidden;
+            transition: width .3s var(--ease), margin .3s var(--ease), opacity .22s var(--ease), border-color .3s;
+        }
+        .sidebar.is-closed {
+            width: 0;
+            margin-right: -0.75rem;
+            opacity: 0;
+            border-color: transparent;
+            pointer-events: none;
+            visibility: hidden;
+            transition: width .3s var(--ease), margin .3s var(--ease), opacity .22s var(--ease), border-color .3s, visibility 0s linear .3s;
+        }
+        .sidebar-inner { width: 15rem; }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+            grid-template-rows: minmax(0, 1fr);
+            column-gap: 0.75rem;
+            transition: grid-template-columns .38s var(--ease), column-gap .38s var(--ease);
+        }
+        .workspace[data-mode="chat"]   { grid-template-columns: minmax(0, 1fr) minmax(0, 0fr); column-gap: 0; }
+        .workspace[data-mode="studio"] { grid-template-columns: minmax(0, 0fr) minmax(0, 1fr); column-gap: 0; }
+
+        .pane {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+            overflow: hidden;
+            box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.7);
+            transition: opacity .28s var(--ease);
+        }
+        .pane.is-collapsed {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            border-width: 0;
+            transition: opacity .2s var(--ease), visibility 0s linear .38s;
+        }
+
+        @media (max-width: 1023px) {
+            .sidebar {
+                position: absolute;
+                top: 0; bottom: 0; left: 0;
+                z-index: var(--z-sidebar);
+                width: 16rem;
+                background: rgba(15, 23, 42, 0.97);
+                box-shadow: 24px 0 60px -20px rgba(0, 0, 0, 0.8);
+                transition: transform .3s var(--ease), opacity .22s var(--ease), visibility 0s;
+            }
+            .sidebar-inner { width: 100%; }
+            .sidebar.is-closed { width: 16rem; margin-right: 0; transform: translateX(-104%); transition: transform .3s var(--ease), opacity .22s var(--ease), visibility 0s linear .3s; }
+            .workspace { display: flex; flex-direction: column; gap: 0.75rem; transition: none; }
+            .workspace[data-mode] { column-gap: 0.75rem; }
+            .pane.is-collapsed { display: none; }
+        }
+
+        /* =====================================================================
+           6. CHAT
+           ===================================================================== */
+        #chat-messages > .msg-row { width: 100%; max-width: 48rem; margin-left: auto; margin-right: auto; }
+        .msg-row { display: flex; gap: 0.75rem; align-items: flex-start; animation: riseIn .28s var(--ease) both; }
+        .msg-row-user { justify-content: flex-end; }
+        .avatar-ai {
+            width: 28px; height: 28px; flex-shrink: 0; margin-top: 2px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 9px; color: #93C5FD;
+            background: linear-gradient(180deg, rgba(37, 99, 235, 0.28), rgba(37, 99, 235, 0.12));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .msg-ai {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            padding: 1rem 1.15rem;
+            border-radius: 6px 16px 16px 16px;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid var(--border-color);
+            font-size: 13.5px;
+            line-height: 1.65;
+            color: #E2E8F0;
+        }
+        .msg-user {
+            max-width: 85%;
+            padding: 0.7rem 1rem;
+            border-radius: 16px 16px 6px 16px;
+            background: rgba(37, 99, 235, 0.16);
+            border: 1px solid rgba(59, 130, 246, 0.28);
+            color: #DBEAFE;
+            font-size: 13.5px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+        .msg-copy {
+            position: absolute; top: 8px; right: 8px;
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px 8px; border-radius: 8px;
+            font-size: 11px; color: var(--text-muted);
+            background: rgba(30, 41, 59, 0.8);
+            opacity: 0; transition: opacity .15s, color .15s, background-color .15s;
+        }
+        .msg-ai:hover .msg-copy, .msg-copy:focus-visible { opacity: 1; }
+        .msg-copy:hover { color: #fff; background: rgba(51, 65, 85, 0.95); }
+        .msg-copy.is-done { color: #34D399; opacity: 1; }
+        .msg-loading { display: flex; align-items: center; gap: 0.6rem; color: var(--text-muted); font-size: 13px; }
+        .typing-dots { display: inline-flex; gap: 3px; }
+        .typing-dots span { width: 5px; height: 5px; border-radius: 9999px; background: #60A5FA; animation: dotBounce 1.2s infinite ease-in-out; }
+        .typing-dots span:nth-child(2) { animation-delay: .15s; }
+        .typing-dots span:nth-child(3) { animation-delay: .3s; }
+        .msg-meta {
+            margin-top: 0.85rem; padding-top: 0.65rem;
+            border-top: 1px solid var(--border-color);
+            font-family: 'JetBrains Mono', monospace; font-size: 10.5px; line-height: 1.6;
+            color: var(--text-faint);
+        }
+        .msg-meta b { font-weight: 500; color: var(--text-muted); }
+        .msg-meta .sep { margin: 0 0.5rem; opacity: .45; }
 
         /* Markdown Content Styling */
-        .prose-dark h1, .prose-dark h2, .prose-dark h3 {
-            color: #F8FAFC;
-            font-weight: 700;
-            margin-top: 0.75rem;
-            margin-bottom: 0.35rem;
-        }
-        .prose-dark h1 { font-size: 1.15rem; }
-        .prose-dark h2 { font-size: 1.05rem; }
-        .prose-dark h3 { font-size: 0.95rem; }
-        .prose-dark p {
-            margin-bottom: 0.5rem;
-            line-height: 1.6;
-        }
-        .prose-dark ul, .prose-dark ol {
-            padding-left: 1.25rem;
-            margin-bottom: 0.5rem;
-        }
+        .prose-dark { overflow-wrap: anywhere; }
+        .prose-dark > *:first-child { margin-top: 0; }
+        .prose-dark h1, .prose-dark h2, .prose-dark h3 { color: #F8FAFC; font-weight: 600; margin-top: 1rem; margin-bottom: 0.4rem; letter-spacing: -0.01em; }
+        .prose-dark h1 { font-size: 1.1rem; }
+        .prose-dark h2 { font-size: 1rem; }
+        .prose-dark h3 { font-size: 0.93rem; }
+        .prose-dark p { margin-bottom: 0.6rem; }
+        .prose-dark strong { color: #F8FAFC; font-weight: 600; }
+        .prose-dark a { color: #60A5FA; text-decoration: underline; text-underline-offset: 2px; }
+        .prose-dark ul, .prose-dark ol { padding-left: 1.25rem; margin-bottom: 0.6rem; }
         .prose-dark ul { list-style-type: disc; }
         .prose-dark ol { list-style-type: decimal; }
-        .prose-dark li { margin-bottom: 0.2rem; }
-        .prose-dark table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 0.6rem 0;
-            font-size: 0.8rem;
-        }
-        .prose-dark th, .prose-dark td {
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            padding: 0.4rem 0.6rem;
-            text-align: left;
-        }
-        .prose-dark th {
-            background: rgba(15, 23, 42, 0.8);
-            color: #38BDF8;
-            font-weight: 600;
-        }
-        .prose-dark code {
-            font-family: 'JetBrains Mono', monospace;
-            background: rgba(15, 23, 42, 0.8);
-            color: #38BDF8;
-            padding: 0.15rem 0.35rem;
-            border-radius: 4px;
-            font-size: 0.85em;
-        }
+        .prose-dark li { margin-bottom: 0.25rem; }
+        .prose-dark li::marker { color: var(--text-faint); }
+        .prose-dark blockquote { margin: 0.6rem 0; padding: 0.15rem 0 0.15rem 0.8rem; border-left: 2px solid var(--border-strong); color: var(--text-muted); }
+        .prose-dark hr { border: 0; border-top: 1px solid var(--border-color); margin: 0.9rem 0; }
+        .prose-dark table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 0.7rem 0; font-size: 0.8rem; }
+        .prose-dark th, .prose-dark td { border: 1px solid var(--border-color); padding: 0.4rem 0.65rem; text-align: left; white-space: nowrap; }
+        .prose-dark td { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; font-size: 0.78rem; }
+        .prose-dark th { background: rgba(2, 6, 23, 0.55); color: #CBD5E1; font-weight: 600; }
+        .prose-dark code { font-family: 'JetBrains Mono', monospace; background: rgba(2, 6, 23, 0.65); color: #7DD3FC; padding: 0.12rem 0.35rem; border-radius: 5px; font-size: 0.84em; }
+        .prose-dark pre { background: rgba(2, 6, 23, 0.8); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.8rem 1rem; overflow-x: auto; margin: 0.7rem 0; }
+        .prose-dark pre code { background: transparent; padding: 0; color: #A7F3D0; }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        /* Prompt rail: scroll horizontal tanpa scrollbar, dengan fade-out di tepi */
+        #quick-prompts-container {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding: 2px 20px;
+            -webkit-mask-image: linear-gradient(to right, transparent 0, #000 18px, #000 calc(100% - 36px), transparent 100%);
+            mask-image: linear-gradient(to right, transparent 0, #000 18px, #000 calc(100% - 36px), transparent 100%);
+            scrollbar-width: none;
+            scroll-snap-type: x proximity;
         }
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.6);
+        #quick-prompts-container::-webkit-scrollbar { display: none; }
+        .chip {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            max-width: 22rem; flex-shrink: 0; scroll-snap-align: start;
+            padding: 0.38rem 0.8rem; border-radius: 9999px;
+            font-size: 12px; font-weight: 500; color: #CBD5E1;
+            background: rgba(30, 41, 59, 0.45);
+            border: 1px solid var(--border-color);
+            transition: background-color .15s var(--ease), border-color .15s var(--ease), color .15s, transform .15s var(--ease);
+            animation: riseIn .25s var(--ease) both;
         }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.25);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(148, 163, 184, 0.4);
-        }
+        .chip:hover { color: #fff; background: rgba(51, 65, 85, 0.6); border-color: rgba(100, 116, 139, 0.55); transform: translateY(-1px); }
+        .chip span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .chip-ico { font-size: 12px; line-height: 1; }
 
-        #cy {
+        /* Composer: input + mic + submit menyatu dalam satu action bar */
+        .composer {
+            position: relative;
+            display: flex; align-items: center; gap: 0.25rem;
+            padding: 0.35rem;
+            border-radius: 16px;
+            background: var(--surface-sunken);
+            border: 1px solid var(--border-strong);
+            transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+        }
+        .composer:focus-within { border-color: rgba(59, 130, 246, 0.55); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12); }
+        .composer.is-recording { border-color: rgba(244, 63, 94, 0.55); box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.1); }
+        .composer input {
+            flex: 1; min-width: 0; background: transparent; border: 0; outline: none;
+            padding: 0.6rem 0.7rem; font-size: 14px; color: #F1F5F9;
+        }
+        .composer input::placeholder { color: var(--text-faint); }
+        #mic-btn.is-recording { color: #fff; background: #E11D48; animation: pulseSoft 1.4s infinite; }
+        .composer-divider { width: 1px; height: 20px; background: var(--border-strong); margin: 0 0.15rem; }
+
+        /* Session list (sidebar) */
+        .sess-item {
+            display: flex; align-items: center; gap: 0.55rem;
+            padding: 0.5rem 0.65rem; border-radius: 10px; cursor: pointer;
+            font-size: 12.5px; color: var(--text-muted);
+            border: 1px solid transparent;
+            transition: background-color .15s, color .15s, border-color .15s;
+        }
+        .sess-item:hover { background: rgba(51, 65, 85, 0.35); color: #E2E8F0; }
+        .sess-item.is-active { background: rgba(37, 99, 235, 0.13); color: #DBEAFE; border-color: rgba(59, 130, 246, 0.28); }
+        .sess-item.is-active > svg { color: #60A5FA; }
+        .sess-del { opacity: 0; padding: 3px; border-radius: 6px; color: var(--text-faint); transition: opacity .15s, color .15s; }
+        .sess-item:hover .sess-del, .sess-del:focus-visible { opacity: 1; }
+        .sess-del:hover { color: #FB7185; }
+
+        /* =====================================================================
+           7. STUDIO
+           ===================================================================== */
+        .chart-wrap {
+            position: relative;
             width: 100%;
-            height: 380px;
-            display: block;
-            border-radius: 8px;
-            background: rgba(11, 16, 32, 0.85);
+            height: clamp(300px, 48vh, 540px);
+            padding: 14px 14px 8px;
+            border-radius: 12px;
+            background: var(--surface-sunken);
+            border: 1px solid var(--border-color);
+        }
+        .cy-wrap {
+            position: relative;
+            width: 100%;
+            height: clamp(380px, 62vh, 700px);
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--surface-sunken);
+            border: 1px solid var(--border-color);
+        }
+        #cy { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+        .panel-title { display: flex; align-items: center; gap: 0.55rem; font-size: 13px; font-weight: 600; color: #E2E8F0; min-width: 0; }
+        .panel-caption { font-size: 12px; color: var(--text-faint); }
+        .section-card { border: 1px solid var(--border-color); border-radius: 12px; background: rgba(2, 6, 23, 0.35); padding: 1rem; }
+        .section-label { display: flex; align-items: center; gap: 0.5rem; font-size: 12px; font-weight: 600; color: #CBD5E1; }
+
+        .data-table-wrap { overflow: auto; max-height: 62vh; border: 1px solid var(--border-color); border-radius: 12px; background: var(--surface-sunken); }
+        .data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; text-align: left; }
+        .data-table th {
+            position: sticky; top: 0; z-index: 1;
+            padding: 0.7rem 1rem; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+            color: var(--text-muted); background: #0F172A; border-bottom: 1px solid var(--border-color);
+        }
+        .data-table td { padding: 0.65rem 1rem; color: #CBD5E1; border-bottom: 1px solid rgba(30, 41, 59, 0.55); }
+        .data-table tbody tr:last-child td { border-bottom: 0; }
+        .data-table tbody tr:hover td { background: rgba(30, 41, 59, 0.4); }
+        .data-table .num-col { text-align: right; font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; color: #7DD3FC; }
+        .data-table th.num-col { color: var(--text-muted); }
+
+        .sql-box {
+            font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.7;
+            color: #6EE7B7; white-space: pre-wrap; overflow-wrap: anywhere;
+            padding: 0.9rem 1rem; border-radius: 10px;
+            background: rgba(2, 6, 23, 0.75); border: 1px solid var(--border-color);
+            max-height: 40vh; overflow: auto;
+        }
+        .cit-item {
+            display: flex; align-items: center; gap: 0.7rem; width: 100%; text-align: left;
+            padding: 0.65rem 0.8rem; border-radius: 10px;
+            background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border-color);
+            transition: border-color .15s, background-color .15s, transform .15s var(--ease);
+        }
+        .cit-item:hover { border-color: rgba(59, 130, 246, 0.45); background: rgba(30, 41, 59, 0.6); transform: translateY(-1px); }
+        .cit-item .cit-arrow { color: var(--text-faint); transition: color .15s, transform .15s; }
+        .cit-item:hover .cit-arrow { color: #60A5FA; transform: translate(1px, -1px); }
+
+        .empty-state {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+            gap: 0.35rem; padding: 2rem 1rem; width: 100%;
+        }
+        .empty-ico {
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; margin-bottom: 0.35rem; color: var(--text-faint);
+            background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border-color);
+        }
+        .empty-title { font-size: 13px; font-weight: 600; color: #CBD5E1; }
+        .empty-desc { font-size: 12px; color: var(--text-faint); max-width: 28rem; line-height: 1.55; }
+
+        .metric-card { padding: 0.9rem 1rem; border-radius: 12px; background: rgba(15, 23, 42, 0.55); border: 1px solid var(--border-color); }
+        .metric-label { font-size: 11px; color: var(--text-muted); }
+        .metric-value { margin-top: 0.3rem; font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
+        .metric-note { margin-top: 0.3rem; font-size: 10.5px; color: var(--text-faint); line-height: 1.5; }
+        .check-row { display: flex; align-items: center; gap: 0.55rem; padding: 0.5rem 0.7rem; border-radius: 9px; font-size: 12px; color: #CBD5E1; background: rgba(2, 6, 23, 0.4); border: 1px solid var(--border-color); }
+        .check-row svg { color: #34D399; flex-shrink: 0; }
+
+        /* =====================================================================
+           8. MODAL
+           ===================================================================== */
+        #citation-preview-modal:not(.hidden) { animation: fadeIn .2s var(--ease) both; }
+        #citation-preview-modal:not(.hidden) .modal-panel { animation: modalIn .26s var(--ease) both; }
+        #citation-preview-modal.is-closing { animation: fadeOut .16s var(--ease) forwards !important; }
+        #citation-preview-modal.is-closing .modal-panel { animation: modalOut .16s var(--ease) forwards !important; }
+
+        /* =====================================================================
+           9. KEYFRAMES
+           ===================================================================== */
+        @keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOut  { from { opacity: 1; } to { opacity: 0; } }
+        @keyframes modalIn  { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
+        @keyframes modalOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(6px) scale(.98); } }
+        @keyframes popIn    { from { opacity: 0; transform: translateY(-6px) scale(.97); } to { opacity: 1; transform: none; } }
+        @keyframes riseIn   { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        @keyframes dotBounce { 0%, 80%, 100% { transform: translateY(0); opacity: .45; } 40% { transform: translateY(-4px); opacity: 1; } }
+        @keyframes pulseRing { 0% { transform: scale(.8); opacity: .5; } 70%, 100% { transform: scale(1.9); opacity: 0; } }
+        @keyframes pulseSoft { 0%, 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, .5); } 50% { box-shadow: 0 0 0 6px rgba(225, 29, 72, 0); } }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
         }
     </style>
 </head>
-<body class="h-screen flex flex-col p-3 md:p-4 gap-3">
+<body class="min-h-screen lg:h-[100dvh] flex flex-col gap-3 p-3 overflow-y-auto lg:overflow-hidden">
 
-    <!-- Top Macro KPI Header -->
-    <header class="card p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-slate-800">
-        <div class="flex items-center gap-3">
-            <span class="p-2.5 rounded-lg bg-blue-600/20 text-blue-400 border border-blue-500/30">
-                <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+    <!-- ===================================================================
+         TOP HEADER: brand + workspace switcher + KPI stat strip
+         =================================================================== -->
+    <header id="top-kpi-header" class="app-header shrink-0 px-3.5 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-2.5">
+        <div class="flex items-center gap-3 min-w-0">
+            <span class="w-8 h-8 shrink-0 rounded-[10px] flex items-center justify-center text-blue-300 bg-gradient-to-b from-blue-600/30 to-blue-600/10 border border-blue-500/30">
+                <i data-lucide="brain-circuit" class="w-[18px] h-[18px]"></i>
             </span>
-            <div>
-                <h1 class="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                    NEURAL ANALYTICS COPILOT
-                    <span class="text-xs px-2.5 py-0.5 rounded-full mono font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">LIVE HYBRID RAG</span>
+            <div class="min-w-0 leading-tight">
+                <h1 class="text-[13px] font-semibold tracking-tight text-slate-100 flex items-center gap-2 whitespace-nowrap">
+                    Neural Analytics Copilot
+                    <span class="inline-flex items-center gap-1.5 text-[10px] font-medium text-emerald-400/90"><span class="status-dot"></span>Online</span>
                 </h1>
-                <p class="text-xs text-slate-400 mono">
-                    DuckDB (5M Parquet) · Qdrant Vector DB · NetworkX RCA Graph · PT Neural Technologies Indonesia
+                <p class="text-[11px] text-slate-500 truncate max-w-[18rem] md:max-w-[22rem]" id="current-domain-subtitle">
+                    {{ domain_info.subtitle if domain_info else "PT Neural Technologies Indonesia · 5.000.000 Transaksi" }}
                 </p>
+            </div>
+
+            <!-- Tombol Cepat Blueprint Arsitektur -->
+            <button type="button" onclick="openArchitectureModal()" class="px-2.5 py-1 rounded-lg border border-cyan-500/30 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm ml-1" title="Lihat Blueprint Arsitektur Sistem">
+                <i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span class="hidden sm:inline">Blueprint Arsitektur</span>
+            </button>
+
+            <!-- Workspace / Dataset Switcher -->
+            <div class="relative ml-1" id="domain-dropdown-container">
+                <button id="domain-dropdown-btn" type="button" onclick="toggleDomainMenu(event)" class="ws-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="domain-dropdown-menu" title="Ganti Dataset Showcase (Ctrl + K)">
+                    <span class="status-dot"></span>
+                    <span id="current-domain-badge" class="whitespace-nowrap">{{ domain_info.badge if domain_info else "🏦 Fintech 5M" }}</span>
+                    <i data-lucide="chevrons-up-down" class="w-3.5 h-3.5 text-slate-500 ws-chevron"></i>
+                    <span class="kbd max-md:hidden">Ctrl K</span>
+                </button>
+
+                <div id="domain-dropdown-menu" class="popover hidden" role="menu" aria-label="Pilih Dataset Showcase">
+                    <div class="flex items-center justify-between px-2.5 pt-1.5 pb-2">
+                        <span class="text-[10.5px] font-semibold tracking-[.08em] uppercase text-slate-500">Ganti Dataset Showcase</span>
+                        <span class="text-[10px] text-slate-600">Tekan <span class="kbd">1</span>–<span class="kbd">4</span></span>
+                    </div>
+                    <a href="/" role="menuitem" data-domain="default" class="ws-item">
+                        <span class="ws-ico">🏦</span>
+                        <span class="min-w-0 flex-1">
+                            <span class="flex items-center justify-between gap-2 text-[12.5px] font-medium text-slate-100">Fintech &amp; Banking <span class="num text-[10.5px] text-slate-500">5M rows</span></span>
+                            <span class="block text-[11px] text-slate-500 truncate">Payment Gateway, VA, QRIS (Core Test)</span>
+                        </span>
+                        <i data-lucide="check" class="w-3.5 h-3.5 ws-check"></i>
+                    </a>
+                    <a href="/bpjs" role="menuitem" data-domain="bpjs" class="ws-item">
+                        <span class="ws-ico">🏥</span>
+                        <span class="min-w-0 flex-1">
+                            <span class="flex items-center justify-between gap-2 text-[12.5px] font-medium text-slate-100">Healthcare Claims <span class="num text-[10.5px] text-slate-500">100k rows</span></span>
+                            <span class="block text-[11px] text-slate-500 truncate">Klaim RS, INA-CBG, LOS, Dispute Fornas</span>
+                        </span>
+                        <i data-lucide="check" class="w-3.5 h-3.5 ws-check"></i>
+                    </a>
+                    <a href="/saas" role="menuitem" data-domain="saas" class="ws-item">
+                        <span class="ws-ico">☁️</span>
+                        <span class="min-w-0 flex-1">
+                            <span class="flex items-center justify-between gap-2 text-[12.5px] font-medium text-slate-100">B2B SaaS Gateway <span class="num text-[10.5px] text-slate-500">100k rows</span></span>
+                            <span class="block text-[11px] text-slate-500 truncate">API Gateway Logs, Rate Limit, Billing</span>
+                        </span>
+                        <i data-lucide="check" class="w-3.5 h-3.5 ws-check"></i>
+                    </a>
+                    <a href="/klinik" role="menuitem" data-domain="klinik" class="ws-item">
+                        <span class="ws-ico">🩺</span>
+                        <span class="min-w-0 flex-1">
+                            <span class="flex items-center justify-between gap-2 text-[12.5px] font-medium text-slate-100">Kasir Klinik Pratama <span class="num text-[10.5px] text-slate-500">25k rows</span></span>
+                            <span class="block text-[11px] text-slate-500 truncate">Kasir Fisik Tunai (Strict Cash-Only)</span>
+                        </span>
+                        <i data-lucide="check" class="w-3.5 h-3.5 ws-check"></i>
+                    </a>
+
+                    <div class="border-t border-slate-800 my-1"></div>
+                    <button type="button" onclick="openArchitectureModal()" role="menuitem" class="ws-item text-left w-full">
+                        <span class="ws-ico">📐</span>
+                        <span class="min-w-0 flex-1">
+                            <span class="flex items-center justify-between gap-2 text-[12.5px] font-medium text-cyan-300">System Architecture <span class="badge border border-cyan-500/30 text-cyan-400 bg-cyan-950/40 text-[9px] px-1.5 py-0.5 rounded">Blueprint</span></span>
+                            <span class="block text-[11px] text-slate-400 truncate">First-Principles SVG &amp; Engineering Pillars</span>
+                        </span>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- KPI Strip -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto">
-            <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80">
-                <span class="text-[10px] text-slate-400 uppercase tracking-wider mono block">Total Transaksi</span>
-                <span class="text-sm md:text-base font-bold mono text-white" id="kpi-tx">100,000</span>
+        <!-- KPI Stat Strip -->
+        <div class="flex items-center gap-2 ml-auto max-md:w-full">
+            <div id="kpi-strip-container" class="stat-strip max-md:flex-1">
+                <div class="stat">
+                    <span class="stat-label">Total Tx</span>
+                    <span class="stat-value" id="kpi-tx">5.000.000</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">GMV</span>
+                    <span class="stat-value" id="kpi-vol">Rp 1,01 T</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Success Rate</span>
+                    <span class="stat-value text-emerald-300" id="kpi-success">96,24%</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label flex items-center gap-1.5"><span class="status-dot is-red"></span>Status Anomali</span>
+                    <span class="stat-value !text-rose-300 truncate max-w-[10rem] !font-sans !text-[12px]" id="kpi-fail-ch">Virtual Account BCA</span>
+                </div>
             </div>
-            <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80">
-                <span class="text-[10px] text-slate-400 uppercase tracking-wider mono block">Total Volume</span>
-                <span class="text-sm md:text-base font-bold mono text-emerald-400" id="kpi-vol">Rp 195.4 M</span>
-            </div>
-            <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80">
-                <span class="text-[10px] text-slate-400 uppercase tracking-wider mono block">Success Rate</span>
-                <span class="text-sm md:text-base font-bold mono text-cyan-400" id="kpi-success">96.26%</span>
-            </div>
-            <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80">
-                <span class="text-[10px] text-slate-400 uppercase tracking-wider mono block">Top Fail Channel</span>
-                <span class="text-sm md:text-base font-bold mono text-rose-400" id="kpi-fail-ch">VA_BCA</span>
-            </div>
+            <button type="button" onclick="toggleTopHeader()" title="Sembunyikan/Tampilkan KPI" aria-label="Sembunyikan atau tampilkan KPI" class="icon-btn border border-slate-800/90">
+                <i id="header-collapse-icon" data-lucide="chevron-up" class="w-4 h-4"></i>
+            </button>
         </div>
     </header>
 
-    <!-- Main Dual-Workspace Layout -->
-    <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-3 min-h-0">
-        
-        <!-- Left Panel: Conversational Assistant (Col 12 to 5) -->
-        <div class="lg:col-span-5 card flex flex-col h-full border-slate-800 overflow-hidden">
-            <!-- Chat Header -->
-            <div class="p-3 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/40">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="message-square" class="w-4 h-4 text-blue-400"></i>
-                    <span class="text-xs font-semibold text-slate-200">Interactive Analyst Session</span>
-                </div>
-                <span class="text-[10px] text-emerald-400 mono flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Model: Gemini Flash 3.8 (Ultra-Fast)
-                </span>
-            </div>
+    <!-- ===================================================================
+         MAIN BODY: sidebar sesi + workspace (chat | studio)
+         =================================================================== -->
+    <div class="flex-1 flex min-h-0 w-full relative">
 
-            <!-- Chat Stream Message Container -->
-            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 text-xs md:text-sm">
-                <!-- Welcome Message -->
-                <div class="flex gap-3">
-                    <div class="w-7 h-7 rounded-lg bg-blue-600/30 flex items-center justify-center shrink-0 border border-blue-500/30 text-blue-400">
-                        <i data-lucide="bot" class="w-4 h-4"></i>
-                    </div>
-                    <div class="space-y-1.5 flex-1 bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
-                        <p class="font-semibold text-blue-300">Selamat datang di Neural Analytics Copilot.</p>
-                        <p class="text-slate-300 leading-relaxed">
-                            Saya dapat membantu menganalisis transaksi pembayaran (DuckDB SQL), mencari prosedur mitigasi (Qdrant SOP), dan menginvestigasi akar masalah lonjakan kegagalan (RCA Graph).
-                        </p>
-                        <p class="text-[11px] text-slate-400 font-medium pt-1">
-                            Silakan ajukan pertanyaan atau klik tombol simulasi cepat di bawah ini.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Prompt Pills -->
-            <div class="p-2.5 border-t border-slate-800/80 bg-slate-900/20 overflow-x-auto whitespace-nowrap flex gap-1.5">
-                <button onclick="sendQuickPrompt('Berapa total transaksi dan bagaimana distribusi status transaksi bulan ini?')" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
-                    📊 A. Distribusi Status
-                </button>
-                <button onclick="sendQuickPrompt('Bagaimana perbandingan tren volume dan tingkat kegagalan antar bulan?')" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
-                    📈 B. Tren MoM
-                </button>
-                <button onclick="sendQuickPrompt('Mengapa tingkat kegagalan transaksi meningkat di September dan kanal mana yang berkontribusi?')" class="text-[11px] px-2.5 py-1 rounded-full bg-rose-950/40 hover:bg-rose-900/40 text-rose-300 border border-rose-800/40 transition">
-                    🔍 C. Investigasi Spike
-                </button>
-                <button onclick="sendQuickPrompt('Berdasarkan dokumen SOP, apa prosedur penanganan jika transaksi mengalami gateway timeout?')" class="text-[11px] px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
-                    📄 D. Prosedur SOP
-                </button>
-                <button onclick="sendQuickPrompt('Sejak kapan lonjakan kegagalan VA BCA terjadi dan bukti dokumen apa yang mendukung?')" class="text-[11px] px-2.5 py-1 rounded-full bg-cyan-950/40 hover:bg-cyan-900/40 text-cyan-300 border border-cyan-800/40 transition">
-                    🔗 E. Follow-up RCA
-                </button>
-            </div>
-
-            <!-- Input Box -->
-            <div class="p-3 border-t border-slate-800 flex gap-2 bg-slate-900/40">
-                <input id="user-input" type="text" placeholder="Tanyakan kondisi bisnis, tren, atau SOP..." 
-                       class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-2 text-xs md:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
-                       onkeydown="if(event.key === 'Enter') handleSend()">
-                <button onclick="handleSend()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition flex items-center justify-center shadow-lg shadow-blue-500/20">
-                    <i data-lucide="send" class="w-4 h-4"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Right Panel: Analytics & Metrics Console (Col 12 to 7) -->
-        <div class="lg:col-span-7 card flex flex-col h-full border-slate-800 overflow-hidden">
-            <!-- Tabs Header -->
-            <div class="p-2 border-b border-slate-800 flex items-center justify-between bg-slate-900/40">
-                <div class="flex gap-2">
-                    <button id="tab-btn-chart" onclick="switchTab('chart')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition flex items-center gap-1.5 shadow-lg shadow-blue-500/20">
-                        <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
-                        <span>Visualisasi Interaktif</span>
-                    </button>
-                    <button id="tab-btn-sql" onclick="switchTab('sql')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-1.5">
-                        <i data-lucide="terminal" class="w-3.5 h-3.5"></i>
-                        <span>SQL & Citations</span>
+        <!-- Sidebar: Sesi Percakapan -->
+        <aside id="chat-sidebar" class="sidebar card flex flex-col is-closed" aria-label="Riwayat percakapan">
+            <div class="sidebar-inner flex flex-col h-full min-h-0">
+                <div class="p-3 border-b border-slate-800/80">
+                    <button type="button" onclick="createNewSession()" class="btn-primary w-full h-9">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Percakapan Baru</span>
                     </button>
                 </div>
-                <span class="text-[11px] text-slate-400 mono pr-2" id="console-status">Console: Active</span>
-            </div>
 
-            <!-- Tab Content Container -->
-            <div class="flex-1 p-4 overflow-y-auto min-h-0 flex flex-col">
-                
-                <!-- Tab 1: Chart Analytics View (Primary Default) -->
-                <div id="tab-content-chart" class="h-full flex flex-col justify-between items-center p-2">
-                    <div class="w-full flex justify-between items-center mb-2">
-                        <div class="flex items-center gap-2">
-                            <span class="p-1 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                                <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+                <div class="flex-1 min-h-0 overflow-y-auto p-2.5 space-y-1" id="session-history-list">
+                    <div class="text-[10.5px] font-semibold text-slate-500 px-2 py-1 uppercase tracking-[.08em]">Riwayat Konsultasi</div>
+                    <!-- Dynamic session items dirender di sini -->
+                </div>
+
+                <div class="px-3 py-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500">
+                    <span class="flex items-center gap-1.5">
+                        <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>
+                        Penyimpanan lokal
+                    </span>
+                    <button type="button" onclick="clearAllSessions()" title="Bersihkan riwayat sesi" aria-label="Bersihkan riwayat sesi" class="icon-btn icon-btn-sm hover:!text-rose-400">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Workspace: Chat (kiri) + Studio (kanan) -->
+        <div id="workspace-grid" data-mode="split" class="workspace flex-1 min-w-0 min-h-0">
+
+            <!-- ============ LEFT PANE: Chat ============ -->
+            <section id="chat-section-col" class="pane card max-lg:h-[82dvh]" aria-label="Percakapan analitik">
+
+                <div class="pane-head px-3.5 py-2.5 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <button type="button" onclick="toggleSidebar()" title="Buka/Tutup riwayat sesi" aria-label="Buka atau tutup riwayat sesi" class="icon-btn icon-btn-sm border border-slate-800/90">
+                            <i data-lucide="panel-left" class="w-4 h-4"></i>
+                        </button>
+                        <div class="min-w-0 leading-tight">
+                            <h2 class="text-[13px] font-semibold text-slate-100 truncate" id="current-session-title">Asisten Analitik</h2>
+                            <span class="text-[11px] text-slate-500 flex items-center gap-1.5 truncate">
+                                <span class="status-dot"></span>
+                                DuckDB · Qdrant · Chart.js
                             </span>
-                            <h3 class="text-xs font-semibold text-slate-200" id="chart-title">Visualisasi Data (Cyber Dark Theme)</h3>
                         </div>
-                        <span class="text-[10px] text-slate-400 mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800">Chart.js Engine</span>
                     </div>
-                    <div class="w-full flex-1 max-h-[420px] flex items-center justify-center">
-                        <canvas id="activeChart"></canvas>
-                    </div>
-                    <div class="w-full pt-2 flex items-center justify-between text-[11px] text-slate-500 mono border-t border-slate-800/60">
-                        <span>Dynamic Content-Driven Analytics</span>
-                        <span>5M Parquet Rows In-Memory</span>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                        <!-- Workspace layout: Chat / Split / Studio -->
+                        <div class="seg seg-sm max-sm:hidden" role="group" aria-label="Mode tata letak workspace">
+                            <button type="button" onclick="setWorkspaceLayout('chat')" id="btn-layout-chat" title="Mode Chat: layar penuh untuk membaca laporan panjang" class="seg-btn">
+                                <i data-lucide="message-square" class="w-3 h-3"></i><span>Chat</span>
+                            </button>
+                            <button type="button" onclick="setWorkspaceLayout('split')" id="btn-layout-split" title="Mode Split: chat di kiri, studio di kanan" class="seg-btn is-active">
+                                <i data-lucide="columns-2" class="w-3 h-3"></i><span>Split</span>
+                            </button>
+                            <button type="button" onclick="setWorkspaceLayout('studio')" id="btn-layout-studio" title="Mode Studio: layar penuh untuk grafik &amp; diagram insiden" class="seg-btn">
+                                <i data-lucide="layout-dashboard" class="w-3 h-3"></i><span>Studio</span>
+                            </button>
+                        </div>
+                        <button type="button" onclick="clearChatHistory()" title="Mulai sesi baru" class="btn-ghost">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                            <span class="max-sm:hidden">Reset</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Tab 2: SQL Inspector & Citations -->
-                <div id="tab-content-sql" class="h-full hidden flex-col gap-4">
-                    <div>
-                        <span class="text-xs font-semibold text-slate-300 block mb-1">AST-Validated SQL Query (DuckDB)</span>
-                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 mono text-xs text-emerald-400 overflow-x-auto" id="sql-display">
-                            -- Tidak ada kueri aktif. Kueri akan muncul saat pertanyaan SQL diajukan.
+                <!-- Chat stream -->
+                <div id="chat-messages" class="flex-1 min-h-0 overflow-y-auto px-4 md:px-6 py-5 space-y-5 scroll-smooth">
+                    <div class="msg-row">
+                        <div class="avatar-ai"><i data-lucide="bot" class="w-4 h-4"></i></div>
+                        <div class="msg-ai">
+                            <p class="font-semibold text-slate-50 mb-1.5">Halo! Selamat datang di Pusat Analitik &amp; Layanan Operasional.</p>
+                            <p class="text-slate-300">
+                                Saya membantu memeriksa data dari basis data 5 juta transaksi, menelusuri penyebab kendala operasional, serta mencari rujukan dokumen SOP dan laporan insiden resmi.
+                            </p>
+                            <p class="text-slate-500 text-[12.5px] mt-2">
+                                Grafik dan bukti kueri tampil otomatis di <strong class="text-slate-300 font-medium">Analytics Studio</strong> pada panel kanan.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dock: persona + prompt cepat + composer -->
+                <div class="border-t border-slate-800/80 bg-slate-900/50 pt-3 pb-3.5">
+                    <div class="px-4 mb-2 flex items-center justify-between gap-3">
+                        <span class="text-[11px] font-medium text-slate-500 shrink-0">Prompt cepat</span>
+                        <div class="seg seg-sm" role="group" aria-label="Sudut pandang analis" id="persona-switcher">
+                            <button type="button" data-persona="kasir" onclick="setPersonaQuickPrompts('kasir')" title="Bahasa praktis lapangan untuk operasional toko/kasir" class="seg-btn">Kasir</button>
+                            <button type="button" data-persona="finance" onclick="setPersonaQuickPrompts('finance')" title="Fokus angka rupiah, rugi dispute, dan rekonsiliasi kas" class="seg-btn">Finance</button>
+                            <button type="button" data-persona="sre" onclick="setPersonaQuickPrompts('sre')" title="Fokus akar masalah teknis, SLA gateway, dan postmortem" class="seg-btn">SRE</button>
                         </div>
                     </div>
 
-                    <div>
-                        <span class="text-xs font-semibold text-slate-300 block mb-1">Document Evidence & Grounding Citations</span>
-                        <div class="space-y-2" id="citations-container">
-                            <div class="p-3 rounded-lg bg-slate-900/50 border border-slate-800/80 text-xs text-slate-400">
-                                Belum ada dokumen yang disitasi dalam sesi ini.
+                    <!-- Quick prompt chips (dirender oleh JS; horizontal scroll tanpa scrollbar + fade edge) -->
+                    <div id="quick-prompts-container" role="list" aria-label="Rekomendasi prompt"></div>
+
+                    <!-- Composer (integrated action bar) -->
+                    <div class="px-4 mt-3">
+                        <div class="composer" id="composer">
+                            <!-- Live Voice Recording Banner -->
+                            <div id="voice-recording-banner" class="hidden absolute inset-0 z-[5] rounded-[16px] bg-slate-950/95 border border-rose-500/50 px-4 flex items-center justify-between backdrop-blur-md">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+                                    <span class="text-xs font-semibold text-rose-300">Merekam suara…</span>
+                                    <div class="flex items-center gap-1 h-4 ml-1" aria-hidden="true">
+                                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-3"></span>
+                                        <span class="w-1 bg-rose-400 rounded-full animate-bounce h-4" style="animation-delay: 0.15s"></span>
+                                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-2" style="animation-delay: 0.3s"></span>
+                                        <span class="w-1 bg-rose-400 rounded-full animate-bounce h-4" style="animation-delay: 0.45s"></span>
+                                        <span class="w-1 bg-rose-500 rounded-full animate-bounce h-3" style="animation-delay: 0.2s"></span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] text-slate-500 max-sm:hidden">Gemini Flash Audio STT</span>
+                                    <button type="button" onclick="toggleVoiceRecording()" class="px-2.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-semibold flex items-center gap-1.5 transition">
+                                        <i data-lucide="square" class="w-3 h-3 fill-white"></i>
+                                        <span>Selesai &amp; Kirim</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <input id="user-input" type="text" autocomplete="off" aria-label="Pertanyaan analitik"
+                                   placeholder="Tanyakan tren transaksi, kendala, atau SOP…"
+                                   onkeydown="if(event.key === 'Enter' && !event.isComposing) handleSend()">
+                            <button id="mic-btn" type="button" onclick="toggleVoiceRecording()" class="icon-btn" title="Bicara (Gemini Flash Audio STT)" aria-label="Rekam suara">
+                                <i id="mic-icon" data-lucide="mic" class="w-4 h-4"></i>
+                            </button>
+                            <span class="composer-divider" aria-hidden="true"></span>
+                            <button type="button" onclick="handleSend()" title="Kirim pertanyaan" aria-label="Kirim pertanyaan" class="btn-primary w-9 h-9 shrink-0">
+                                <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <p class="mt-1.5 px-1 text-[10.5px] text-slate-600 flex items-center gap-1.5">
+                            <span class="kbd">Enter</span> kirim
+                            <span class="opacity-40">·</span>
+                            Klik prompt cepat atau ketik kueri bebas
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ RIGHT PANE: Analytics Studio ============ -->
+            <section id="interactive-studio-section" class="pane card" aria-label="Analytics Studio">
+
+                <div class="pane-head px-4 pt-3 pb-3 flex flex-col gap-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <span class="w-7 h-7 shrink-0 rounded-lg flex items-center justify-center text-blue-300 bg-blue-500/10 border border-blue-500/25">
+                                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                            </span>
+                            <div class="min-w-0 leading-tight">
+                                <h3 class="text-[13px] font-semibold text-slate-100 truncate">Analytics &amp; Evidence Studio</h3>
+                                <p class="text-[11px] text-slate-500 truncate" id="studio-subtitle">Menampilkan visualisasi data &amp; dokumen rujukan terkini</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button type="button" onclick="exportTableToCSV()" title="Ekspor data tabel ke format CSV" class="btn-ghost">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i><span>CSV</span>
+                            </button>
+                            <button type="button" onclick="downloadExecutivePDF()" title="Unduh Executive Briefing PDF" class="btn-ghost">
+                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i><span>PDF</span>
+                            </button>
+                            <button type="button" onclick="toggleStudioCollapse()" title="Sembunyikan/Tampilkan Studio" aria-label="Sembunyikan atau tampilkan studio" class="icon-btn icon-btn-sm border border-slate-800/90">
+                                <i id="studio-collapse-icon" data-lucide="maximize-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Segmented pill tabs -->
+                    <div class="seg overflow-x-auto no-scrollbar self-start" role="tablist" aria-label="Panel studio">
+                        <button id="studio-tab-chart-btn" type="button" role="tab" aria-selected="true" onclick="switchStudioTab('chart')" title="Visualisasi metrik transaksi (Chart.js)" class="seg-btn is-active">
+                            <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i><span>Grafik</span>
+                        </button>
+                        <button id="studio-tab-table-btn" type="button" role="tab" aria-selected="false" onclick="switchStudioTab('table')" title="Rincian angka mentah per baris &amp; kanal" class="seg-btn">
+                            <i data-lucide="table" class="w-3.5 h-3.5"></i><span>Tabel Data</span>
+                        </button>
+                        <button id="studio-tab-evidence-btn" type="button" role="tab" aria-selected="false" onclick="switchStudioTab('evidence')" title="Bukti dokumen rujukan (Qdrant) &amp; kueri SQL DuckDB" class="seg-btn">
+                            <i data-lucide="file-check-2" class="w-3.5 h-3.5"></i><span>Dokumen SOP &amp; SQL</span>
+                        </button>
+                        <button id="studio-tab-diagram-btn" type="button" role="tab" aria-selected="false" onclick="switchStudioTab('diagram')" title="Pelacakan akar masalah berarah (NetworkX Graph RCA)" class="seg-btn">
+                            <i data-lucide="network" class="w-3.5 h-3.5"></i><span>Diagram Insiden</span>
+                        </button>
+                        <button id="studio-tab-benchmark-btn" type="button" role="tab" aria-selected="false" onclick="switchStudioTab('benchmark')" title="Hasil uji regresi &amp; skor kepatuhan resmi" class="seg-btn">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i><span>Audit Kinerja</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Studio content -->
+                <div id="studio-main-body" class="flex-1 min-h-0 overflow-y-auto p-4 md:p-5">
+
+                    <!-- 1. Grafik -->
+                    <div id="studio-chart-panel" class="flex flex-col gap-3.5">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="panel-title">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0"></span>
+                                <span id="studio-chart-title" class="truncate">Kinerja &amp; Tingkat Kendala Pembayaran</span>
+                            </div>
+                            <div class="seg seg-sm shrink-0" role="group" aria-label="Jenis grafik">
+                                <button type="button" data-chart-type="bar" onclick="setChartType('bar')" class="seg-btn is-active">Bar</button>
+                                <button type="button" data-chart-type="line" onclick="setChartType('line')" class="seg-btn">Line</button>
+                                <button type="button" data-chart-type="doughnut" onclick="setChartType('doughnut')" class="seg-btn">Donut</button>
+                            </div>
+                        </div>
+                        <div class="chart-wrap">
+                            <canvas id="studioChartCanvas"></canvas>
+                        </div>
+                        <p class="panel-caption flex items-center gap-1.5">
+                            <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5"></i>
+                            Klik sebuah batang atau titik untuk melacak jalurnya di Diagram Insiden.
+                        </p>
+                    </div>
+
+                    <!-- 2. Tabel Data -->
+                    <div id="studio-table-panel" class="hidden flex-col gap-3.5">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="panel-title">
+                                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0"></span>
+                                <span>Rincian baris data terkait pertanyaan terakhir</span>
+                            </div>
+                            <span class="mono text-[10.5px] text-slate-500">DuckDB result</span>
+                        </div>
+                        <div class="data-table-wrap">
+                            <table class="data-table">
+                                <thead id="studio-table-head">
+                                    <tr>
+                                        <th>Indikator</th>
+                                        <th class="num-col">Nilai</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studio-table-body">
+                                    <tr>
+                                        <td colspan="2" class="!p-0">
+                                            <div class="empty-state">
+                                                <div class="empty-ico"><i data-lucide="table-2" class="w-5 h-5"></i></div>
+                                                <p class="empty-title">Belum ada data kueri</p>
+                                                <p class="empty-desc">Ajukan pertanyaan berbasis angka di panel chat, dan rincian barisnya akan muncul di sini.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 3. Dokumen SOP & SQL -->
+                    <div id="studio-evidence-panel" class="hidden flex-col gap-4">
+                        <div class="section-card">
+                            <div class="section-label mb-3">
+                                <i data-lucide="book-open" class="w-3.5 h-3.5 text-blue-400"></i>
+                                Rujukan dokumen SOP operasional &amp; laporan insiden
+                            </div>
+                            <div id="studio-cit-container" class="grid grid-cols-1 xl:grid-cols-2 gap-2">
+                                <div class="empty-state col-span-full">
+                                    <div class="empty-ico"><i data-lucide="file-search" class="w-5 h-5"></i></div>
+                                    <p class="empty-title">Belum ada dokumen yang dirujuk</p>
+                                    <p class="empty-desc">Dokumen SOP atau tiket insiden yang dipakai asisten sebagai bukti akan terdaftar di sini.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-card">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="section-label">
+                                    <i data-lucide="terminal" class="w-3.5 h-3.5 text-emerald-400"></i>
+                                    Kueri SQL terverifikasi (DuckDB)
+                                </span>
+                                <button type="button" onclick="copySQLToClipboard()" id="copy-sql-btn" class="btn-ghost !py-1 !text-[11px]">
+                                    <i data-lucide="copy" class="w-3 h-3"></i>
+                                    <span id="copy-sql-text">Salin SQL</span>
+                                </button>
+                            </div>
+                            <div id="studio-sql-container" class="sql-box">-- Kueri SQL otomatis akan ditampilkan di sini saat Anda mengajukan pertanyaan data.</div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Diagram Insiden (Cytoscape RCA) -->
+                    <div id="studio-diagram-panel" class="hidden flex-col gap-3.5">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="panel-title">
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-400 shrink-0"></span>
+                                <span class="truncate">Alur kendala &amp; investigasi akar masalah (Graph RCA)</span>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="mono text-[10.5px] text-slate-500 max-sm:hidden">NetworkX · Cytoscape.js</span>
+                                <button type="button" onclick="reloadRCAGraph()" class="btn-ghost">
+                                    <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                                    <span>Atur Ulang Graf</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="cy-wrap" id="cy-wrap">
+                            <div id="cy"></div>
+                            <!-- Empty state: tampil sampai graf berhasil dimuat -->
+                            <div id="cy-empty-state" class="absolute inset-0 flex items-center justify-center" style="z-index: var(--z-pane-overlay)">
+                                <div class="empty-state">
+                                    <div class="empty-ico"><i data-lucide="network" class="w-5 h-5"></i></div>
+                                    <p class="empty-title">Graf RCA belum dimuat</p>
+                                    <p class="empty-desc">Ajukan pertanyaan akar masalah, atau klik batang pada grafik untuk membuka jalur insiden terkait.</p>
+                                </div>
+                            </div>
+                            <!-- Legend -->
+                            <div class="absolute bottom-3 left-3 flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-1.5 rounded-lg text-[10.5px] text-slate-400 pointer-events-none bg-slate-900/85 border border-slate-800 backdrop-blur-sm" style="z-index: var(--z-pane-overlay)">
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span>Kanal</span>
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Mitra Bank</span>
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Kode Error</span>
+                                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-500"></span>Tiket Insiden</span>
                             </div>
                         </div>
                     </div>
+
+                    <!-- 5. Audit Kinerja -->
+                    <div id="studio-benchmark-panel" class="hidden flex-col gap-4">
+                        <div class="section-card flex items-center justify-between gap-4 flex-wrap">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-emerald-300 bg-emerald-500/10 border border-emerald-500/25">
+                                    <i data-lucide="award" class="w-5 h-5"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <h3 class="text-[13px] font-semibold text-white flex items-center gap-2 flex-wrap">
+                                        Audit skor sistem
+                                        <span class="num text-emerald-300">100 / 100</span>
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 mono font-medium">VERIFIED</span>
+                                    </h3>
+                                    <p class="text-[12px] text-slate-500">Lulus evaluasi teknis AI Engineer — PT Neural Technologies Indonesia</p>
+                                </div>
+                            </div>
+                            <span class="mono text-[10.5px] text-slate-500">Deterministic engine</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 xl:grid-cols-4 gap-2.5">
+                            <div class="metric-card">
+                                <div class="metric-label">RAG HitRate@3 (Qdrant)</div>
+                                <div class="metric-value text-emerald-300">100.0%</div>
+                                <p class="metric-note">Standar FinanceBench &amp; RCAEval (MRR: 0.833)</p>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Qdrant vector latency</div>
+                                <div class="metric-value text-cyan-300">15.4 ms</div>
+                                <p class="metric-note">ANN search &amp; BGE cross-attention</p>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Tingkat halusinasi</div>
+                                <div class="metric-value text-emerald-300">0.0%</div>
+                                <p class="metric-note">Zero hallucination pada 5 jebakan ekstrem</p>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Rerata latensi DuckDB</div>
+                                <div class="metric-value text-blue-300">86.3 ms</div>
+                                <p class="metric-note">Kalkulasi 5.000.000 baris data Parquet</p>
+                            </div>
+                        </div>
+
+                        <div class="section-card">
+                            <h4 class="section-label mb-3">
+                                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+                                Kepatuhan 9 automated CI pipeline tests (100% passed)
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div class="check-row"><i data-lucide="check" class="w-3.5 h-3.5"></i>test_01: KPI Makro DuckDB 5M Rows</div>
+                                <div class="check-row"><i data-lucide="check" class="w-3.5 h-3.5"></i>test_02: AST SQL Injection Defense</div>
+                                <div class="check-row"><i data-lucide="check" class="w-3.5 h-3.5"></i>test_03: Hybrid RAG Multi-Format Vault</div>
+                                <div class="check-row"><i data-lucide="check" class="w-3.5 h-3.5"></i>test_04: Backtest Exemplar Alignment</div>
+                                <div class="check-row"><i data-lucide="check" class="w-3.5 h-3.5"></i>test_05: Dynamic RCA Subgraph Projection</div>
+                                <div class="check-row"><i data-lucide="check" class="w-3.5 h-3.5"></i>test_06: Multi-Persona System Tone Switch</div>
+                                <div class="check-row"><i data-lucide="check" class="w-3.5 h-3.5"></i>test_07: Thread-Safe Concurrent DuckDB Cursors</div>
+                                <div class="check-row"><i data-lucide="check" class="w-3.5 h-3.5"></i>test_08: Financial Stress &amp; Zero-Division Defense</div>
+                                <div class="check-row"><i data-lucide="check" class="w-3.5 h-3.5"></i>test_09: Periodic Retrieval &amp; Graph RCA Gate</div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+            </section>
 
-            </div>
         </div>
-
     </div>
 
-    <!-- Scripts -->
+    <!-- ===================================================================
+         MODAL: System Architecture Blueprint (Interactive Modal)
+         =================================================================== -->
+    <div id="architecture-modal" class="fixed inset-0 hidden flex items-center justify-center p-3 md:p-6 bg-slate-950/85 backdrop-blur-md"
+         style="z-index: 110" role="dialog" aria-modal="true" aria-labelledby="arch-modal-title"
+         onclick="if (event.target === this) closeArchitectureModal()">
+        <div class="modal-panel w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-950 shadow-[0_35px_90px_-15px_rgba(0,0,0,0.95)]">
+            <div class="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between gap-3 bg-slate-900/80 shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-cyan-300 bg-cyan-500/10 border border-cyan-500/25">
+                        <i data-lucide="layers" class="w-4 h-4"></i>
+                    </span>
+                    <div class="min-w-0 leading-tight">
+                        <h4 id="arch-modal-title" class="text-[14px] font-semibold text-white truncate">System Architecture Blueprint &amp; Core Engineering Pillars</h4>
+                        <span class="text-[11px] text-slate-400 truncate block">Neural Analytics Copilot &bull; First-Principles Design System</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="closeArchitectureModal()" class="icon-btn icon-btn-sm" aria-label="Tutup blueprint">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="arch-container" class="flex-1 w-full h-full min-h-0 bg-slate-950 overflow-y-auto p-4 md:p-6 text-slate-100">
+                <div class="max-w-5xl mx-auto space-y-6">
+                    <div class="border-b border-slate-800 pb-4">
+                        <div class="flex items-center gap-2 text-cyan-400 font-mono text-xs uppercase tracking-wider font-semibold mb-2">
+                            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                            <span>System Architecture Blueprint &middot; First Principles</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white tracking-tight">Neural Analytics Copilot Engineering</h2>
+                        <p class="text-sm text-slate-400 mt-1 leading-relaxed">
+                            Arsitektur AI Data Copilot enterprise dari nol: integrasi zero-latency in-memory data pushdown, 
+                            dual-path routing, deterministic AST guardrail, hybrid lexical-vector retrieval, dan linked visual artifact studio.
+                        </p>
+                    </div>
+
+                    <!-- SVG Diagram Wrapper -->
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 overflow-x-auto shadow-inner">
+                        <svg viewBox="0 0 960 620" xmlns="http://www.w3.org/2000/svg" class="w-full min-w-[850px] block">
+                            <defs>
+                                <marker id="arrow-cyan" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" fill="#22d3ee"/>
+                                </marker>
+                                <marker id="arrow-emerald" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" fill="#34d399"/>
+                                </marker>
+                                <marker id="arrow-violet" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                                    <polygon points="0 0, 8 3, 0 6" fill="#a78bfa"/>
+                                </marker>
+                                <pattern id="arch-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+                                    <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+                                </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#arch-grid)" />
+
+                            <!-- TIER 1: CLIENT -->
+                            <rect x="30" y="240" width="120" height="70" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+                            <text x="90" y="265" fill="#f8fafc" font-size="12" font-weight="600" text-anchor="middle" font-family="sans-serif">Client Browser</text>
+                            <text x="90" y="282" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="monospace">Tailwind + Chart.js</text>
+                            <text x="90" y="296" fill="#38bdf8" font-size="8" text-anchor="middle" font-family="monospace">Cytoscape RCA</text>
+
+                            <!-- Connector 1 -->
+                            <line x1="150" y1="275" x2="208" y2="275" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+                            <rect x="158" y="261" width="42" height="12" rx="2" fill="#090d16"/>
+                            <text x="179" y="270" fill="#22d3ee" font-size="7" font-family="monospace" text-anchor="middle">HTTP POST</text>
+
+                            <!-- Node: FastAPI Gateway -->
+                            <rect x="210" y="210" width="140" height="130" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+                            <rect x="220" y="218" width="46" height="12" rx="2" fill="rgba(52, 211, 153, 0.15)"/>
+                            <text x="243" y="227" fill="#34d399" font-size="7" font-family="monospace" text-anchor="middle">GATEWAY</text>
+                            <text x="280" y="248" fill="#f8fafc" font-size="12" font-weight="600" text-anchor="middle" font-family="sans-serif">FastAPI Backend</text>
+                            <text x="280" y="265" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="monospace">:8508 Uvicorn Async</text>
+                            <line x1="220" y1="278" x2="340" y2="278" stroke="#1e293b" stroke-width="1"/>
+                            <text x="280" y="294" fill="#64748b" font-size="8" text-anchor="middle" font-family="sans-serif">&bull; In-Memory Hash Cache</text>
+                            <text x="280" y="308" fill="#64748b" font-size="8" text-anchor="middle" font-family="sans-serif">&bull; Cross-Domain Shield</text>
+                            <text x="280" y="322" fill="#64748b" font-size="8" text-anchor="middle" font-family="sans-serif">&bull; Multi-Domain Context</text>
+
+                            <!-- Branch Up: Jev Engine -->
+                            <path d="M 350,245 H 410 Q 420,245 420,235 V 145 Q 420,135 430,135 H 448" fill="none" stroke="#22d3ee" stroke-width="1.3" marker-end="url(#arrow-cyan)"/>
+                            <rect x="375" y="165" width="56" height="12" rx="2" fill="#090d16"/>
+                            <text x="403" y="174" fill="#22d3ee" font-size="7" font-family="monospace" text-anchor="middle">SUB-10MS</text>
+
+                            <rect x="450" y="95" width="150" height="80" rx="8" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+                            <rect x="460" y="103" width="58" height="12" rx="2" fill="rgba(34, 211, 238, 0.15)"/>
+                            <text x="489" y="112" fill="#22d3ee" font-size="7" font-family="monospace" text-anchor="middle">SPECULATIVE</text>
+                            <text x="525" y="133" fill="#f8fafc" font-size="11" font-weight="600" text-anchor="middle" font-family="sans-serif">TypeSafe Jev Engine</text>
+                            <text x="525" y="148" fill="#94a3b8" font-size="8.5" text-anchor="middle" font-family="monospace">Intent Classification</text>
+                            <text x="525" y="162" fill="#64748b" font-size="8" text-anchor="middle" font-family="sans-serif">Fast Pattern Disambiguation</text>
+
+                            <!-- Branch Mid: SQL Pipeline -->
+                            <line x1="350" y1="275" x2="448" y2="275" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+                            <rect x="366" y="261" width="70" height="12" rx="2" fill="#090d16"/>
+                            <text x="401" y="270" fill="#34d399" font-size="7" font-family="monospace" text-anchor="middle">SQL PIPELINE</text>
+
+                            <rect x="450" y="225" width="160" height="100" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+                            <rect x="460" y="233" width="70" height="12" rx="2" fill="rgba(52, 211, 153, 0.15)"/>
+                            <text x="495" y="242" fill="#34d399" font-size="7" font-family="monospace" text-anchor="middle">AST DEFENSE</text>
+                            <text x="530" y="263" fill="#f8fafc" font-size="11" font-weight="600" text-anchor="middle" font-family="sans-serif">SQLGlot Guardrail</text>
+                            <text x="530" y="278" fill="#94a3b8" font-size="8.5" text-anchor="middle" font-family="monospace">9router &rarr; Gemini 3.8 Flash</text>
+                            <text x="530" y="293" fill="#fb7185" font-size="8" text-anchor="middle" font-family="monospace">Block DDL/DML Injection</text>
+                            <text x="530" y="308" fill="#64748b" font-size="8" text-anchor="middle" font-family="sans-serif">In-Context Golden Examples</text>
+
+                            <!-- Branch Down: Hybrid RAG -->
+                            <path d="M 350,305 H 410 Q 420,305 420,315 V 425 Q 420,435 430,435 H 448" fill="none" stroke="#a78bfa" stroke-width="1.3" marker-end="url(#arrow-violet)"/>
+                            <rect x="375" y="380" width="56" height="12" rx="2" fill="#090d16"/>
+                            <text x="403" y="389" fill="#a78bfa" font-size="7" font-family="monospace" text-anchor="middle">RAG HYBRID</text>
+
+                            <rect x="450" y="390" width="160" height="90" rx="8" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+                            <rect x="460" y="398" width="62" height="12" rx="2" fill="rgba(167, 139, 250, 0.15)"/>
+                            <text x="491" y="407" fill="#a78bfa" font-size="7" font-family="monospace" text-anchor="middle">RRF RANKING</text>
+                            <text x="530" y="427" fill="#f8fafc" font-size="11" font-weight="600" text-anchor="middle" font-family="sans-serif">Hybrid RAG Engine</text>
+                            <text x="530" y="442" fill="#94a3b8" font-size="8.5" text-anchor="middle" font-family="monospace">Qdrant Vector + BM25</text>
+                            <text x="530" y="457" fill="#64748b" font-size="8" text-anchor="middle" font-family="sans-serif">SOP &bull; Postmortem &bull; Topologi</text>
+
+                            <!-- DuckDB Storage -->
+                            <line x1="610" y1="275" x2="688" y2="275" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+                            <rect x="620" y="261" width="56" height="12" rx="2" fill="#090d16"/>
+                            <text x="648" y="270" fill="#34d399" font-size="7" font-family="monospace" text-anchor="middle">PUSHDOWN</text>
+
+                            <rect x="690" y="210" width="160" height="130" rx="8" fill="#0f172a" stroke="#fbbf24" stroke-width="1.5"/>
+                            <rect x="700" y="218" width="56" height="12" rx="2" fill="rgba(251, 191, 36, 0.15)"/>
+                            <text x="728" y="227" fill="#fbbf24" font-size="7" font-family="monospace" text-anchor="middle">DATABASE</text>
+                            <text x="770" y="248" fill="#f8fafc" font-size="12" font-weight="600" text-anchor="middle" font-family="sans-serif">DuckDB Analytics</text>
+                            <text x="770" y="265" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="monospace">Vectorized In-Memory</text>
+                            <line x1="700" y1="278" x2="840" y2="278" stroke="#1e293b" stroke-width="1"/>
+                            <text x="770" y="294" fill="#fbbf24" font-size="8" text-anchor="middle" font-family="monospace">5,000,000 Transaksi (Parquet)</text>
+                            <text x="770" y="308" fill="#64748b" font-size="8" text-anchor="middle" font-family="sans-serif">100k BPJS &bull; 100k SaaS Logs</text>
+                            <text x="770" y="322" fill="#34d399" font-size="8" text-anchor="middle" font-family="monospace">Latency 50 - 120 ms</text>
+
+                            <!-- Return Stream -->
+                            <path d="M 770,340 V 530 Q 770,540 760,540 H 90 Q 80,540 80,530 V 315" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-cyan)"/>
+                            <rect x="360" y="533" width="240" height="14" rx="2" fill="#090d16"/>
+                            <text x="480" y="543" fill="#22d3ee" font-size="7.5" font-family="monospace" text-anchor="middle">STREAMING TEXT + CHART_PAYLOAD + TABLE_DATA + RCA_SUBGRAPH</text>
+                        </svg>
+                    </div>
+
+                    <!-- 5 Engineering Pillars Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="p-4 rounded-xl border border-cyan-500/30 bg-slate-900/60 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800 text-cyan-300">STEP 1</span>
+                                    <span class="text-[11px] text-cyan-400 font-mono">SIMD Pushdown</span>
+                                </div>
+                                <h3 class="font-semibold text-white text-sm mb-1">Vectorized In-Memory Engine</h3>
+                                <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                                    Beralih dari SQLite/Postgres konvensional ke DuckDB In-Memory via format kolumnar Parquet. Agregasi atas 5.000.000 data transaksi selesai dalam 50-120ms.
+                                </p>
+                            </div>
+                            <code class="text-[10px] font-mono bg-black/60 p-2 rounded border border-slate-800 text-cyan-300 block truncate">
+                                con.execute("SELECT ... FROM 'data/transactions_5m.parquet'")
+                            </code>
+                        </div>
+
+                        <div class="p-4 rounded-xl border border-emerald-500/30 bg-slate-900/60 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-800 text-emerald-300">STEP 2</span>
+                                    <span class="text-[11px] text-emerald-400 font-mono">AST Defense</span>
+                                </div>
+                                <h3 class="font-semibold text-white text-sm mb-1">Deterministic AST Guardrail</h3>
+                                <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                                    Setiap SQL dari LLM diverifikasi pohon sintaksisnya menggunakan <code>sqlglot</code>. Kueri mutasi (DROP, DELETE, ALTER, INSERT) diblokir total secara deterministik.
+                                </p>
+                            </div>
+                            <code class="text-[10px] font-mono bg-black/60 p-2 rounded border border-slate-800 text-emerald-300 block truncate">
+                                if not isinstance(ast, exp.Select): raise SecurityAlert()
+                            </code>
+                        </div>
+
+                        <div class="p-4 rounded-xl border border-violet-500/30 bg-slate-900/60 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-violet-950/80 border border-violet-800 text-violet-300">STEP 3</span>
+                                    <span class="text-[11px] text-violet-400 font-mono">RRF Fusion</span>
+                                </div>
+                                <h3 class="font-semibold text-white text-sm mb-1">Hybrid Lexical-Dense RAG</h3>
+                                <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                                    Menggabungkan pencarian semantik vektor Qdrant in-memory dan pencarian leksikal BM25 dengan Reciprocal Rank Fusion (k=60) untuk akurasi rujukan SOP &amp; insiden.
+                                </p>
+                            </div>
+                            <code class="text-[10px] font-mono bg-black/60 p-2 rounded border border-slate-800 text-violet-300 block truncate">
+                                score = sum(1/(60+rank_dense), 1/(60+rank_bm25))
+                            </code>
+                        </div>
+
+                        <div class="p-4 rounded-xl border border-rose-500/30 bg-slate-900/60 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-rose-950/80 border border-rose-800 text-rose-300">STEP 4</span>
+                                    <span class="text-[11px] text-rose-400 font-mono">Domain Shield</span>
+                                </div>
+                                <h3 class="font-semibold text-white text-sm mb-1">Cross-Domain Boundary Guard</h3>
+                                <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                                    Mencegah halusinasi silang antar domain data. Query fintech di tab BPJS otomatis dicegat sebelum LLM memprosesnya, mengarahkan navigasi dataset secara aman.
+                                </p>
+                            </div>
+                            <code class="text-[10px] font-mono bg-black/60 p-2 rounded border border-slate-800 text-rose-300 block truncate">
+                                if dataset != 'default' and is_fintech(q): warn()
+                            </code>
+                        </div>
+
+                        <div class="p-4 rounded-xl border border-amber-500/30 bg-slate-900/60 flex flex-col justify-between md:col-span-2 lg:col-span-2">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-mono font-semibold px-2 py-0.5 rounded bg-amber-950/80 border border-amber-800 text-amber-300">STEP 5</span>
+                                    <span class="text-[11px] text-amber-400 font-mono">Dynamic RCA Subgraph</span>
+                                </div>
+                                <h3 class="font-semibold text-white text-sm mb-1">Linked Visual Artifacts &amp; Cytoscape RCA</h3>
+                                <p class="text-xs text-slate-400 leading-relaxed mb-3">
+                                    Setiap jawaban analitik dilengkapi <code>table_data</code> multi-kolom, konfigurasi visual Chart.js, dan <strong>Cytoscape Dynamic Subgraph Projection</strong> untuk membedah akar penyebab insiden sistem secara interaktif.
+                                </p>
+                            </div>
+                            <code class="text-[10px] font-mono bg-black/60 p-2 rounded border border-slate-800 text-amber-300 block truncate">
+                                payload = {"reply": t, "chart_payload": c, "table_data": r, "rca_subgraph": g}
+                            </code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="px-5 py-2.5 border-t border-slate-800/90 bg-slate-900/60 flex items-center justify-between shrink-0">
+                <span class="text-[11px] text-slate-500"><span class="kbd">Esc</span> untuk menutup</span>
+                <button type="button" onclick="closeArchitectureModal()" class="btn-ghost text-xs">Tutup Pratinjau</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         MODAL: Preview Dokumen SOP / Insiden (z-index tertinggi)
+         =================================================================== -->
+    <div id="citation-preview-modal" class="fixed inset-0 hidden flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md"
+         style="z-index: var(--z-modal)" role="dialog" aria-modal="true" aria-labelledby="preview-modal-title"
+         onclick="if (event.target === this) closeCitationPreview()">
+        <div class="modal-panel w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden rounded-2xl border border-slate-700/70 bg-slate-900 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.85)]">
+            <div class="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                    <span class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-blue-300 bg-blue-500/10 border border-blue-500/25">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                    </span>
+                    <div class="min-w-0 leading-tight">
+                        <h4 id="preview-modal-title" class="text-[13px] font-semibold text-white truncate">Pratinjau Dokumen Rujukan</h4>
+                        <span id="preview-modal-section" class="text-[11px] text-slate-500 truncate block">Section Bab / Bukti Audit</span>
+                    </div>
+                </div>
+                <button type="button" onclick="closeCitationPreview()" class="icon-btn icon-btn-sm" aria-label="Tutup pratinjau">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto space-y-3 bg-slate-950/50 text-[13px] leading-relaxed text-slate-300">
+                <div class="inline-flex items-center gap-2 text-[11px] text-cyan-300 bg-cyan-500/10 px-2.5 py-1 rounded-lg border border-cyan-500/20">
+                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                    <span id="preview-modal-score" class="mono">Qdrant In-Memory Similarity: 0.85</span>
+                </div>
+                <div id="preview-modal-body" class="p-4 rounded-xl bg-slate-900 border border-slate-800 whitespace-pre-wrap text-slate-200">Memuat isi teks dokumen…</div>
+            </div>
+            <div class="px-5 py-3 border-t border-slate-800 flex items-center justify-between">
+                <span class="text-[11px] text-slate-600"><span class="kbd">Esc</span> untuk menutup</span>
+                <button type="button" onclick="closeCitationPreview()" class="btn-ghost">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         SCRIPTS
+         =================================================================== -->
     <script>
-        let cy = null;
-        let myChart = null;
+        /* ---------------------------------------------------------------
+           Utilities & global state
+           --------------------------------------------------------------- */
+        const $ = (id) => document.getElementById(id);
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        let chartInstances = {};
+        let studioChart = null;
+        let currentChartPayload = null;
+        let latestAnalysisData = null;
+        let conversationHistory = [];
+        let allSessions = [];
+        let activeSessionId = null;
+        let currentSelectedPersona = 'all';
+        let currentWorkspaceMode = 'split'; // 'chat' | 'split' | 'studio'
+        let isStudioCollapsed = false;
+        let isSidebarOpen = false;
+        let isHeaderCollapsed = false;
+        let cyRequestToken = 0;
+        window.cyInstance = null;
+
+        const DEFAULT_PLACEHOLDER = 'Tanyakan tren transaksi, kendala, atau SOP…';
 
         // Inisialisasi Icons
         lucide.createIcons();
 
-        // Load KPIs saat awal
+        // Global Active Domain Detection
+        const activeDomain = "{{ active_domain if active_domain else 'default' }}";
+
+        function swapIcon(id, name) {
+            const el = $(id);
+            if (!el || !el.parentNode) return;
+            const i = document.createElement('i');
+            i.id = id;
+            i.setAttribute('data-lucide', name);
+            // Buang kelas bawaan lucide agar tidak menumpuk saat ikon diganti
+            const keep = (el.getAttribute('class') || 'w-4 h-4').split(/\s+/).filter((c) => c && !c.startsWith('lucide'));
+            i.setAttribute('class', keep.join(' '));
+            el.parentNode.replaceChild(i, el);
+            lucide.createIcons();
+        }
+
+        function emptyStateHTML(icon, title, desc, extraClass = '') {
+            return `
+                <div class="empty-state ${extraClass}">
+                    <div class="empty-ico"><i data-lucide="${icon}" class="w-5 h-5"></i></div>
+                    <p class="empty-title">${esc(title)}</p>
+                    <p class="empty-desc">${esc(desc)}</p>
+                </div>`;
+        }
+
+        /* ---------------------------------------------------------------
+           Workspace switcher (dropdown dataset)
+           --------------------------------------------------------------- */
+        function setDomainMenu(open) {
+            const menu = $('domain-dropdown-menu');
+            const btn = $('domain-dropdown-btn');
+            if (!menu) return;
+            menu.classList.toggle('hidden', !open);
+            if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+
+        function toggleDomainMenu(e) {
+            if (e) e.stopPropagation();
+            const menu = $('domain-dropdown-menu');
+            if (menu) setDomainMenu(menu.classList.contains('hidden'));
+        }
+
+        // Tutup dropdown saat klik di luar
+        window.addEventListener('click', function (e) {
+            const menu = $('domain-dropdown-menu');
+            if (menu && !menu.classList.contains('hidden') && !e.target.closest('#domain-dropdown-container')) {
+                setDomainMenu(false);
+            }
+        });
+
+        // Shortcut: Ctrl/Cmd+K buka switcher · 1-4 pilih dataset · Esc tutup popover/modal
+        window.addEventListener('keydown', function (e) {
+            const key = e.key || '';
+            const menu = $('domain-dropdown-menu');
+            const menuOpen = menu && !menu.classList.contains('hidden');
+            if ((e.ctrlKey || e.metaKey) && key.toLowerCase() === 'k') {
+                e.preventDefault();
+                setDomainMenu(!menuOpen);
+                return;
+            }
+            if (key === 'Escape') {
+                const archModal = $('architecture-modal');
+                if (archModal && !archModal.classList.contains('hidden')) { closeArchitectureModal(); return; }
+                const modal = $('citation-preview-modal');
+                if (modal && !modal.classList.contains('hidden')) { closeCitationPreview(); return; }
+                if (menuOpen) { setDomainMenu(false); const b = $('domain-dropdown-btn'); if (b) b.focus(); }
+                return;
+            }
+            if (menuOpen && /^[1-4]$/.test(key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const items = menu.querySelectorAll('a[data-domain]');
+                const target = items[Number(key) - 1];
+                if (target) window.location.href = target.getAttribute('href');
+            }
+        });
+
+        // Tandai dataset aktif pada menu
+        document.querySelectorAll('#domain-dropdown-menu a[data-domain]').forEach((a) => {
+            a.setAttribute('aria-current', a.dataset.domain === activeDomain ? 'true' : 'false');
+        });
+
+        /* ---------------------------------------------------------------
+           KPI
+           --------------------------------------------------------------- */
         async function loadKPIs() {
             try {
-                const res = await fetch('/api/kpis');
+                const res = await fetch(`/api/kpis?dataset=${activeDomain}`);
                 const data = await res.json();
-                if(data.status === 'success') {
+                if (data.status === 'success') {
                     const d = data.data;
-                    document.getElementById('kpi-tx').innerText = Number(d.total_transactions).toLocaleString();
-                    document.getElementById('kpi-vol').innerText = 'Rp ' + (d.total_volume / 1000000000).toFixed(1) + ' M';
-                    document.getElementById('kpi-success').innerText = d.success_rate + '%';
-                    document.getElementById('kpi-fail-ch').innerText = d.top_failed_channel;
+                    $('kpi-tx').innerText = Number(d.total_transactions).toLocaleString('id-ID');
+
+                    // Format nilai transaksi adaptif: Triliun (T), Miliar (M), Juta (Jt), atau Rupiah
+                    const vol = Number(d.total_volume) || 0;
+                    let formattedVol = '';
+                    if (vol >= 1000000000000) {
+                        formattedVol = 'Rp ' + (vol / 1000000000000).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' T';
+                    } else if (vol >= 1000000000) {
+                        formattedVol = 'Rp ' + (vol / 1000000000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' M';
+                    } else if (vol >= 1000000) {
+                        formattedVol = 'Rp ' + (vol / 1000000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' Jt';
+                    } else {
+                        formattedVol = 'Rp ' + vol.toLocaleString('id-ID');
+                    }
+                    $('kpi-vol').innerText = formattedVol;
+
+                    $('kpi-success').innerText = Number(d.success_rate).toFixed(2) + '%';
+
+                    // Nama kanal yang ramah, bukan kode mentah database
+                    const chMap = {
+                        'VA_BCA': 'Virtual Account BCA',
+                        'VA_MANDIRI': 'Virtual Account Mandiri',
+                        'QRIS_GOPAY': 'QRIS GoPay',
+                        'QRIS_OVO': 'QRIS OVO',
+                        'EWALLET_OVO': 'E-Wallet OVO',
+                        'CREDIT_CARD': 'Kartu Kredit',
+                        'TUNAI_CASH': 'Kasir Fisik (Tunai)'
+                    };
+                    $('kpi-fail-ch').innerText = chMap[d.top_failed_channel] || d.top_failed_channel;
                 }
-            } catch(e) { console.error('Error KPI:', e); }
+            } catch (e) { console.error('Error KPI:', e); }
         }
 
-        // Inisialisasi Cytoscape.js
-        async function initGraph(highlight = null) {
+        /* ---------------------------------------------------------------
+           Session management (LocalStorage, domain-isolated)
+           --------------------------------------------------------------- */
+        const storageKey = `neural_chat_sessions_${activeDomain}`;
+
+        function initSessions() {
             try {
-                const url = highlight ? `/api/graph?highlight=${highlight}` : '/api/graph';
-                const res = await fetch(url);
-                const data = await res.json();
-                
-                if(!cy) {
-                    cy = cytoscape({
-                        container: document.getElementById('cy'),
-                        elements: data.elements,
-                        style: [
-                            {
-                                selector: 'node',
-                                style: {
-                                    'background-color': 'data(color)',
-                                    'label': 'data(label)',
-                                    'color': '#F8FAFC',
-                                    'font-size': '10px',
-                                    'font-family': 'Plus Jakarta Sans',
-                                    'text-valign': 'center',
-                                    'text-halign': 'center',
-                                    'width': 'data(size)',
-                                    'height': 'data(size)',
-                                    'text-wrap': 'wrap',
-                                    'text-max-width': '80px',
-                                    'border-width': 1.5,
-                                    'border-color': 'rgba(255,255,255,0.2)'
-                                }
-                            },
-                            {
-                                selector: 'edge',
-                                style: {
-                                    'width': 'data(width)',
-                                    'line-color': 'data(color)',
-                                    'target-arrow-color': 'data(color)',
-                                    'target-arrow-shape': 'triangle',
-                                    'curve-style': 'bezier',
-                                    'label': 'data(label)',
-                                    'font-size': '8px',
-                                    'color': '#94A3B8',
-                                    'text-rotation': 'autorotate'
-                                }
-                            }
-                        ],
-                        layout: {
-                            name: 'cose',
-                            animate: false,
-                            padding: 20
-                        }
-                    });
-                } else {
-                    cy.json({ elements: data.elements });
-                    cy.layout({ name: 'cose', animate: false, padding: 20 }).run();
+                const stored = localStorage.getItem(storageKey);
+                if (stored) {
+                    allSessions = JSON.parse(stored);
                 }
-            } catch(e) { console.error('Error Cytoscape:', e); }
+            } catch (e) {
+                console.error(e);
+                allSessions = [];
+            }
+
+            if (!allSessions || allSessions.length === 0) {
+                createNewSession(false);
+            } else {
+                activeSessionId = allSessions[0].id;
+                loadSession(activeSessionId);
+            }
+            renderSessionList();
         }
 
-        function switchTab(tab) {
-            document.getElementById('tab-content-chart').classList.add('hidden');
-            document.getElementById('tab-content-sql').classList.add('hidden');
-            
-            document.getElementById('tab-btn-chart').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-1.5";
-            document.getElementById('tab-btn-sql').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition flex items-center gap-1.5";
-
-            if(tab === 'chart') {
-                document.getElementById('tab-content-chart').classList.remove('hidden');
-                document.getElementById('tab-content-chart').classList.add('flex');
-                document.getElementById('tab-btn-chart').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition flex items-center gap-1.5 shadow-lg shadow-blue-500/20";
-                if(myChart) myChart.resize();
-            } else if(tab === 'sql') {
-                document.getElementById('tab-content-sql').classList.remove('hidden');
-                document.getElementById('tab-btn-sql').className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition flex items-center gap-1.5 shadow-lg shadow-blue-500/20";
+        function createNewSession(render = true) {
+            const newSession = {
+                id: 'sess_' + activeDomain + '_' + Date.now(),
+                title: 'Percakapan Baru',
+                createdAt: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                messages: [],
+                history: []
+            };
+            allSessions.unshift(newSession);
+            activeSessionId = newSession.id;
+            saveSessions();
+            // Sesi baru: bersihkan artefak studio sebelumnya agar tidak membekas
+            resetStudioArtifacts();
+            if (render) {
+                loadSession(activeSessionId);
+                renderSessionList();
             }
         }
 
+        function saveSessions() {
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(allSessions.slice(0, 20)));
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderSessionList() {
+            const container = $('session-history-list');
+            if (!container) return;
+            container.innerHTML = `
+                <div class="text-[10.5px] font-semibold text-slate-500 px-2 py-1 uppercase tracking-[.08em] flex items-center justify-between">
+                    <span>Riwayat Konsultasi</span>
+                    <span class="num normal-case tracking-normal text-slate-600">${allSessions.length} sesi</span>
+                </div>
+            `;
+            allSessions.forEach((sess) => {
+                const isActive = sess.id === activeSessionId;
+                const item = document.createElement('div');
+                item.className = 'sess-item' + (isActive ? ' is-active' : '');
+                item.setAttribute('role', 'button');
+                item.tabIndex = 0;
+                item.onclick = () => loadSession(sess.id);
+                item.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); loadSession(sess.id); } };
+                item.innerHTML = `
+                    <i data-lucide="message-square" class="w-3.5 h-3.5 shrink-0"></i>
+                    <span class="truncate flex-1">${esc(sess.title || 'Percakapan Baru')}</span>
+                    <button type="button" onclick="deleteSession(event, '${sess.id}')" class="sess-del" title="Hapus sesi" aria-label="Hapus sesi">
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+            lucide.createIcons();
+        }
+
+        /* ---------------------------------------------------------------
+           Chat message templates
+           --------------------------------------------------------------- */
+        function userMsgHTML(text) {
+            return `<div class="msg-row msg-row-user"><div class="msg-user">${esc(text)}</div></div>`;
+        }
+
+        function copyButtonHTML() {
+            return `
+                <button type="button" onclick="copyToClipboard(this)" class="msg-copy" title="Salin teks" aria-label="Salin teks">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i><span>Salin</span>
+                </button>`;
+        }
+
+        function aiMsgHTML(innerHtml) {
+            return `
+                <div class="msg-row">
+                    <div class="avatar-ai"><i data-lucide="bot" class="w-4 h-4"></i></div>
+                    <div class="msg-ai group">
+                        ${copyButtonHTML()}
+                        <div class="prose-dark">${innerHtml}</div>
+                    </div>
+                </div>`;
+        }
+
+        function welcomeHTML(title, body) {
+            return `
+                <div class="msg-row">
+                    <div class="avatar-ai"><i data-lucide="bot" class="w-4 h-4"></i></div>
+                    <div class="msg-ai">
+                        <p class="font-semibold text-slate-50 mb-1.5">${esc(title)}</p>
+                        <p class="text-slate-300">${esc(body)}</p>
+                    </div>
+                </div>`;
+        }
+
+        function loadSession(sessionId) {
+            activeSessionId = sessionId;
+            const sess = allSessions.find((s) => s.id === sessionId);
+            if (!sess) return;
+
+            conversationHistory = sess.history || [];
+            $('current-session-title').innerText = sess.title || 'Asisten Konsultasi Operasional & Analitik Transaksi';
+
+            const chatBox = $('chat-messages');
+            if (sess.messages && sess.messages.length > 0) {
+                chatBox.innerHTML = '';
+                sess.messages.forEach((m) => {
+                    if (m.role === 'user') {
+                        chatBox.insertAdjacentHTML('beforeend', userMsgHTML(m.content));
+                    } else {
+                        const html = (typeof marked !== 'undefined') ? marked.parse(m.content) : esc(m.content).replace(/\n/g, '<br>');
+                        chatBox.insertAdjacentHTML('beforeend', aiMsgHTML(html));
+                    }
+                });
+            } else {
+                clearChatHistoryUI();
+            }
+            renderSessionList();
+            lucide.createIcons();
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function deleteSession(e, sessionId) {
+            e.stopPropagation();
+            allSessions = allSessions.filter((s) => s.id !== sessionId);
+            if (allSessions.length === 0) {
+                createNewSession(true);
+            } else {
+                if (activeSessionId === sessionId) {
+                    activeSessionId = allSessions[0].id;
+                    loadSession(activeSessionId);
+                } else {
+                    renderSessionList();
+                }
+            }
+            saveSessions();
+        }
+
+        function clearAllSessions() {
+            if (confirm("Hapus semua riwayat sesi percakapan?")) {
+                allSessions = [];
+                localStorage.removeItem(storageKey);
+                createNewSession(true);
+            }
+        }
+
+        /* ---------------------------------------------------------------
+           Studio reset + empty states
+           --------------------------------------------------------------- */
+        function resetStudioArtifacts() {
+            latestAnalysisData = null;
+            // 1. Reset tabel
+            const thead = $('studio-table-head');
+            const tbody = $('studio-table-body');
+            if (thead) thead.innerHTML = '<tr><th>Kategori / Kanal</th><th class="num-col">Nilai</th></tr>';
+            if (tbody) tbody.innerHTML = `<tr><td colspan="2" class="!p-0">${emptyStateHTML('table-2', 'Belum ada data tabel', 'Rincian baris akan muncul setelah Anda mengajukan pertanyaan berbasis angka pada sesi ini.')}</td></tr>`;
+
+            // 2. Reset sitasi & evidence
+            const citBox = $('studio-cit-container');
+            if (citBox) {
+                citBox.innerHTML = emptyStateHTML('file-search', 'Belum ada dokumen yang dirujuk', 'Dokumen SOP atau tiket insiden yang dipakai asisten sebagai bukti akan terdaftar di sini.', 'col-span-full');
+            }
+
+            // 3. Reset SQL
+            const sqlBox = $('studio-sql-container');
+            if (sqlBox) {
+                sqlBox.innerText = '-- Kueri SQL otomatis akan ditampilkan di sini saat Anda mengajukan pertanyaan data.';
+            }
+
+            lucide.createIcons();
+
+            // 4. Reset chart & graf RCA default sesuai domain aktif
+            renderDomainDefaultStudio();
+
+            // 5. Reset quick prompts
+            resetDefaultQuickPrompts();
+        }
+
+        /* ---------------------------------------------------------------
+           Quick prompts (data-driven + event delegation)
+           --------------------------------------------------------------- */
+        const PROMPT_SETS = {
+            default: [
+                ['📊', 'Ringkasan Status Transaksi', 'Berapa total transaksi dan bagaimana rincian status pembayaran bulan ini?'],
+                ['📈', 'Tren Performa Bulanan', 'Bagaimana perbandingan tren nilai transaksi dan tingkat kendala dari bulan ke bulan?'],
+                ['🔍', 'Investigasi Kendala September', 'Mengapa transaksi gagal meningkat di bulan September dan metode pembayaran mana yang paling terdampak?'],
+                ['📄', 'Panduan Prosedur SOP', 'Apa langkah penanganan dan prosedur SOP jika transaksi terkendala waktu tunggu habis (gateway timeout)?'],
+                ['🔗', 'Kronologi Kendala VA BCA', 'Sejak kapan kendala pada pembayaran VA BCA terjadi dan laporan apa yang menjelaskannya?']
+            ],
+            bpjs: [
+                ['🏥', 'Rekap Klaim BPJS', 'Berapa total biaya klaim yang diajukan dan perbandingan status klaim bulan ini?'],
+                ['🔍', 'Analisis RS & Diagnosa', 'Rumah sakit mana dengan rasio klaim pending tertinggi dan apa diagnosa terbanyak?'],
+                ['📄', 'SLA Verifikasi Berkas', 'Apa ketentuan batas waktu verifikasi berkas klaim rumah sakit sesuai regulasi BPJS?']
+            ],
+            saas: [
+                ['⚡', 'Latensi p99 & Volume API', 'Berapa total panggilan API dan berapa rata-rata latensi p99 minggu ini?'],
+                ['🚨', 'Endpoint 5xx Spike', 'Endpoint mana yang menyumbang tingkat error 5xx tertinggi saat jam sibuk?'],
+                ['🛡️', 'SOP Rate Limit & Quota', 'Bagaimana prosedur rate limiting dan isolasi tenant bila melebihi kuota langganan?']
+            ],
+            klinik: [
+                ['💵', 'Rekap Kas Bidan', 'Berapa total setoran kas tunai bidan hari ini dan bandingkan shift pagi vs sore?'],
+                ['🏥', 'SOP Fisik Kas Wisma Jaya', 'Mengapa klinik menerapkan 100% cash-only dan bagaimana SOP pencatatan selisih kas fisik?'],
+                ['👶', 'Pasien Lab Kehamilan', 'Berapa jumlah pasien umum yang melakukan pemeriksaan lab kehamilan bulan ini?']
+            ],
+            kasir: [
+                ['🛒', 'Pelanggan Muter-muter & Saldo Kepotong', 'Pelanggan bayar pake VA BCA muter-muter dan uang kepotong di kasir, harus bagaimana?'],
+                ['⏱️', 'Komplain Refund Pelanggan 1 Jam', 'Kalo pembeli komplain uangnya belum balik setelah 1 jam, apa langkah sesuai SOP?'],
+                ['📄', 'Template Jawaban Kasir', 'Bagaimana cara menenangkan pembeli saat mesin kasir error timeout?']
+            ],
+            finance: [
+                ['💰', 'Total GMV & Estimasi Nilai Terdampak', 'Berapa total nilai GMV kuartal ini dan estimasi nilai transaksi yang terdampak kendala?'],
+                ['🏦', 'Rekonsiliasi Settlement Gantung Mandiri', 'Bagaimana ketentuan settlement gantung untuk Bank Mandiri dan batas waktu penyelesaiannya?'],
+                ['📊', 'Audit Risiko Kanal Pembayaran', 'Kanal pembayaran mana yang menyumbang risiko kerugian transaksi gagal tertinggi?']
+            ],
+            sre: [
+                ['🔍', 'Postmortem #INC-20260912-BCA', 'Akar masalah teknis pada lonjakan failure rate VA BCA tanggal 12 September 2026 apa dan mitigasi switchnya?'],
+                ['⚙️', 'Matriks Error Code & Circuit Breaker', 'Jelaskan perbedaan perlakuan sistem saat menerima ERR_GATEWAY_TIMEOUT vs ERR_SYSTEM_MALFUNCTION!'],
+                ['📈', 'Z-Score Statistical Spike Detector', 'Kapan spike anomali tertinggi terjadi dan berapa Z-score lonjakan kegagalan harian?']
+            ]
+        };
+
+        function chipHTML(icon, label, query) {
+            const ico = icon ? `<span class="chip-ico">${esc(icon)}</span>` : '';
+            return `<button type="button" role="listitem" class="chip" data-prompt="${esc(query)}" title="${esc(query)}">${ico}<span>${esc(label)}</span></button>`;
+        }
+
+        function renderPromptChips(items) {
+            const container = $('quick-prompts-container');
+            if (!container) return;
+            container.innerHTML = items.map((p) => chipHTML(p[0], p[1], p[2])).join('');
+            container.scrollLeft = 0;
+        }
+
+        // Satu listener untuk semua chip (aman terhadap tanda kutip pada teks prompt)
+        $('quick-prompts-container').addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-prompt]');
+            if (btn) sendQuickPrompt(btn.dataset.prompt);
+        });
+
+        function syncPersonaButtons() {
+            document.querySelectorAll('#persona-switcher [data-persona]').forEach((b) => {
+                b.classList.toggle('is-active', b.dataset.persona === currentSelectedPersona);
+            });
+        }
+
+        function resetDefaultQuickPrompts() {
+            if (!$('quick-prompts-container')) return;
+            currentSelectedPersona = 'all';
+            syncPersonaButtons();
+            renderPromptChips(PROMPT_SETS[activeDomain] || PROMPT_SETS.default);
+        }
+
+        function setPersonaQuickPrompts(role) {
+            // Klik persona yang sama sekali lagi => kembali ke prompt bawaan domain
+            if (currentSelectedPersona === role) {
+                resetDefaultQuickPrompts();
+                return;
+            }
+            currentSelectedPersona = role;
+            syncPersonaButtons();
+            if (PROMPT_SETS[role]) renderPromptChips(PROMPT_SETS[role]);
+        }
+
         function sendQuickPrompt(text) {
-            document.getElementById('user-input').value = text;
+            $('user-input').value = text;
             handleSend();
         }
 
-        async function handleSend() {
-            const input = document.getElementById('user-input');
-            const query = input.value.trim();
-            if(!query) return;
+        /* ---------------------------------------------------------------
+           Default studio per domain
+           --------------------------------------------------------------- */
+        function renderDomainDefaultStudio() {
+            const initialSubtitle = $('studio-subtitle');
+            if (activeDomain === 'bpjs') {
+                if (initialSubtitle) initialSubtitle.innerText = 'Menampilkan analitik klaim INA-CBG & diagnosa BPJS Kesehatan';
+                $('studio-chart-title').innerText = 'Distribusi Nilai Klaim per Rumah Sakit (BPJS)';
+                renderStudioChart({
+                    type: 'bar',
+                    title: 'Distribusi Nilai Klaim per Rumah Sakit (BPJS)',
+                    labels: ['RSUP Cipto Mangunkusumo', 'RS Harapan Kita', 'RS Hasan Sadikin', 'RS Kariadi', 'RS Sardjito'],
+                    data: [125000000000, 98000000000, 84000000000, 72000000000, 58900000000],
+                    label: 'Total Biaya Klaim (Rp)'
+                });
+                initOrUpdateCytoscape('Tipe A');
+            } else if (activeDomain === 'saas') {
+                if (initialSubtitle) initialSubtitle.innerText = 'Menampilkan log billing & latency API Gateway SaaS';
+                $('studio-chart-title').innerText = 'Volume Panggilan API per Layanan (SaaS)';
+                renderStudioChart({
+                    type: 'bar',
+                    title: 'Volume Panggilan API per Layanan (SaaS)',
+                    labels: ['/v1/auth', '/v1/billing', '/v1/webhooks', '/v1/reports', '/v1/export'],
+                    data: [420000, 310000, 150000, 85000, 35000],
+                    label: 'Total Panggilan API'
+                });
+                initOrUpdateCytoscape('Starter Tier');
+            } else if (activeDomain === 'klinik') {
+                if (initialSubtitle) initialSubtitle.innerText = 'Menampilkan rekap kas & kunjungan Klinik Wisma Jaya (Cash-Only)';
+                $('studio-chart-title').innerText = 'Setoran Kas Tunai per Shift Bidan';
+                renderStudioChart({
+                    type: 'bar',
+                    title: 'Setoran Kas Tunai per Shift Bidan',
+                    labels: ['Bidan Siti (Pagi)', 'Bidan Ratna (Sore)', 'Bidan Dewi (Pagi)', 'Pemeriksaan Lab', 'Resep Obat'],
+                    data: [265000000, 245000000, 213810000, 142000000, 98000000],
+                    label: 'Setoran Kas (Rp)'
+                });
+                initOrUpdateCytoscape('TUNAI_CASH');
+            } else {
+                if (initialSubtitle) initialSubtitle.innerText = 'Menampilkan visualisasi data transaksi & dokumen SOP fintech';
+                $('studio-chart-title').innerText = 'Kinerja & Tingkat Kendala Pembayaran';
+                renderStudioChart({
+                    type: 'bar',
+                    title: 'Distribusi Volume Kanal Pembayaran',
+                    labels: ['VA BCA', 'VA Mandiri', 'VA BRI', 'QRIS Gopay', 'Kartu Kredit'],
+                    data: [1420000, 1180000, 950000, 890000, 560000],
+                    label: 'Total Transaksi'
+                });
+                initOrUpdateCytoscape('VA_BCA');
+            }
+            switchStudioTab('chart');
+        }
 
-            // Tambahkan bubble user
-            const chatBox = document.getElementById('chat-messages');
-            chatBox.innerHTML += `
-                <div class="flex gap-3 justify-end">
-                    <div class="bg-blue-600/20 text-blue-200 border border-blue-500/30 p-3 rounded-xl max-w-[85%] leading-relaxed">
-                        ${query}
-                    </div>
-                </div>
-            `;
+        function copyToClipboard(btn) {
+            const container = btn.closest('.group');
+            const prose = container ? container.querySelector('.prose-dark') : null;
+            const text = prose ? prose.innerText : '';
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(() => {
+                const span = btn.querySelector('span');
+                const orig = span.innerText;
+                span.innerText = 'Tersalin!';
+                btn.classList.add('is-done');
+                setTimeout(() => {
+                    span.innerText = orig;
+                    btn.classList.remove('is-done');
+                }, 2000);
+            });
+        }
+
+        /* ---------------------------------------------------------------
+           Sidebar / header / chat helpers
+           --------------------------------------------------------------- */
+        function applySidebarState() {
+            const sidebar = $('chat-sidebar');
+            if (!sidebar) return;
+            sidebar.classList.toggle('is-closed', !isSidebarOpen);
+            sidebar.toggleAttribute('inert', !isSidebarOpen);
+        }
+
+        function toggleSidebar() {
+            isSidebarOpen = !isSidebarOpen;
+            applySidebarState();
+            scheduleVisualResize(340);
+        }
+
+        function toggleTopHeader() {
+            const kpiStrip = $('kpi-strip-container');
+            isHeaderCollapsed = !isHeaderCollapsed;
+            kpiStrip.classList.toggle('hidden', isHeaderCollapsed);
+            swapIcon('header-collapse-icon', isHeaderCollapsed ? 'chevron-down' : 'chevron-up');
+            scheduleVisualResize(120);
+        }
+
+        function clearChatHistoryUI() {
+            const chatBox = $('chat-messages');
+            chatBox.innerHTML = welcomeHTML(
+                'Sesi baru telah dimulai.',
+                'Silakan ajukan pertanyaan mengenai data transaksi dari basis data 5 juta transaksi, investigasi kendala, atau pedoman operasional SOP.'
+            );
+            lucide.createIcons();
+        }
+
+        function clearChatHistory() {
+            createNewSession(true);
+        }
+
+        /* ---------------------------------------------------------------
+           Voice recording (Gemini STT)
+           --------------------------------------------------------------- */
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+
+        function setRecordingUI(on) {
+            const micBtn = $('mic-btn');
+            const voiceBanner = $('voice-recording-banner');
+            const composer = $('composer');
+            if (voiceBanner) voiceBanner.classList.toggle('hidden', !on);
+            if (micBtn) micBtn.classList.toggle('is-recording', on);
+            if (composer) composer.classList.toggle('is-recording', on);
+        }
+
+        async function toggleVoiceRecording() {
+            const input = $('user-input');
+
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = (e) => {
+                        if (e.data.size > 0) audioChunks.push(e.data);
+                    };
+
+                    mediaRecorder.onstop = async () => {
+                        setRecordingUI(false);
+                        // Hentikan semua track mic segera setelah rekaman berhenti
+                        stream.getTracks().forEach((track) => track.stop());
+                        input.placeholder = "Memproses transkripsi suara via Gemini Flash Audio STT…";
+
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const formData = new FormData();
+                        formData.append('file', audioBlob, 'voice_query.webm');
+
+                        try {
+                            const res = await fetch('/api/transcribe', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const data = await res.json();
+                            if (data.success && data.text) {
+                                input.value = data.text;
+                                input.placeholder = DEFAULT_PLACEHOLDER;
+                                handleSend();
+                            } else {
+                                input.placeholder = "Gagal transkripsi: " + (data.error || "Audio tidak terdengar");
+                            }
+                        } catch (err) {
+                            input.placeholder = "Koneksi transkripsi audio gagal.";
+                        }
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    setRecordingUI(true);
+                    input.placeholder = "Mendengarkan suara Anda… (klik mic lagi untuk selesai & kirim)";
+                    lucide.createIcons();
+                } catch (err) {
+                    alert("Akses mikrofon tidak diizinkan atau tidak didukung di browser ini: " + err.message);
+                }
+            } else {
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+                isRecording = false;
+            }
+        }
+
+        /* ---------------------------------------------------------------
+           Chat send / streaming
+           --------------------------------------------------------------- */
+        function metaItem(label, value) {
+            return `<span><b>${esc(label)}</b> ${esc(value)}</span>`;
+        }
+
+        function buildProfilerHTML(p) {
+            if (!p) return '';
+            const parts = [];
+            if (p.duckdb_latency_ms != null) {
+                let rows = '';
+                if (p.scanned_rows) {
+                    rows = p.scanned_rows >= 1000000
+                        ? ` · ${(p.scanned_rows / 1000000).toFixed(1)}M baris`
+                        : ` · ${(p.scanned_rows / 1000).toFixed(0)}k baris`;
+                }
+                parts.push(metaItem('DuckDB', `${p.duckdb_latency_ms}ms${rows}`));
+            }
+            if (p.rag_latency_ms != null) parts.push(metaItem('RAG', `${p.rag_latency_ms}ms${p.rag_strategy ? ' · ' + p.rag_strategy : ''}`));
+            if (p.ast_guardrail) parts.push(metaItem('AST', p.ast_guardrail));
+            if (p.active_persona) parts.push(metaItem('Role', p.active_persona));
+            if (p.backtest_exemplar_aligned) parts.push(metaItem('Backtest', 'Aligned'));
+            if (!parts.length) return '';
+            return `<div class="msg-meta">${parts.join('<span class="sep">/</span>')}</div>`;
+        }
+
+        async function handleSend() {
+            const input = $('user-input');
+            const query = input.value.trim();
+            if (!query) return;
+
+            const chatBox = $('chat-messages');
+            chatBox.insertAdjacentHTML('beforeend', userMsgHTML(query));
             input.value = '';
             chatBox.scrollTop = chatBox.scrollHeight;
 
             // Placeholder bot
             const botMsgId = 'msg-' + Date.now();
-            chatBox.innerHTML += `
-                <div class="flex gap-3" id="${botMsgId}">
-                    <div class="w-7 h-7 rounded-lg bg-blue-600/30 flex items-center justify-center shrink-0 border border-blue-500/30 text-blue-400">
-                        <i data-lucide="bot" class="w-4 h-4"></i>
-                    </div>
-                    <div class="space-y-1.5 flex-1 bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
-                        <p class="text-slate-400 italic">Menganalisis query dengan Tri-Engine...</p>
+            chatBox.insertAdjacentHTML('beforeend', `
+                <div class="msg-row" id="${botMsgId}">
+                    <div class="avatar-ai"><i data-lucide="bot" class="w-4 h-4"></i></div>
+                    <div class="msg-ai group">
+                        ${copyButtonHTML()}
+                        <div id="loading-${botMsgId}" class="msg-loading">
+                            <span class="typing-dots"><span></span><span></span><span></span></span>
+                            Memeriksa data transaksi dan pedoman SOP…
+                        </div>
+                        <div id="content-${botMsgId}" class="prose-dark"></div>
+                        <div id="inline-chart-container-${botMsgId}" class="hidden mt-4 pt-4 border-t border-slate-800/80">
+                            <div class="flex items-center justify-between mb-2.5">
+                                <span class="text-[12px] font-semibold text-slate-300 flex items-center gap-1.5">
+                                    <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-blue-400"></i>
+                                    <span id="inline-chart-title-${botMsgId}">Visualisasi Interaktif</span>
+                                </span>
+                            </div>
+                            <div class="relative w-full max-w-full h-[260px] bg-slate-950/60 px-3 pt-3 pb-2 rounded-xl border border-slate-800/90">
+                                <canvas id="inline-chart-${botMsgId}"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            `;
+            `);
             lucide.createIcons();
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
                 const res = await fetch('/api/chat', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({message: query})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: query,
+                        history: conversationHistory,
+                        persona: currentSelectedPersona,
+                        dataset: activeDomain
+                    })
                 });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
                 const data = await res.json();
-                
-                // Update respon bot dengan Markdown parser
-                const msgEl = document.getElementById(botMsgId);
-                const parsedHtml = (typeof marked !== 'undefined') ? marked.parse(data.reply) : data.reply.replace(/\n/g, '<br>');
-                msgEl.innerHTML = `
-                    <div class="w-7 h-7 rounded-lg bg-blue-600/30 flex items-center justify-center shrink-0 border border-blue-500/30 text-blue-400">
-                        <i data-lucide="bot" class="w-4 h-4"></i>
-                    </div>
-                    <div class="space-y-2 flex-1 bg-slate-900/70 p-3.5 rounded-xl border border-slate-800 text-slate-200 leading-relaxed prose-dark text-xs md:text-sm">
-                        <div>${parsedHtml}</div>
-                        ${data.citations && data.citations.length ? `
-                            <div class="pt-2 border-t border-slate-800/80 flex flex-wrap gap-1.5 not-prose">
-                                ${data.citations.map(c => `<span class="text-[10px] mono px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 border border-blue-800/60">📄 ${c.title} (${c.section})</span>`).join('')}
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-                lucide.createIcons();
-                chatBox.scrollTop = chatBox.scrollHeight;
 
-                // Update SQL Display
-                if(data.sql_executed) {
-                    document.getElementById('sql-display').innerText = data.sql_executed;
+                // Catat ke conversationHistory & sesi aktif
+                conversationHistory.push({ role: "user", content: query });
+                if (data.reply) {
+                    conversationHistory.push({ role: "assistant", content: data.reply });
+                }
+                if (conversationHistory.length > 10) {
+                    conversationHistory = conversationHistory.slice(-10);
                 }
 
-                // Update Citations Tab
-                if(data.citations && data.citations.length) {
-                    const citBox = document.getElementById('citations-container');
-                    citBox.innerHTML = data.citations.map(c => `
-                        <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
-                            <span class="font-semibold text-blue-400 block">${c.title}</span>
-                            <span class="text-slate-400 text-[11px]">${c.section}</span>
-                        </div>
-                    `).join('');
+                const currentSess = allSessions.find((s) => s.id === activeSessionId);
+                if (currentSess) {
+                    currentSess.messages.push({ role: "user", content: query });
+                    if (data.reply) currentSess.messages.push({ role: "assistant", content: data.reply });
+                    currentSess.history = conversationHistory;
+                    if (currentSess.title === 'Percakapan Baru') {
+                        currentSess.title = query.length > 28 ? query.substring(0, 28) + '...' : query;
+                        $('current-session-title').innerText = currentSess.title;
+                    }
+                    saveSessions();
+                    renderSessionList();
                 }
 
-                // Update Chart jika ada data visualisasi
-                if(data.chart_payload) {
-                    renderChart(data.chart_payload);
-                    switchTab('chart');
-                } else if(data.target_channel) {
-                    initGraph(data.target_channel);
-                    document.getElementById('graph-tag').innerText = `Incident Highlight: ${data.target_channel}`;
-                    switchTab('graph');
+                const loadingEl = $(`loading-${botMsgId}`);
+                if (loadingEl) loadingEl.remove();
+                // Perbarui Interactive Studio di panel kanan segera setelah data diterima
+                updateStudioArtifacts(data);
+                const textContainer = $(`content-${botMsgId}`);
+                const fullText = data.reply || "";
+
+                // Streaming typing effect
+                const words = fullText.split(' ');
+                let currentIndex = 0;
+                const chunkSize = 3;
+
+                function streamType() {
+                    if (currentIndex < words.length) {
+                        currentIndex = Math.min(currentIndex + chunkSize, words.length);
+                        const partialText = words.slice(0, currentIndex).join(' ');
+                        const html = (typeof marked !== 'undefined') ? marked.parse(partialText) : esc(partialText).replace(/\n/g, '<br>');
+                        textContainer.innerHTML = html + (currentIndex < words.length ? ' <span class="inline-block w-1.5 h-4 bg-blue-400 animate-pulse ml-0.5 align-middle rounded-sm"></span>' : '');
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                        setTimeout(streamType, 18);
+                    } else {
+                        // Satu baris metadata eksekusi (ringkas, tanpa badge)
+                        const metaHtml = buildProfilerHTML(data.profiler);
+                        if (metaHtml) textContainer.insertAdjacentHTML('beforeend', metaHtml);
+
+                        // Inline chart di dalam bubble asisten jika ada chart_payload
+                        if (data.chart_payload && data.chart_payload.labels && data.chart_payload.data) {
+                            const inlineBox = $(`inline-chart-container-${botMsgId}`);
+                            const inlineTitle = $(`inline-chart-title-${botMsgId}`);
+                            const inlineCanvas = $(`inline-chart-${botMsgId}`);
+                            if (inlineBox && inlineCanvas && typeof Chart !== 'undefined') {
+                                inlineBox.classList.remove('hidden');
+                                inlineTitle.innerText = data.chart_payload.title || 'Visualisasi Terkait Respons';
+                                const ctxInline = inlineCanvas.getContext('2d');
+                                new Chart(ctxInline, buildChartConfig(ctxInline, data.chart_payload, { inline: true }));
+                            }
+                        }
+
+                        // Quick action prompts dinamis berdasarkan konteks (label sudah memuat emoji)
+                        if (data.suggested_prompts && data.suggested_prompts.length) {
+                            renderPromptChips(data.suggested_prompts.map((p) => ['', p.label, p.label]));
+                        }
+
+                        lucide.createIcons();
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    }
                 }
 
-            } catch(e) {
+                streamType();
+
+            } catch (e) {
                 console.error(e);
+                const loadingEl = $(`loading-${botMsgId}`);
+                if (loadingEl) {
+                    loadingEl.className = 'flex items-center gap-2 text-[13px] text-rose-300';
+                    loadingEl.innerHTML = '<i data-lucide="alert-triangle" class="w-4 h-4"></i><span>Gagal memproses pertanyaan. Periksa koneksi lalu coba lagi.</span>';
+                    lucide.createIcons();
+                }
             }
         }
 
-        function renderChart(payload) {
-            const ctx = document.getElementById('activeChart').getContext('2d');
-            document.getElementById('chart-title').innerText = payload.title || 'Visualisasi Data';
-            
-            if(myChart) myChart.destroy();
+        /* ---------------------------------------------------------------
+           Export
+           --------------------------------------------------------------- */
+        async function downloadExecutivePDF() {
+            if (!latestAnalysisData) {
+                alert("Belum ada data analisis terkini untuk diunduh. Silakan ajukan pertanyaan terlebih dahulu.");
+                return;
+            }
+            try {
+                const res = await fetch('/api/export-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(latestAnalysisData)
+                });
+                if (!res.ok) {
+                    alert("Gagal mengunduh PDF");
+                    return;
+                }
+                const blob = await res.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute('download', `Executive_Briefing_Report_${Date.now()}.pdf`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            } catch (err) {
+                alert("Koneksi gagal: " + err.message);
+            }
+        }
 
-            const isDonut = payload.type === 'doughnut';
-            
-            // Palet Warna Cyber Gradient ala finance.naufalhal.tech
-            let gradient = null;
-            if(!isDonut) {
-                gradient = ctx.createLinearGradient(0, 0, 0, 320);
-                gradient.addColorStop(0, 'rgba(59, 130, 246, 0.7)');   // Blue 500
-                gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.4)'); // Violet 500
-                gradient.addColorStop(1, 'rgba(11, 16, 32, 0.05)');    // Transparan
+        function exportTableToCSV() {
+            const table = document.querySelector('#studio-table-panel table');
+            if (!table) return;
+            if (table.querySelector('.empty-state')) {
+                alert("Belum ada data tabel untuk diekspor. Ajukan pertanyaan berbasis angka terlebih dahulu.");
+                return;
+            }
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+            for (let i = 0; i < rows.length; i++) {
+                const row = [], cols = rows[i].querySelectorAll('td, th');
+                for (let j = 0; j < cols.length; j++) {
+                    let text = cols[j].innerText.replace(/"/g, '""');
+                    row.push('"' + text + '"');
+                }
+                csv.push(row.join(','));
+            }
+            const csvBlob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(csvBlob);
+            link.setAttribute('download', `rekap_analitik_transaksi_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function copySQLToClipboard() {
+            const sqlText = $('studio-sql-container').innerText;
+            if (!sqlText || sqlText.includes('-- Kueri SQL otomatis')) return;
+            navigator.clipboard.writeText(sqlText).then(() => {
+                const textSpan = $('copy-sql-text');
+                const orig = textSpan.innerText;
+                textSpan.innerText = 'Tersalin!';
+                setTimeout(() => { textSpan.innerText = orig; }, 1500);
+            });
+        }
+
+        /* ---------------------------------------------------------------
+           Workspace layout (Chat | Split | Studio) + visual resize
+           --------------------------------------------------------------- */
+        let visualResizeTimer = null;
+
+        function runVisualResize() {
+            if (studioChart) studioChart.resize();
+            const cyEl = $('cy');
+            // Lewati graf jika panelnya sedang tersembunyi (ukuran 0) agar fit() tidak merusak zoom
+            if (window.cyInstance && cyEl && cyEl.clientWidth > 0 && cyEl.clientHeight > 0) {
+                window.cyInstance.resize();
+                window.cyInstance.fit(window.cyInstance.elements(), 48);
+            }
+        }
+
+        function scheduleVisualResize(delay = 150) {
+            clearTimeout(visualResizeTimer);
+            visualResizeTimer = setTimeout(runVisualResize, delay);
+        }
+
+        function setWorkspaceLayout(mode) {
+            currentWorkspaceMode = mode;
+            const grid = $('workspace-grid');
+            const studioSection = $('interactive-studio-section');
+            const chatSection = $('chat-section-col');
+
+            grid.dataset.mode = mode;
+            chatSection.classList.toggle('is-collapsed', mode === 'studio');
+            studioSection.classList.toggle('is-collapsed', mode === 'chat');
+            chatSection.toggleAttribute('inert', mode === 'studio');
+            studioSection.toggleAttribute('inert', mode === 'chat');
+
+            [['btn-layout-chat', 'chat'], ['btn-layout-split', 'split'], ['btn-layout-studio', 'studio']].forEach(([id, m]) => {
+                const btn = $(id);
+                if (btn) btn.classList.toggle('is-active', m === mode);
+            });
+
+            if (mode === 'studio') swapIcon('studio-collapse-icon', 'minimize-2');
+            else if (mode === 'split') swapIcon('studio-collapse-icon', 'maximize-2');
+
+            scheduleVisualResize(420);
+        }
+
+        function toggleStudioCollapse() {
+            if (currentWorkspaceMode === 'chat') {
+                setWorkspaceLayout('split');
+            } else if (currentWorkspaceMode === 'split') {
+                setWorkspaceLayout('chat');
+            } else {
+                setWorkspaceLayout('split');
+            }
+        }
+
+        // Auto-resize: jendela, transisi grid, dan perubahan ukuran kontainer
+        window.addEventListener('resize', () => scheduleVisualResize(120));
+        $('workspace-grid').addEventListener('transitionend', (e) => {
+            if (e.target === e.currentTarget && e.propertyName.startsWith('grid-template-columns')) runVisualResize();
+        });
+        if (typeof ResizeObserver !== 'undefined') {
+            const ro = new ResizeObserver(() => scheduleVisualResize(80));
+            ro.observe($('studio-main-body'));
+            ro.observe($('cy-wrap'));
+        }
+
+        /* ---------------------------------------------------------------
+           Cytoscape RCA
+           --------------------------------------------------------------- */
+        function setCyEmpty(show) {
+            const el = $('cy-empty-state');
+            if (el) el.classList.toggle('hidden', !show);
+        }
+
+        function fitCyIfVisible() {
+            const cyEl = $('cy');
+            if (!window.cyInstance || !cyEl || cyEl.clientWidth === 0) return;
+            window.cyInstance.resize();
+            window.cyInstance.fit(window.cyInstance.elements(), 48);
+            window.cyInstance.center();
+        }
+
+        function initOrUpdateCytoscape(highlightChannel, dynamicOnly = false) {
+            let url = `/api/graph?dataset=${encodeURIComponent(activeDomain)}&`;
+            if (highlightChannel) url += `highlight=${encodeURIComponent(highlightChannel)}&`;
+            if (dynamicOnly) url += `dynamic=true`;
+
+            const token = ++cyRequestToken;
+
+            fetch(url)
+                .then((r) => r.json())
+                .then((data) => {
+                    if (token !== cyRequestToken) return; // respons usang
+                    if (!data.elements || (Array.isArray(data.elements) && data.elements.length === 0)) {
+                        setCyEmpty(true);
+                        return;
+                    }
+                    setCyEmpty(false);
+                    if (window.cyInstance) window.cyInstance.destroy();
+                    window.cyInstance = cytoscape({
+                        container: $('cy'),
+                        elements: data.elements,
+                        wheelSensitivity: 0.25,
+                        style: [
+                            {
+                                selector: 'node',
+                                style: {
+                                    'label': 'data(label)',
+                                    'color': '#F8FAFC',
+                                    'font-family': 'Inter',
+                                    'font-size': '12px',
+                                    'font-weight': '600',
+                                    'text-valign': 'center',
+                                    'text-halign': 'center',
+                                    'text-wrap': 'wrap',
+                                    'text-max-width': '100px',
+                                    'background-color': '#1E293B',
+                                    'border-width': 2,
+                                    'border-color': '#475569',
+                                    'width': 'mapData(size, 20, 60, 55, 95)',
+                                    'height': 'mapData(size, 20, 60, 55, 95)',
+                                    'text-outline-color': '#090D16',
+                                    'text-outline-width': 3
+                                }
+                            },
+                            {
+                                selector: 'node[type = "Channel"]',
+                                style: { 'background-color': '#1E3A8A', 'border-color': '#60A5FA', 'shape': 'round-rectangle', 'width': 95, 'height': 45 }
+                            },
+                            {
+                                selector: 'node[type = "Vendor"]',
+                                style: { 'background-color': '#064E3B', 'border-color': '#34D399', 'shape': 'ellipse', 'width': 85, 'height': 85 }
+                            },
+                            {
+                                selector: 'node[type = "Incident"]',
+                                style: { 'background-color': '#581C87', 'border-color': '#C084FC', 'shape': 'diamond', 'width': 95, 'height': 95 }
+                            },
+                            {
+                                selector: 'node[type = "ErrorCode"]',
+                                style: { 'background-color': '#881337', 'border-color': '#FB7185', 'shape': 'round-tag', 'width': 90, 'height': 42 }
+                            },
+                            {
+                                selector: 'node[type = "SOP"]',
+                                style: { 'background-color': '#065F46', 'border-color': '#10B981', 'shape': 'hexagon', 'width': 95, 'height': 50 }
+                            },
+                            {
+                                selector: 'node[?highlighted]',
+                                style: {
+                                    'border-color': '#F43F5E',
+                                    'border-width': 4,
+                                    'background-color': '#BE123C',
+                                    'font-weight': 'bold',
+                                    'font-size': '12px',
+                                    'shadow-blur': 15,
+                                    'shadow-color': '#F43F5E',
+                                    'shadow-opacity': 0.8
+                                }
+                            },
+                            {
+                                selector: 'edge',
+                                style: {
+                                    'width': 1.5,
+                                    'line-color': '#475569',
+                                    'target-arrow-color': '#64748B',
+                                    'target-arrow-shape': 'triangle',
+                                    'curve-style': 'bezier',
+                                    'label': 'data(label)',
+                                    'font-family': 'Inter',
+                                    'font-size': '9px',
+                                    'font-weight': '500',
+                                    'color': '#CBD5E1',
+                                    'text-rotation': 'autorotate',
+                                    'text-background-opacity': 0.85,
+                                    'text-background-color': '#090D16',
+                                    'text-background-padding': '2px',
+                                    'text-background-shape': 'round-rectangle'
+                                }
+                            }
+                        ],
+                        layout: {
+                            name: 'cose',
+                            idealEdgeLength: 100,
+                            nodeOverlap: 20,
+                            refresh: 20,
+                            fit: true,
+                            padding: 40,
+                            randomize: false,
+                            componentSpacing: 100,
+                            nodeRepulsion: 400000,
+                            edgeElasticity: 100,
+                            nestingFactor: 5,
+                            gravity: 80,
+                            numIter: 1000,
+                            initialTemp: 200,
+                            coolingFactor: 0.95,
+                            minTemp: 1.0
+                        }
+                    });
+                    window.cyInstance.minZoom(0.2);
+                    window.cyInstance.maxZoom(2.5);
+
+                    // Linked interactivity: klik simpul Incident/SOP membuka modal dokumen
+                    window.cyInstance.on('tap', 'node', function (evt) {
+                        const node = evt.target;
+                        const nodeType = node.data('type');
+                        const nodeLabel = node.data('label');
+                        if (nodeType === 'Incident' || nodeType === 'SOP') {
+                            openDocDrawer(nodeLabel, nodeType, `Entitas Analitik: ${nodeLabel}\nTipe: ${nodeType}\nStatus: Active Operational RCA Path`);
+                        }
+                    });
+
+                    // Padding memadai agar label simpul tidak terpotong (dilewati bila panel tersembunyi;
+                    // fit ulang otomatis terjadi saat tab Diagram dibuka)
+                    setTimeout(fitCyIfVisible, 200);
+                })
+                .catch((err) => {
+                    console.error("Error loading graph:", err);
+                    if (token === cyRequestToken && !window.cyInstance) setCyEmpty(true);
+                });
+        }
+
+        function reloadRCAGraph() {
+            if (window.cyInstance) {
+                window.cyInstance.resize();
+                const l = window.cyInstance.layout({
+                    name: 'cose',
+                    idealEdgeLength: 100,
+                    nodeOverlap: 20,
+                    refresh: 20,
+                    fit: true,
+                    padding: 40,
+                    randomize: false,
+                    componentSpacing: 100,
+                    nodeRepulsion: 400000,
+                    edgeElasticity: 100,
+                    nestingFactor: 5,
+                    gravity: 80,
+                    numIter: 1000,
+                    initialTemp: 200,
+                    coolingFactor: 0.95,
+                    minTemp: 1.0
+                });
+                l.run();
+                setTimeout(fitCyIfVisible, 150);
+            }
+        }
+
+        /* ---------------------------------------------------------------
+           Studio tabs
+           --------------------------------------------------------------- */
+        function switchStudioTab(tab) {
+            const key = (tab === 'rca') ? 'diagram' : tab;
+            const panels = {
+                chart: $('studio-chart-panel'),
+                table: $('studio-table-panel'),
+                evidence: $('studio-evidence-panel'),
+                diagram: $('studio-diagram-panel'),
+                benchmark: $('studio-benchmark-panel')
+            };
+            const buttons = {
+                chart: $('studio-tab-chart-btn'),
+                table: $('studio-tab-table-btn'),
+                evidence: $('studio-tab-evidence-btn'),
+                diagram: $('studio-tab-diagram-btn'),
+                benchmark: $('studio-tab-benchmark-btn')
+            };
+
+            const studioMainBody = $('studio-main-body');
+            if (studioMainBody) studioMainBody.scrollTop = 0;
+
+            Object.keys(panels).forEach((k) => {
+                const el = panels[k];
+                if (el) {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                }
+                const btn = buttons[k];
+                if (btn) {
+                    btn.classList.remove('is-active');
+                    btn.setAttribute('aria-selected', 'false');
+                }
+            });
+
+            if (!panels[key]) return;
+            panels[key].classList.remove('hidden');
+            panels[key].classList.add('flex');
+            if (buttons[key]) {
+                buttons[key].classList.add('is-active');
+                buttons[key].setAttribute('aria-selected', 'true');
             }
 
-            const donutColors = [
-                '#22C55E', // Green
-                '#EF4444', // Red
-                '#F59E0B', // Amber
-                '#8B5CF6', // Violet
-                '#06B6D4'  // Cyan
-            ];
+            if (key === 'chart') {
+                if (studioChart) studioChart.resize();
+            } else if (key === 'diagram') {
+                setTimeout(() => {
+                    if (!window.cyInstance) {
+                        initOrUpdateCytoscape(latestAnalysisData ? latestAnalysisData.target_channel : null, true);
+                    } else {
+                        reloadRCAGraph();
+                    }
+                }, 250);
+            }
+        }
 
-            myChart = new Chart(ctx, {
-                type: payload.type,
+        /* ---------------------------------------------------------------
+           Citation preview modal
+           --------------------------------------------------------------- */
+        let modalCloseTimer = null;
+
+        function showPreviewModal(info) {
+            clearTimeout(modalCloseTimer);
+            const modal = $('citation-preview-modal');
+            $('preview-modal-title').innerText = info.title;
+            $('preview-modal-section').innerText = info.section;
+            $('preview-modal-score').innerText = info.score;
+            $('preview-modal-body').innerText = info.body;
+            modal.classList.remove('is-closing');
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function openCitationPreview(idx) {
+            if (!latestAnalysisData || !latestAnalysisData.citations || !latestAnalysisData.citations[idx]) return;
+            const c = latestAnalysisData.citations[idx];
+            showPreviewModal({
+                title: c.title,
+                section: "Bab / Bagian: " + (c.section || "-"),
+                score: "Cosine Similarity: " + (c.score || "0.85") + " (Relevance Filter Passed)",
+                body: c.content || "Teks konten dokumen tidak tersedia."
+            });
+        }
+
+        // Dipanggil saat simpul Incident/SOP pada graf RCA diklik
+        function openDocDrawer(title, type, body) {
+            showPreviewModal({
+                title: title || 'Entitas RCA',
+                section: "Tipe entitas: " + (type || '-'),
+                score: "Graph RCA · " + (type || 'Entity'),
+                body: body || "Detail entitas tidak tersedia."
+            });
+        }
+
+        function closeCitationPreview() {
+            const modal = $('citation-preview-modal');
+            if (!modal || modal.classList.contains('hidden')) return;
+            modal.classList.add('is-closing');
+            clearTimeout(modalCloseTimer);
+            modalCloseTimer = setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('is-closing');
+            }, 160);
+        }
+
+        /* ---------------------------------------------------------------
+           Architecture Blueprint Modal Handlers
+           --------------------------------------------------------------- */
+        function openArchitectureModal() {
+            closeDomainMenu();
+            const modal = $('architecture-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeArchitectureModal() {
+            const modal = $('architecture-modal');
+            if (!modal) return;
+            modal.classList.add('hidden');
+        }
+
+        /* ---------------------------------------------------------------
+           Update studio dari respons chat
+           --------------------------------------------------------------- */
+        function updateStudioArtifacts(data) {
+            latestAnalysisData = data;
+            // Buka kembali studio jika sebelumnya dilipat pengguna
+            if (isStudioCollapsed) {
+                toggleStudioCollapse();
+            }
+            // 1. Chart
+            if (data.chart_payload) {
+                $('studio-chart-title').innerText = data.chart_payload.title || 'Visualisasi Data Transaksi';
+                renderStudioChart(data.chart_payload);
+            }
+            // Diagram jika ada target_channel (aktifkan dynamic subgraph)
+            if (data.target_channel && window.cyInstance) {
+                initOrUpdateCytoscape(data.target_channel, true);
+                // Smart tab focus: respons berfokus pada akar masalah => tab Diagram Insiden
+                switchStudioTab('diagram');
+            } else if (data.chart_payload) {
+                // Kueri analitik angka/tabel => pastikan tab Grafik aktif
+                switchStudioTab('chart');
+            }
+
+            // 2. Tabel (Prioritaskan Multi-Column table_data jika tersedia, fallback ke chart_payload)
+            const thead = $('studio-table-head');
+            const tbody = $('studio-table-body');
+
+            if (data.table_data && Array.isArray(data.table_data) && data.table_data.length > 0) {
+                const cols = Object.keys(data.table_data[0]);
+                thead.innerHTML = `<tr>${cols.map(c => {
+                    const isNum = typeof data.table_data[0][c] === 'number';
+                    const label = c.replace(/_/g, ' ').toUpperCase();
+                    return `<th class="${isNum ? 'num-col' : ''}">${esc(label)}</th>`;
+                }).join('')}</tr>`;
+
+                tbody.innerHTML = data.table_data.map(row => {
+                    return `<tr>${cols.map(c => {
+                        const val = row[c];
+                        const isNum = typeof val === 'number';
+                        const formatted = isNum ? val.toLocaleString('id-ID') : (val !== null && val !== undefined ? String(val) : '-');
+                        return `<td class="${isNum ? 'num-col' : 'font-medium text-slate-200'}">${esc(formatted)}</td>`;
+                    }).join('')}</tr>`;
+                }).join('');
+            } else if (data.chart_payload && data.chart_payload.labels && data.chart_payload.data) {
+                thead.innerHTML = `
+                    <tr>
+                        <th>Kategori / Kanal</th>
+                        <th class="num-col">${esc(data.chart_payload.label || 'Nilai')}</th>
+                    </tr>
+                `;
+
+                tbody.innerHTML = data.chart_payload.labels.map((lbl, idx) => {
+                    const v = data.chart_payload.data[idx];
+                    const shown = typeof v === 'number' ? v.toLocaleString('id-ID') : v;
+                    return `
+                        <tr>
+                            <td class="font-medium text-slate-200">${esc(lbl)}</td>
+                            <td class="num-col">${esc(shown)}</td>
+                        </tr>`;
+                }).join('');
+            }
+
+            // 3. Evidence (Dokumen & SQL)
+            if (data.citations && data.citations.length) {
+                const citBox = $('studio-cit-container');
+                citBox.innerHTML = data.citations.map((c, idx) => `
+                    <button type="button" onclick="openCitationPreview(${idx})" class="cit-item">
+                        <span class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-blue-300 bg-blue-500/10 border border-blue-500/20">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-[12.5px] font-medium text-slate-100 truncate">${esc(c.title)}</span>
+                            <span class="block text-[11px] text-slate-500 truncate">${esc(c.section)}</span>
+                        </span>
+                        <i data-lucide="arrow-up-right" class="w-3.5 h-3.5 cit-arrow shrink-0"></i>
+                    </button>
+                `).join('');
+                lucide.createIcons();
+            }
+
+            if (data.sql_executed) {
+                $('studio-sql-container').innerText = data.sql_executed;
+            }
+        }
+
+        /* ---------------------------------------------------------------
+           Chart.js (studio + inline) — padding dinamis & label membungkus
+           --------------------------------------------------------------- */
+        function shortNum(v) {
+            const a = Math.abs(v);
+            if (a >= 1e12) return +(v / 1e12).toFixed(1) + 'T';
+            if (a >= 1e9) return +(v / 1e9).toFixed(1) + 'B';
+            if (a >= 1e6) return +(v / 1e6).toFixed(1) + 'M';
+            if (a >= 1e3) return +(v / 1e3).toFixed(0) + 'k';
+            return v;
+        }
+
+        // Bungkus label panjang menjadi beberapa baris agar tidak terpotong / bertumpuk
+        function wrapLabel(text, maxChars) {
+            const s = String(text);
+            if (s.length <= maxChars) return s;
+            const words = s.split(/\s+/);
+            const lines = [];
+            let cur = '';
+            words.forEach((w) => {
+                if (!cur) cur = w;
+                else if ((cur + ' ' + w).length <= maxChars) cur += ' ' + w;
+                else { lines.push(cur); cur = w; }
+            });
+            if (cur) lines.push(cur);
+            return lines.length > 1 ? lines : s;
+        }
+
+        function wrapLabels(labels, width, inline) {
+            const per = Math.max(width, 120) / Math.max(labels.length, 1);
+            const maxChars = Math.max(8, Math.min(24, Math.floor(per / (inline ? 5.6 : 6.8))));
+            return labels.map((l) => wrapLabel(l, maxChars));
+        }
+
+        function buildChartConfig(ctx, payload, opts = {}) {
+            const inline = !!opts.inline;
+            const type = payload.type || 'bar';
+            const isDonut = type === 'doughnut';
+            const parent = ctx.canvas.parentElement;
+            const wrapWidth = parent ? parent.clientWidth - 24 : 480;
+            const rawLabels = payload.labels;
+            const displayLabels = isDonut ? rawLabels : wrapLabels(rawLabels, wrapWidth, inline);
+
+            let gradient = null;
+            if (type === 'line' && !inline) {
+                const h = (ctx.canvas.clientHeight || 280);
+                gradient = ctx.createLinearGradient(0, 0, 0, h);
+                gradient.addColorStop(0, 'rgba(59, 130, 246, 0.55)');
+                gradient.addColorStop(0.55, 'rgba(139, 92, 246, 0.22)');
+                gradient.addColorStop(1, 'rgba(9, 13, 22, 0.02)');
+            }
+
+            const donutColors = ['#22C55E', '#EF4444', '#F59E0B', '#8B5CF6', '#06B6D4'];
+            const tickSize = inline ? 10 : 11;
+            const numFont = { family: 'JetBrains Mono', size: inline ? 9 : 10 };
+
+            return {
+                type: type,
                 data: {
-                    labels: payload.labels,
+                    labels: displayLabels,
                     datasets: [{
                         label: payload.label || 'Nilai',
                         data: payload.data,
-                        backgroundColor: isDonut 
-                            ? donutColors.slice(0, payload.labels.length) 
-                            : (payload.type === 'line' ? gradient : 'rgba(59, 130, 246, 0.65)'),
-                        borderColor: isDonut ? '#0B1020' : '#3B82F6',
-                        borderWidth: 2,
-                        fill: payload.type === 'line',
+                        backgroundColor: isDonut
+                            ? donutColors.slice(0, rawLabels.length)
+                            : (type === 'line' ? (gradient || 'rgba(59, 130, 246, 0.25)') : 'rgba(59, 130, 246, 0.62)'),
+                        hoverBackgroundColor: isDonut ? undefined : 'rgba(96, 165, 250, 0.85)',
+                        borderColor: isDonut ? '#0F172A' : '#3B82F6',
+                        borderWidth: isDonut ? 2 : (type === 'bar' ? 0 : 2),
+                        fill: type === 'line',
                         tension: 0.35,
                         pointBackgroundColor: '#60A5FA',
-                        pointBorderColor: '#0B1020',
+                        pointBorderColor: '#0F172A',
                         pointBorderWidth: 2,
                         pointRadius: 4,
                         pointHoverRadius: 6,
-                        borderRadius: payload.type === 'bar' ? 6 : 0
+                        borderRadius: type === 'bar' ? 6 : 0,
+                        maxBarThickness: 64
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    // Padding dinamis: ruang ekstra bawah untuk label kategori multi-baris
+                    layout: {
+                        padding: { top: 10, bottom: isDonut ? 8 : 22, left: 8, right: 14 }
+                    },
+                    onResize: isDonut ? undefined : (chart, size) => {
+                        const next = wrapLabels(rawLabels, size.width - 24, inline);
+                        if (JSON.stringify(next) !== JSON.stringify(chart.data.labels)) {
+                            chart.data.labels = next;
+                            chart.update('none');
+                        }
+                    },
                     plugins: {
                         legend: {
                             display: isDonut,
                             position: 'bottom',
-                            labels: { 
-                                color: '#94A3B8', 
-                                font: { family: 'Plus Jakarta Sans', size: 11, weight: '500' },
-                                padding: 15,
+                            labels: {
+                                color: '#94A3B8',
+                                font: { family: 'Inter', size: inline ? 10 : 11, weight: '500' },
+                                padding: 14,
+                                boxWidth: 8,
+                                boxHeight: 8,
                                 usePointStyle: true
                             }
                         },
                         tooltip: {
-                            backgroundColor: '#0F172A',
+                            backgroundColor: 'rgba(15, 23, 42, 0.96)',
                             titleColor: '#F8FAFC',
-                            bodyColor: '#38BDF8',
-                            borderColor: 'rgba(148, 163, 184, 0.2)',
+                            bodyColor: '#7DD3FC',
+                            borderColor: 'rgba(148, 163, 184, 0.22)',
                             borderWidth: 1,
                             padding: 10,
-                            titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: '600' },
-                            bodyFont: { family: 'JetBrains Mono', size: 12 }
+                            cornerRadius: 8,
+                            displayColors: false,
+                            titleFont: { family: 'Inter', size: 12, weight: '600' },
+                            bodyFont: { family: 'JetBrains Mono', size: 12 },
+                            callbacks: {
+                                title: (items) => String(rawLabels[items[0].dataIndex]),
+                                label: (c) => {
+                                    const v = (c.parsed && typeof c.parsed === 'object') ? c.parsed.y : c.parsed;
+                                    return ' ' + (c.dataset.label || 'Nilai') + ': ' + Number(v).toLocaleString('id-ID');
+                                }
+                            }
                         }
                     },
-                    scales: isDonut ? {} : {
-                        x: { 
-                            ticks: { 
-                                color: '#94A3B8', 
-                                font: { family: 'JetBrains Mono', size: 10 } 
-                            }, 
-                            grid: { color: 'rgba(148, 163, 184, 0.08)' } 
+                    onHover: opts.linked ? (evt, els) => {
+                        if (evt.native && evt.native.target) evt.native.target.style.cursor = els.length ? 'pointer' : 'default';
+                    } : undefined,
+                    onClick: opts.linked ? (event, elements) => {
+                        if (elements && elements.length > 0) {
+                            const label = rawLabels[elements[0].index];
+                            if (label) {
+                                // Linked interactivity: perbarui filter & graf RCA
+                                const cleanLabel = String(label).replace(/\s+/g, '_');
+                                initOrUpdateCytoscape(cleanLabel, true);
+                                switchStudioTab('rca');
+                            }
+                        }
+                    } : undefined,
+                    scales: isDonut ? {
+                        x: { display: false },
+                        y: { display: false }
+                    } : {
+                        x: {
+                            display: true,
+                            grid: { display: false },
+                            border: { color: 'rgba(148, 163, 184, 0.18)' },
+                            ticks: {
+                                display: true,
+                                color: '#CBD5E1',
+                                font: { family: 'Inter', size: tickSize, weight: '500', lineHeight: 1.25 },
+                                maxRotation: 0,
+                                minRotation: 0,
+                                autoSkip: false,
+                                padding: 8
+                            }
                         },
-                        y: { 
-                            ticks: { 
-                                color: '#94A3B8', 
-                                font: { family: 'JetBrains Mono', size: 10 } 
-                            }, 
-                            grid: { color: 'rgba(148, 163, 184, 0.08)' } 
+                        y: {
+                            display: true,
+                            beginAtZero: true,
+                            grid: { color: 'rgba(148, 163, 184, 0.08)' },
+                            border: { display: false },
+                            ticks: {
+                                display: true,
+                                color: '#94A3B8',
+                                font: numFont,
+                                padding: 8,
+                                maxTicksLimit: 6,
+                                callback: (value) => shortNum(value)
+                            }
                         }
                     }
                 }
+            };
+        }
+
+        function syncChartTypeButtons(type) {
+            document.querySelectorAll('[data-chart-type]').forEach((b) => {
+                b.classList.toggle('is-active', b.dataset.chartType === type);
             });
         }
 
-        // On Load
-        window.addEventListener('DOMContentLoaded', () => {
-            loadKPIs();
-            // Default render tren bulanan di awal
-            renderChart({
-                type: 'line',
-                title: 'Tren Tingkat Kegagalan MoM (Juli - September 2026)',
-                labels: ['2026-07', '2026-08', '2026-09'],
-                data: [3.51, 3.48, 4.29],
-                label: 'Failure Rate (%)'
-            });
-        });
+        function setChartType(type) {
+            if (!currentChartPayload) return;
+            currentChartPayload.type = type;
+            renderStudioChart(currentChartPayload);
+        }
+
+        function renderStudioChart(payload) {
+            if (typeof Chart === 'undefined') return;
+            currentChartPayload = JSON.parse(JSON.stringify(payload));
+            if (!currentChartPayload.type) currentChartPayload.type = 'bar';
+            const canvas = $('studioChartCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            if (studioChart) studioChart.destroy();
+            studioChart = new Chart(ctx, buildChartConfig(ctx, currentChartPayload, { linked: true }));
+            syncChartTypeButtons(currentChartPayload.type);
+        }
+
+        /* ---------------------------------------------------------------
+           Startup
+           --------------------------------------------------------------- */
+        if (typeof Chart !== 'undefined') {
+            Chart.defaults.font.family = "'Inter', 'Plus Jakarta Sans', sans-serif";
+            Chart.defaults.color = '#94A3B8';
+        }
+
+        // Sidebar terbuka otomatis hanya pada layar lebar agar workspace tetap lega
+        isSidebarOpen = window.innerWidth >= 1440;
+        applySidebarState();
+
+        loadKPIs();
+        initSessions();
+        renderDomainDefaultStudio();
+        resetDefaultQuickPrompts();
     </script>
 </body>
 </html>

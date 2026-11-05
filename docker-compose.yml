@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+  neural-analytics-copilot:
+    build: .
+    container_name: neural-analytics-copilot
+    restart: unless-stopped
+    ports:
+      - "8508:8508"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ROUTER_URL=http://host.docker.internal:20128/v1/chat/completions
+      - ROUTER_MODEL=hc/auto
+      - TYPESAFE_API_KEY=${TYPESAFE_API_KEY:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data:/app/data:ro
+      - ./docs:/app/docs:ro
+      - ./vault:/app/vault:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8508/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

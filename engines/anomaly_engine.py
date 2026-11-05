@@ -1,6 +1,6 @@
 """Statistical Outlier & Anomaly Detection Engine.
 Mendeteksi lonjakan kegagalan (spike) menggunakan rolling Z-score & group variance.
-Berjalan dalam hitungan milidetik di CPU tanpa membebani LLM.
+Berjalan dalam hitungan milidetik di CPU tanpa membebani LLM dan mendukung multi-domain dataset.
 """
 
 import duckdb
@@ -8,15 +8,31 @@ import numpy as np
 import pandas as pd
 from typing import Dict, Any, List
 
+
 class AnomalyEngine:
     def __init__(self, parquet_path: str = "data/transactions_5m.parquet"):
         self.parquet_path = parquet_path
         self.conn = duckdb.connect(":memory:")
-        self.conn.execute(f"CREATE VIEW transactions AS SELECT * FROM read_parquet('{self.parquet_path}')")
-        
-        # Caching hasil Z-score agar tidak scan 5 juta data berulang-ulang di setiap request
+
+        raw_cols_info = self.conn.execute(
+            f"DESCRIBE SELECT * FROM read_parquet('{self.parquet_path}')"
+        ).fetchall()
+        raw_col_names = {r[0] for r in raw_cols_info}
+
+        extra_aliases: List[str] = []
+        if "timestamp" not in raw_col_names and "waktu_transaksi" in raw_col_names:
+            extra_aliases.append("waktu_transaksi AS timestamp")
+        if "failure_code" not in raw_col_names and "status_pembayaran" in raw_col_names:
+            extra_aliases.append("status_pembayaran AS failure_code")
+
+        alias_sql = (", " + ", ".join(extra_aliases)) if extra_aliases else ""
+        self.conn.execute(
+            f"CREATE VIEW transactions AS SELECT *{alias_sql} FROM read_parquet('{self.parquet_path}')"
+        )
+
+        # Caching hasil Z-score agar tidak scan berulang-ulang di setiap request
         self._cached_spikes = None
-        
+
     def detect_channel_spikes(self, z_threshold: float = 2.5) -> List[Dict[str, Any]]:
         """Mendeteksi tanggal dan kanal yang mengalami lonjakan tingkat kegagalan secara statistik."""
         if self._cached_spikes is not None:
@@ -33,29 +49,28 @@ class AnomalyEngine:
         ORDER BY 1, 2
         """
         df = self.conn.execute(query).df()
-        
+
         anomalies = []
-        
+
         # Analisis Z-Score per kanal
         for channel_name in df['channel'].unique():
             ch_df = df[df['channel'] == channel_name].copy()
             rates = ch_df['fail_rate_pct'].values
-            
+
             if len(rates) < 5:
                 continue
-                
+
             mean = np.mean(rates)
             std = np.std(rates)
-            
+
             if std == 0:
                 continue
-                
+
             ch_df['z_score'] = (ch_df['fail_rate_pct'] - mean) / std
-            
+
             # Cari baris yang melampaui z_threshold
             outliers = ch_df[ch_df['z_score'] >= z_threshold]
             for _, row in outliers.iterrows():
-                # Query kode error paling dominan di tanggal dan kanal ini
                 top_err_query = f"""
                 SELECT failure_code, COUNT(*) as cnt 
                 FROM transactions 
@@ -67,8 +82,8 @@ class AnomalyEngine:
                 LIMIT 1
                 """
                 top_err = self.conn.execute(top_err_query).df().to_dict(orient="records")
-                primary_code = top_err[0]['failure_code'] if top_err else "UNKNOWN"
-                
+                primary_code = (top_err[0]['failure_code'] if top_err and top_err[0].get('failure_code') else "UNKNOWN")
+
                 anomalies.append({
                     "date": row['tx_date'],
                     "channel": channel_name,
@@ -79,8 +94,7 @@ class AnomalyEngine:
                     "primary_failure_code": primary_code,
                     "severity": "CRITICAL" if row['z_score'] >= 4.0 else "WARNING"
                 })
-                
-        # Urutkan berdasarkan z_score tertinggi
+
         anomalies.sort(key=lambda x: x['z_score'], reverse=True)
         self._cached_spikes = anomalies
         return anomalies

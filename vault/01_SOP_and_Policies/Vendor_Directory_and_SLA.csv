@@ -1,0 +1,5 @@
+vendor_id,vendor_name,contact_tier,hotline_phone,escalation_email,sla_response_time,circuit_breaker_enabled
+VEND-001,Bank Central Asia,Tier 1 Banking,021-23588000,helpdesk.api@bca.co.id,< 15 Menit,TRUE
+VEND-002,Bank Mandiri Host-to-Host,Tier 1 Banking,021-52997777,api.support@bankmandiri.co.id,< 30 Menit,TRUE
+VEND-003,Artajasa ATM Bersama,Tier 1 Switcher,021-5705999,noc@artajasa.co.id,< 10 Menit,TRUE
+VEND-004,Gopay Midtrans Gateway,Tier 2 E-Wallet,021-50858888,merchant-support@midtrans.com,< 1 Jam,FALSE

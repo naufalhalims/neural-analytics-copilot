@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arsitektur Neural Analytics Copilot - First Principles</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #090d16;
+      --color-panel:   #0f172a;
+      --color-ink:     #f8fafc;
+      --color-muted:   #94a3b8;
+      --color-soft:    #64748b;
+      --color-border:  #1e293b;
+      --color-cyan:    #22d3ee;
+      --color-emerald: #34d399;
+      --color-violet:  #a78bfa;
+      --color-amber:   #fbbf24;
+      --color-rose:    #fb7185;
+      --font-sans:     'Geist', system-ui, -apple-system, sans-serif;
+      --font-serif:    'Instrument Serif', serif;
+      --font-mono:     'Geist Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      padding: 2.5rem 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 1.5rem;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--color-cyan);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-cyan);
+      box-shadow: 0 0 10px var(--color-cyan);
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 3.2vw + 1rem, 2.75rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--color-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .diagram-wrapper {
+      background: var(--color-panel);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      margin-bottom: 2.5rem;
+    }
+
+    svg {
+      width: 100%;
+      min-width: 960px;
+      display: block;
+    }
+
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .pillar-card {
+      background: var(--color-panel);
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      position: relative;
+    }
+
+    .pillar-card.cyan { border-top: 3px solid var(--color-cyan); }
+    .pillar-card.emerald { border-top: 3px solid var(--color-emerald); }
+    .pillar-card.violet { border-top: 3px solid var(--color-violet); }
+    .pillar-card.rose { border-top: 3px solid var(--color-rose); }
+    .pillar-card.amber { border-top: 3px solid var(--color-amber); }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--color-muted);
+      border: 1px solid var(--color-border);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--color-ink);
+    }
+
+    .pillar-card p {
+      font-size: 0.82rem;
+      color: var(--color-muted);
+      line-height: 1.55;
+      margin-bottom: 0.75rem;
+    }
+
+    .code-pill {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      background: #020617;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #1e293b;
+      color: #38bdf8;
+      display: block;
+      overflow-x: auto;
+    }
+
+    footer {
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--color-soft);
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="eyebrow">
+        <span class="pulse-dot"></span>
+        <span>SYSTEM ARCHITECTURE BLUEPRINT &middot; FIRST PRINCIPLES</span>
+      </div>
+      <h1>Neural Analytics Copilot Engineering</h1>
+      <p class="subtitle">
+        Bagaimana membangun AI Data Copilot enterprise dari nol: integrasi zero-latency in-memory data pushdown, 
+        dual-path routing, deterministic AST guardrail, hybrid lexical-vector retrieval, dan linked visual artifact studio.
+      </p>
+    </header>
+
+    <!-- Interactive Dark SVG Diagram -->
+    <div class="diagram-wrapper">
+      <svg viewBox="0 0 960 620" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="copilot-arch-title copilot-arch-desc">
+        <title id="copilot-arch-title">Neural Analytics Copilot System Architecture</title>
+        <desc id="copilot-arch-desc">Arsitektur alur data dari Client Request menuju Jev Fast Router, DuckDB Vector Engine, AST Guardrail, Hybrid RAG Qdrant, dan Frontend Studio Artifacts</desc>
+        
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#64748b"/>
+          </marker>
+          <marker id="arrow-cyan" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#22d3ee"/>
+          </marker>
+          <marker id="arrow-emerald" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#34d399"/>
+          </marker>
+          <marker id="arrow-rose" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#fb7185"/>
+          </marker>
+          <marker id="arrow-violet" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#a78bfa"/>
+          </marker>
+          
+          <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- ================= TIER 1: CLIENT & ROUTING LAYER ================= -->
+        <!-- Ingress User -->
+        <rect x="30" y="240" width="120" height="70" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+        <text x="90" y="265" fill="#f8fafc" font-size="12" font-weight="600" text-anchor="middle" font-family="'Geist', sans-serif">Client Browser</text>
+        <text x="90" y="282" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="'Geist Mono', monospace">Tailwind + Chart.js</text>
+        <text x="90" y="296" fill="#38bdf8" font-size="8" text-anchor="middle" font-family="'Geist Mono', monospace">Cytoscape RCA</text>
+
+        <!-- Connector 1 -> FastAPI Gateway -->
+        <line x1="150" y1="275" x2="208" y2="275" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+        <rect x="158" y="261" width="42" height="12" rx="2" fill="#090d16"/>
+        <text x="179" y="270" fill="#22d3ee" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle">HTTP POST</text>
+
+        <!-- Node: FastAPI Gateway -->
+        <rect x="210" y="210" width="140" height="130" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+        <rect x="220" y="218" width="46" height="12" rx="2" fill="rgba(52, 211, 153, 0.15)"/>
+        <text x="243" y="227" fill="#34d399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle">GATEWAY</text>
+        <text x="280" y="248" fill="#f8fafc" font-size="12" font-weight="600" text-anchor="middle" font-family="'Geist', sans-serif">FastAPI Backend</text>
+        <text x="280" y="265" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="'Geist Mono', monospace">:8508 Uvicorn Async</text>
+        <line x1="220" y1="278" x2="340" y2="278" stroke="#1e293b" stroke-width="1"/>
+        <text x="280" y="294" fill="#64748b" font-size="8" text-anchor="middle" font-family="'Geist', sans-serif">&bull; In-Memory Hash Cache</text>
+        <text x="280" y="308" fill="#64748b" font-size="8" text-anchor="middle" font-family="'Geist', sans-serif">&bull; Cross-Domain Shield</text>
+        <text x="280" y="322" fill="#64748b" font-size="8" text-anchor="middle" font-family="'Geist', sans-serif">&bull; Multi-Domain Context</text>
+
+        <!-- Routing Branch Up: Jev Speculative Engine -->
+        <path d="M 350,245 H 410 Q 420,245 420,235 V 145 Q 420,135 430,135 H 448" fill="none" stroke="#22d3ee" stroke-width="1.3" marker-end="url(#arrow-cyan)"/>
+        <rect x="375" y="165" width="56" height="12" rx="2" fill="#090d16"/>
+        <text x="403" y="174" fill="#22d3ee" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle">SUB-10MS</text>
+
+        <!-- Node: TypeSafe Jev System 1 -->
+        <rect x="450" y="95" width="150" height="80" rx="8" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+        <rect x="460" y="103" width="58" height="12" rx="2" fill="rgba(34, 211, 238, 0.15)"/>
+        <text x="489" y="112" fill="#22d3ee" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle">SPECULATIVE</text>
+        <text x="525" y="133" fill="#f8fafc" font-size="11" font-weight="600" text-anchor="middle" font-family="'Geist', sans-serif">TypeSafe Jev Engine</text>
+        <text x="525" y="148" fill="#94a3b8" font-size="8.5" text-anchor="middle" font-family="'Geist Mono', monospace">Intent Classification</text>
+        <text x="525" y="162" fill="#64748b" font-size="8" text-anchor="middle" font-family="'Geist', sans-serif">Fast Pattern Disambiguation</text>
+
+        <!-- Routing Branch Mid: Text-to-SQL + AST Guardrail -->
+        <line x1="350" y1="275" x2="448" y2="275" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+        <rect x="366" y="261" width="70" height="12" rx="2" fill="#090d16"/>
+        <text x="401" y="270" fill="#34d399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle">SQL PIPELINE</text>
+
+        <!-- Node: LLM Text-to-SQL + sqlglot AST Guardrail -->
+        <rect x="450" y="225" width="160" height="100" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+        <rect x="460" y="233" width="70" height="12" rx="2" fill="rgba(52, 211, 153, 0.15)"/>
+        <text x="495" y="242" fill="#34d399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle">AST DEFENSE</text>
+        <text x="530" y="263" fill="#f8fafc" font-size="11" font-weight="600" text-anchor="middle" font-family="'Geist', sans-serif">SQLGlot Guardrail</text>
+        <text x="530" y="278" fill="#94a3b8" font-size="8.5" text-anchor="middle" font-family="'Geist Mono', monospace">9router &rarr; Gemini 3.8 Flash</text>
+        <text x="530" y="293" fill="#fb7185" font-size="8" text-anchor="middle" font-family="'Geist Mono', monospace">Block DDL/DML Injection</text>
+        <text x="530" y="308" fill="#64748b" font-size="8" text-anchor="middle" font-family="'Geist', sans-serif">Backtest In-Context Exemplars</text>
+
+        <!-- Routing Branch Down: Hybrid RAG Dedicated Vault -->
+        <path d="M 350,305 H 410 Q 420,305 420,315 V 425 Q 420,435 430,435 H 448" fill="none" stroke="#a78bfa" stroke-width="1.3" marker-end="url(#arrow-violet)"/>
+        <rect x="375" y="380" width="56" height="12" rx="2" fill="#090d16"/>
+        <text x="403" y="389" fill="#a78bfa" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle">RAG HYBRID</text>
+
+        <!-- Node: Dedicated Vault RAG -->
+        <rect x="450" y="390" width="160" height="90" rx="8" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+        <rect x="460" y="398" width="62" height="12" rx="2" fill="rgba(167, 139, 250, 0.15)"/>
+        <text x="491" y="407" fill="#a78bfa" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle">RRF RANKING</text>
+        <text x="530" y="427" fill="#f8fafc" font-size="11" font-weight="600" text-anchor="middle" font-family="'Geist', sans-serif">Hybrid RAG Engine</text>
+        <text x="530" y="442" fill="#94a3b8" font-size="8.5" text-anchor="middle" font-family="'Geist Mono', monospace">Qdrant Vector + BM25</text>
+        <text x="530" y="457" fill="#64748b" font-size="8" text-anchor="middle" font-family="'Geist', sans-serif">SOP &bull; Postmortem &bull; Topologi</text>
+        <text x="530" y="469" fill="#a78bfa" font-size="7.5" text-anchor="middle" font-family="'Geist Mono', monospace">Hot-Reindex API Support</text>
+
+        <!-- Connector Mid -> DuckDB Engine -->
+        <line x1="610" y1="275" x2="688" y2="275" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+        <rect x="620" y="261" width="56" height="12" rx="2" fill="#090d16"/>
+        <text x="648" y="270" fill="#34d399" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle">PUSHDOWN</text>
+
+        <!-- Node: DuckDB In-Memory & Parquet Store -->
+        <rect x="690" y="210" width="160" height="130" rx="8" fill="#0f172a" stroke="#fbbf24" stroke-width="1.5"/>
+        <rect x="700" y="218" width="56" height="12" rx="2" fill="rgba(251, 191, 36, 0.15)"/>
+        <text x="728" y="227" fill="#fbbf24" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle">DATABASE</text>
+        <text x="770" y="248" fill="#f8fafc" font-size="12" font-weight="600" text-anchor="middle" font-family="'Geist', sans-serif">DuckDB Analytics</text>
+        <text x="770" y="265" fill="#94a3b8" font-size="9" text-anchor="middle" font-family="'Geist Mono', monospace">Vectorized In-Memory</text>
+        <line x1="700" y1="278" x2="840" y2="278" stroke="#1e293b" stroke-width="1"/>
+        <text x="770" y="294" fill="#fbbf24" font-size="8" text-anchor="middle" font-family="'Geist Mono', monospace">5,000,000 Transaksi (Parquet)</text>
+        <text x="770" y="308" fill="#64748b" font-size="8" text-anchor="middle" font-family="'Geist', sans-serif">100k BPJS &bull; 100k SaaS Logs</text>
+        <text x="770" y="322" fill="#34d399" font-size="8" text-anchor="middle" font-family="'Geist Mono', monospace">Latency 50 - 120 ms</text>
+
+        <!-- Feedback Loop to Frontend (Payload: Response + Table_Data + Dynamic Cytoscape) -->
+        <path d="M 770,340 V 530 Q 770,540 760,540 H 90 Q 80,540 80,530 V 315" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-cyan)"/>
+        <rect x="360" y="533" width="240" height="14" rx="2" fill="#090d16"/>
+        <text x="480" y="543" fill="#22d3ee" font-size="7.5" font-family="'Geist Mono', monospace" text-anchor="middle">STREAMING TEXT + CHART_PAYLOAD + TABLE_DATA + RCA_SUBGRAPH</text>
+
+        <!-- LEGEND FOOTER STRIP -->
+        <line x1="40" y1="575" x2="920" y2="575" stroke="#1e293b" stroke-width="1"/>
+        <text x="40" y="595" fill="#64748b" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.1em">LEGEND &amp; ROLES</text>
+
+        <rect x="180" y="587" width="12" height="10" rx="2" fill="rgba(34, 211, 238, 0.2)" stroke="#22d3ee"/>
+        <text x="200" y="595" fill="#94a3b8" font-size="8" font-family="'Geist', sans-serif">Client / Stream</text>
+
+        <rect x="330" y="587" width="12" height="10" rx="2" fill="rgba(52, 211, 153, 0.2)" stroke="#34d399"/>
+        <text x="350" y="595" fill="#94a3b8" font-size="8" font-family="'Geist', sans-serif">Gateway &amp; AST</text>
+
+        <rect x="480" y="587" width="12" height="10" rx="2" fill="rgba(167, 139, 250, 0.2)" stroke="#a78bfa"/>
+        <text x="500" y="595" fill="#94a3b8" font-size="8" font-family="'Geist', sans-serif">Hybrid RAG</text>
+
+        <rect x="630" y="587" width="12" height="10" rx="2" fill="rgba(251, 191, 36, 0.2)" stroke="#fbbf24"/>
+        <text x="650" y="595" fill="#94a3b8" font-size="8" font-family="'Geist', sans-serif">DuckDB Engine</text>
+
+        <line x1="770" y1="592" x2="795" y2="592" stroke="#22d3ee" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#arrow-cyan)"/>
+        <text x="805" y="595" fill="#94a3b8" font-size="8" font-family="'Geist', sans-serif">Artifact Feedback</text>
+      </svg>
+    </div>
+
+    <!-- The 5 Core Engineering Pillars -->
+    <div class="pillars-grid">
+      <!-- Pillar 1 -->
+      <div class="pillar-card cyan">
+        <div class="card-head">
+          <span class="badge">STEP 1</span>
+          <h2 class="card-title">Vectorized Analytical Engine</h2>
+        </div>
+        <p>
+          Beralih dari SQLite/Postgres ke <strong>DuckDB In-Memory</strong> dengan format kolom Parquet. 
+          Agregasi matematis (SUM, COUNT, GROUP BY) atas 5.000.000 transaksi pembayaran selesai dalam <strong>50 - 120 ms</strong> tanpa memakan beban RAM server.
+        </p>
+        <code class="code-pill">con.execute("SELECT channel, SUM(amount) FROM 'data/transactions_5m.parquet' GROUP BY 1")</code>
+      </div>
+
+      <!-- Pillar 2 -->
+      <div class="pillar-card emerald">
+        <div class="card-head">
+          <span class="badge">STEP 2</span>
+          <h2 class="card-title">Deterministic AST Defense</h2>
+        </div>
+        <p>
+          Mencegah kegagalan keamanan Text-to-SQL dengan <strong>sqlglot Abstract Syntax Tree (AST)</strong>. 
+          Setiap SQL kueri diparsing ke dalam pohon sintaksis: kueri yang memuat perintah mutasi (<code>DROP</code>, <code>DELETE</code>, <code>INSERT</code>, <code>ALTER</code>) langsung ditolak deterministik sebelum menyentuh storage engine.
+        </p>
+        <code class="code-pill">if not isinstance(parsed, exp.Select): raise SecurityAlert("Dilarang keras!")</code>
+      </div>
+
+      <!-- Pillar 3 -->
+      <div class="pillar-card violet">
+        <div class="card-head">
+          <span class="badge">STEP 3</span>
+          <h2 class="card-title">Hybrid Lexical-Dense RAG</h2>
+        </div>
+        <p>
+          Menggabungkan pencarian semantik vektor (<strong>Qdrant in-memory</strong> dengan model embedding <code>all-MiniLM-L6-v2</code>) dan pencarian leksikal (<strong>BM25 Inverted Index</strong>).
+          Digabungkan menggunakan <strong>Reciprocal Rank Fusion (RRF, k=60)</strong> untuk rujukan akurat nomor tiket insiden dan SOP operasional.
+        </p>
+        <code class="code-pill">score = sum(1.0 / (60 + rank_dense), 1.0 / (60 + rank_bm25))</code>
+      </div>
+
+      <!-- Pillar 4 -->
+      <div class="pillar-card rose">
+        <div class="card-head">
+          <span class="badge">STEP 4</span>
+          <h2 class="card-title">Cross-Domain Boundary Guard</h2>
+        </div>
+        <p>
+          Mencegah kontaminasi kueri antar dataset showcase. Saat user berada di tab BPJS Kesehatan lalu menanyakan Virtual Account perbankan, 
+          guardrail langsung mencegat, menahan query fallback rumah sakit, dan mengarahkan navigasi dataset yang tepat.
+        </p>
+        <code class="code-pill">if dataset != "default" and has_fintech_kw(msg): return redirect_warning()</code>
+      </div>
+
+      <!-- Pillar 5 -->
+      <div class="pillar-card amber">
+        <div class="card-head">
+          <span class="badge">STEP 5</span>
+          <h2 class="card-title">Linked Visuals &amp; Dynamic RCA</h2>
+        </div>
+        <p>
+          Hasil analitik tidak hanya berupa teks chat, melainkan paket data komprehensif: <code>reply</code>, <code>chart_payload</code> untuk Chart.js, 
+          <code>table_data</code> untuk rendering multi-kolom di frontend studio, dan <strong>Cytoscape Dynamic Subgraph Projection</strong> untuk melacak topologi akar masalah insiden secara real-time.
+        </p>
+        <code class="code-pill">payload = {"reply": text, "chart_payload": chart, "table_data": sql_rows}</code>
+      </div>
+    </div>
+
+    <footer>
+      Neural Analytics Copilot Engineering Specification &bull; Designed with First-Principles Methodology
+    </footer>
+  </div>
+</body>
+</html>

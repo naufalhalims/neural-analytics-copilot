@@ -1,0 +1,47 @@
+[
+  {
+    "persona": "Ibu Diana (CFO / VP Finance)",
+    "role": "Finance Executive",
+    "csat": 5.0,
+    "latency_ms": 10528.48965767771,
+    "deck_bytes": 3422,
+    "deck_status": "\u2705 GENERATED (3422 bytes in 159.2 ms) \u2014 Dossier Siap Rapat",
+    "reaction": "\ud83e\udd29 SANGAT PUAS: 'Luar biasa! Angkanya langsung keluar dalam milidetik tanpa harus nunggu tim data 3 hari. Kalkulasi dispute Rp 2,92 Miliar sangat jelas!'"
+  },
+  {
+    "persona": "Dimas (Lead Architect & SRE Director)",
+    "role": "Engineering Lead",
+    "csat": 5.0,
+    "latency_ms": 9421.416093129665,
+    "deck_bytes": 3582,
+    "deck_status": "\u2705 GENERATED (3582 bytes in 14.9 ms) \u2014 Dossier Siap Rapat",
+    "reaction": "\ud83d\ude80 TERKAGUM-KAGUM: 'Gokil! Nomor tiket insiden, lonjakan latency, dan dokumen SOP mitigasinya langsung ter-link secara otomatis. RCA-nya akurat.'"
+  },
+  {
+    "persona": "Rina (Head of Merchant Success)",
+    "role": "Business Operations",
+    "csat": 5.0,
+    "latency_ms": 7033.181017264724,
+    "deck_bytes": 0,
+    "deck_status": "N/A (Tidak meminta unduh)",
+    "reaction": "\u2728 IMPRESSED: 'Visualisasi grafik distribusinya langsung ter-render otomatis di layar, sangat membantu saat presentasi ke merchant!'"
+  },
+  {
+    "persona": "dr. Hendra (Direktur RS & Auditor Klaim BPJS)",
+    "role": "Healthcare Executive",
+    "csat": 5.0,
+    "latency_ms": 11031.351394951344,
+    "deck_bytes": 3425,
+    "deck_status": "\u2705 GENERATED (3425 bytes in 15.3 ms) \u2014 Dossier Siap Rapat",
+    "reaction": "\ud83d\udc4f TERPUKAU: 'Sistemnya langsung bisa baca 100 ribu klaim BPJS dan tahu tarif INA-CBG serta dispute fornas. Portabilitasnya top!'"
+  },
+  {
+    "persona": "Siti (Kasir Toko Retail Pratama)",
+    "role": "Front-Desk Staff",
+    "csat": 5.0,
+    "latency_ms": 8886.516923084855,
+    "deck_bytes": 0,
+    "deck_status": "N/A (Tidak meminta unduh)",
+    "reaction": "\ud83e\udd70 SANGAT TERBANTU: 'Bahasanya ramah banget dan gampang dipahami pembeli, gak bikin panik kasir di toko.'"
+  }
+]

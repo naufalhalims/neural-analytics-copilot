@@ -1,0 +1,32 @@
+{
+  "service_inventory": {
+    "version": "2026.3.1",
+    "updated_at": "2026-09-25T14:30:00Z",
+    "cluster_name": "k8s-payment-prod-cgk01",
+    "services": [
+      {
+        "name": "payment-gateway-bca-adapter",
+        "protocol": "ISO-8583 / JSON-RPC",
+        "downstream_host": "api.klikbca.internal.net",
+        "timeout_sla_ms": 3500,
+        "circuit_breaker": {
+          "failure_threshold_pct": 5.0,
+          "open_cooldown_seconds": 60,
+          "fallback_action": "ROUTE_SECONDARY_SWITCHER"
+        },
+        "oncall_contact": {
+          "primary": "L3-SRE-Gateway",
+          "slack_channel": "#incident-bca-bridge",
+          "pagerduty_key": "PD-BCA-CRIT-9921"
+        }
+      },
+      {
+        "name": "qris-settlement-engine",
+        "protocol": "gRPC / Kafka Event Stream",
+        "topic_name": "trx.qris.settlement.v1",
+        "batch_interval_minutes": 15,
+        "sla_window": "T+1 Hari Kerja"
+      }
+    ]
+  }
+}

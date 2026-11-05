@@ -1,0 +1,32 @@
+# Python & Virtualenv
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.bak
+
+# Testing & Cache
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Sensitive / Credentials
+.env
+*.pem
+*.key
+*.token
+*.pub
+
+# Large Datasets & Binary Storage (Auto-generated or Seeded)
+data/*.parquet
+data/**/*.parquet
+data/*.db
+data/*.sqlite
+data/qdrant_db/
+
+# OS & IDE
+.DS_Store
+.idea/
+.vscode/
