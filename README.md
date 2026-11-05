@@ -1,6 +1,14 @@
 # AI-Powered Enterprise Data Analytics Copilot
 > **Candidate Implementation for Technical Test AI Engineer — PT Neural Technologies Indonesia**  
-> *Production-Grade Architecture: Vectorized DuckDB (5M Rows), Hybrid RAG (Qdrant + BM25 RRF), Strict AST Guardrail, Dynamic RCA Subgraph, and Walk-Forward Backtesting Alignment.*
+> *Production-Grade Architecture: Vectorized DuckDB (5M Rows), Hybrid RAG (Qdrant + BM25 RRF), Strict AST Guardrail, Dynamic RCA Subgraph, Hermes-Inspired Turn Context Compaction (TCC), and Pointer-Based Vault Memory.*
+
+[![Demo](https://img.shields.io/badge/Live_Showcase-neural--demo.naufalhal.tech-blue?style=flat&logo=cloudflare)](https://neural-demo.naufalhal.tech)
+[![Tests](https://img.shields.io/badge/Tests-21%20Passed-brightgreen)](https://github.com/naufalhalims/neural-analytics-copilot)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+🌐 **Live Interactive Showcase Application:**  
+👉 **[https://neural-demo.naufalhal.tech](https://neural-demo.naufalhal.tech)**  
+*(Aplikasi live terhubung ke Cloudflare Tunnel dengan Uvicorn multi-worker, PM2 process supervisor, dan DuckDB in-memory engine).*
 
 ---
 
@@ -77,10 +85,37 @@ Laporan lengkap audit keamanan siber, ketahanan multi-turn, dan rekomendasi perb
 
 ---
 
-## 🧠 Production Context Compaction & Persistent Memory (Hermes-Inspired)
-Sistem mengadopsi arsitektur internal Hermes Agent untuk efisiensi context window dan kesinambungan status pengguna tingkat produksi:
-1. **Turn Context Compaction (TCC)**: Menerapkan mekanisme *Head & Tail Protection* (melindungi prompt inisiasi awal dan 2 putaran dialog terbaru) dengan ekstraksi fakta numerik (*anchor preservation*) pada riwayat tengah saat token melampaui ambang batas.
-2. **SQLite WAL Persistent Memory Store**: Menyimpan role operasional pengguna dan *pinned facts* pada database lokal berkinerja tinggi (`data/chat_memory.db`) yang diinjeksi secara stabil ke system prompt (`POST /api/profile/set` dan `GET /api/profile/{session_id}`).
+## 🧠 Production Context Compaction, Tool Calling, & Pointer-Based Vault Memory (Hermes-Inspired)
+
+Sistem mengadopsi arsitektur internal Hermes Agent untuk efisiensi context window, determinisme tool calling, dan kesinambungan memori jangka panjang:
+
+1. **Turn Context Compaction (TCC) dengan Anchor Preservation**:
+   - Menerapkan mekanisme *Head & Tail Protection*: mempertahankan system instructions awal dan 2 putaran interaksi dialog terbaru (`recent tail`).
+   - Melakukan kompresi cerdas pada riwayat tengah (*middle history*) ketika akumulasi token melebihi ambang batas threshold (`max_history_tokens=1000`).
+   - **Anchor Extraction**: Mengekstraksi fakta kunci, angka numerik (persentase, nilai rupiah, kode status error), dan entitas krusial dari giliran percakapan yang dipadatkan sehingga konteks penalaran tidak hilang.
+
+2. **Deterministic Agentic Tool Calling & Intent Fast-Path**:
+   - Mengombinasikan router inferensi berkecepatan tinggi (<10ms via Jev Speculative / Semantic Regex) untuk memetakan intent analitik:
+     - `run_sql_analytics`: Dialokasikan ke mesin vektor DuckDB SIMD columnar.
+     - `search_knowledge_docs`: Memanggil Hybrid RAG (Qdrant + BM25 RRF).
+     - `detect_anomalies_zscore`: Menghitung lonjakan varians statistik secara in-memory.
+   - Setiap respon API secara transparan menyertakan payload `tool_metadata` yang merinci tools yang dieksekusi dan metrik latensi masing-masing.
+
+3. **Pointer-Based Vault Memory & SQLite WAL Persistent Store**:
+   - Mengadopsi prinsip Second Brain / Obsidian: dokumen kebijakan, SOP insiden, dan learned lessons disimpan di `./vault/` dan diindeks berbasis pointer referensi eksplisit (`[Ref: SOP_Penanganan_Insiden § 4.2]`).
+   - Menyimpan *User Role* (misal: SRE L3, Merchant Ops, Auditor) dan *Pinned Facts* pada database lokal berkinerja tinggi (`data/chat_memory.db`) dengan mode SQLite WAL (`PRAGMA journal_mode=WAL`) yang diinjeksi secara stabil ke context prompt (`POST /api/profile/set` dan `GET /api/profile/{session_id}`).
+
+---
+
+## 🏛️ Architecture Decision Records (ADR — Engineering Trade-offs)
+
+Interviewer dan lead engineer sering kali menanyakan alasan di balik pemilihan arsitektur. Berikut adalah 3 keputusan desain kunci yang diambil:
+
+| Keputusan Desain | Alternatif yang Ditinggalkan | Alasan Pemilihan & Keunggulan Produksi |
+|---|---|---|
+| **DuckDB SIMD In-Memory** | Traditional RDBMS (Postgres / MySQL) atau Pandas | DuckDB mengeksekusi kueri analitik secara columnar vektor SIMD langsung pada file Apache Parquet 5M baris dalam **50–120 ms** tanpa overhead latency network TCP/IP dan tanpa memory footprint besar ala Pandas Dataframe. |
+| **Compiler-Level AST Guardrail (`sqlglot`)** | LLM Self-Correction / Prompt Guardrail | Mengandalkan prompt LLM untuk keamanan kueri rentan terhadap *prompt injection* dan *jailbreak*. AST Guardrail memvalidasi pohon sintaksis di level compiler secara deterministik, menolak multi-statement, DDL, DML, dan akses sistem tanpa toleransi. |
+| **Hybrid RAG (RRF $k=60$)** | Naive Vector-Only Semantic Search | Vector search saja sering gagal pada istilah teknis spesifik (seperti nomor tiket `#INC-20260912-BCA` atau kode error `ERR_GATEWAY_TIMEOUT`). Penggabungan Dense Vector (`all-MiniLM-L6-v2`) dengan BM25 Lexical via Reciprocal Rank Fusion menghasilkan akurasi retrieval tertinggi. |
 
 ---
 
