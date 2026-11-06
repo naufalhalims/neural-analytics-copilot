@@ -505,6 +505,40 @@ async def get_kpis(dataset: Optional[str] = "default"):
     except Exception as e:
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
 
+@app.get("/api/qdrant/points")
+async def get_qdrant_points(limit: int = 50, offset: int = 0):
+    """Mengambil rincian points dan vector status dari Qdrant in-memory knowledge store."""
+    try:
+        col_name = rag_engine.collection_name
+        total_count = rag_engine.client.count(collection_name=col_name).count
+        scroll_res = rag_engine.client.scroll(
+            collection_name=col_name,
+            limit=limit,
+            offset=offset,
+            with_payload=True,
+            with_vectors=False
+        )
+        points = []
+        for p in scroll_res[0]:
+            points.append({
+                "id": str(p.id),
+                "payload": p.payload or {},
+                "vector_dim": rag_engine._get_embedding_dim(),
+            })
+        return JSONResponse({
+            "status": "success",
+            "collection_name": col_name,
+            "total_points": total_count,
+            "vector_dim": rag_engine._get_embedding_dim(),
+            "model_name": "all-MiniLM-L6-v2",
+            "distance_metric": "Cosine",
+            "points": points,
+            "limit": limit,
+            "offset": offset
+        })
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+
 @app.get("/api/graph")
 async def get_graph(highlight: Optional[str] = None, dynamic: Optional[bool] = False, dataset: Optional[str] = "default"):
     """Mengambil topologi NetworkX dalam format Cytoscape.js dengan opsi subgraph dinamis & multi-domain."""

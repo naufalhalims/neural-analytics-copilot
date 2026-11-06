@@ -62,7 +62,7 @@ cp .env.example .env
 # 2. Opsional: Hubungkan ke Upstream LLM (OpenAI, Groq, OpenRouter, atau biarkan default untuk deterministik fallback)
 # Edit .env sesuai provider Anda
 
-# 3. Jalankan Verification Test Suite (23 Tests)
+# 3. Jalankan Verification Test Suite (24 Tests)
 pytest tests/ -v
 
 # 4. Jalankan Server
@@ -74,7 +74,7 @@ python3 run_server.py
 ## 🧪 Menjalankan Automated Quality Gate & Benchmark Suite
 Seluruh fungsionalitas inti telah diproteksi oleh automated testing terotomatisasi serta suite evaluasi berkala:
 ```bash
-# 1. Menjalankan CI Pipeline, TCC Compactor, PDF & STT Contracts, & Domain Integrity Unit Tests (23 Tests Passed)
+# 1. Menjalankan CI Pipeline, TCC Compactor, PDF & STT Contracts, Qdrant Explorer, & Domain Integrity Unit Tests (24 Tests Passed)
 ./venv/bin/pytest tests/ -v
 
 # 2. Menjalankan Autonomous Adversarial Benchmark & GPU Harness Audit

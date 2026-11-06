@@ -124,6 +124,19 @@ class TestNeuralAnalyticsCore:
         # Subgraph terisolasi harus lebih ramping daripada topologi penuh
         assert len(elements_bca) < len(elements_all), "Dynamic Subgraph Projection gagal memangkas simpul non-relevan."
 
+    def test_12_qdrant_points_explorer_contract(self):
+        """Memverifikasi contract endpoint /api/qdrant/points untuk inspeksi vector DB."""
+        resp = client.get("/api/qdrant/points?limit=50")
+        assert resp.status_code == 200, "Endpoint /api/qdrant/points wajib merespon 200 OK"
+        data = resp.json()
+        assert data.get("status") == "success", "Response /api/qdrant/points harus success"
+        assert data.get("collection_name") == "operational_knowledge", "Collection wajib operational_knowledge"
+        assert data.get("total_points", 0) > 0, "Points di Qdrant collection wajib > 0"
+        assert "points" in data and isinstance(data["points"], list), "Field points harus berupa list"
+        first_point = data["points"][0]
+        assert "id" in first_point and "payload" in first_point, "Point harus memiliki id dan payload"
+        assert data.get("vector_dim") == 384, "Vector dimension wajib 384 untuk all-MiniLM-L6-v2"
+
     def test_06_persona_system_tone_switch(self):
         """Memverifikasi sistem menyesuaikan persona aktif dari UI session dan mengisolasi cache key per persona."""
         roles = ["kasir", "finance", "sre"]

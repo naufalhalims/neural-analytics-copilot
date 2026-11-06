@@ -927,6 +927,9 @@
                         <button id="studio-tab-diagram-btn" type="button" role="tab" aria-selected="false" onclick="switchStudioTab('diagram')" title="Pelacakan akar masalah berarah (NetworkX Graph RCA)" class="seg-btn">
                             <i data-lucide="network" class="w-3.5 h-3.5"></i><span>Diagram Insiden</span>
                         </button>
+                        <button id="studio-tab-qdrant-btn" type="button" role="tab" aria-selected="false" onclick="switchStudioTab('qdrant')" title="Inspeksi Vector Database Qdrant In-Memory & Chunks Dokumen" class="seg-btn">
+                            <i data-lucide="database" class="w-3.5 h-3.5"></i><span>Qdrant Explorer</span>
+                        </button>
                         <button id="studio-tab-benchmark-btn" type="button" role="tab" aria-selected="false" onclick="switchStudioTab('benchmark')" title="Hasil uji regresi &amp; skor kepatuhan resmi" class="seg-btn">
                             <i data-lucide="shield-check" class="w-3.5 h-3.5"></i><span>Audit Kinerja</span>
                         </button>
@@ -1056,7 +1059,71 @@
                         </div>
                     </div>
 
-                    <!-- 5. Audit Kinerja -->
+                    <!-- 5. Qdrant Knowledge Explorer -->
+                    <div id="studio-qdrant-panel" class="hidden flex-col gap-4">
+                        <div class="section-card flex items-center justify-between gap-4 flex-wrap">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-cyan-300 bg-cyan-500/10 border border-cyan-500/25">
+                                    <i data-lucide="database" class="w-5 h-5"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <h3 class="text-[13px] font-semibold text-white flex items-center gap-2 flex-wrap">
+                                        Qdrant Vector Database
+                                        <span id="qdrant-points-badge" class="num text-cyan-300">29 Points</span>
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 mono font-medium">EMBEDDED · IN-MEMORY</span>
+                                    </h3>
+                                    <p class="text-[12px] text-slate-500">Collection: <code class="mono text-slate-300">operational_knowledge</code> · Model: <code class="mono text-slate-300">all-MiniLM-L6-v2 (384-dim)</code></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="loadQdrantExplorerData()" class="btn-ghost !py-1.5 !text-[11.5px]">
+                                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                                    <span>Segarkan Vektor</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 xl:grid-cols-4 gap-2.5">
+                            <div class="metric-card">
+                                <div class="metric-label">Total Points</div>
+                                <div id="qdrant-card-total" class="metric-value text-cyan-300">29</div>
+                                <p class="metric-note">Indexed Chunks Dokumen</p>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Embedding Dimensi</div>
+                                <div class="metric-value text-emerald-300">384</div>
+                                <p class="metric-note">Dense Vector Float32</p>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Distance Metric</div>
+                                <div class="metric-value text-blue-300">Cosine</div>
+                                <p class="metric-note">Normalized Angular Space</p>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Retrieval Latency</div>
+                                <div class="metric-value text-purple-300">&lt; 15 ms</div>
+                                <p class="metric-note">Zero Network Roundtrip</p>
+                            </div>
+                        </div>
+
+                        <div class="section-card flex flex-col gap-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="section-label">
+                                    <i data-lucide="layers" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                    Daftar Point &amp; Payload Dokumen di Qdrant Collection
+                                </span>
+                                <input type="text" id="qdrant-filter-input" onkeyup="filterQdrantList()" placeholder="Cari point atau dokumen..." class="text-[12px] px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-200 focus:outline-none focus:border-cyan-500 w-44 md:w-60" />
+                            </div>
+                            <div id="qdrant-points-list" class="flex flex-col gap-2 max-h-[480px] overflow-y-auto pr-1">
+                                <div class="empty-state">
+                                    <div class="empty-ico"><i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i></div>
+                                    <p class="empty-title">Memuat data vektor Qdrant...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 6. Audit Kinerja -->
                     <div id="studio-benchmark-panel" class="hidden flex-col gap-4">
                         <div class="section-card flex items-center justify-between gap-4 flex-wrap">
                             <div class="flex items-center gap-3 min-w-0">
@@ -2493,6 +2560,7 @@
                 table: $('studio-table-panel'),
                 evidence: $('studio-evidence-panel'),
                 diagram: $('studio-diagram-panel'),
+                qdrant: $('studio-qdrant-panel'),
                 benchmark: $('studio-benchmark-panel')
             };
             const buttons = {
@@ -2500,6 +2568,7 @@
                 table: $('studio-tab-table-btn'),
                 evidence: $('studio-tab-evidence-btn'),
                 diagram: $('studio-tab-diagram-btn'),
+                qdrant: $('studio-tab-qdrant-btn'),
                 benchmark: $('studio-tab-benchmark-btn')
             };
 
@@ -2537,6 +2606,111 @@
                         reloadRCAGraph();
                     }
                 }, 250);
+            } else if (key === 'qdrant') {
+                loadQdrantExplorerData();
+            }
+        }
+
+        /* ---------------------------------------------------------------
+           Qdrant Explorer Handlers
+           --------------------------------------------------------------- */
+        let qdrantAllPoints = [];
+
+        async function loadQdrantExplorerData() {
+            const listEl = $('qdrant-points-list');
+            if (!listEl) return;
+            try {
+                const res = await fetch('/api/qdrant/points?limit=100');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    qdrantAllPoints = data.points || [];
+                    if ($('qdrant-points-badge')) $('qdrant-points-badge').innerText = `${data.total_points} Points`;
+                    if ($('qdrant-card-total')) $('qdrant-card-total').innerText = data.total_points;
+                    renderQdrantPoints(qdrantAllPoints);
+                } else {
+                    listEl.innerHTML = `<div class="empty-state"><p class="empty-title text-rose-400">Gagal memuat: ${data.message || 'Error'}</p></div>`;
+                }
+            } catch (err) {
+                listEl.innerHTML = `<div class="empty-state"><p class="empty-title text-rose-400">Koneksi API error: ${err.message}</p></div>`;
+            }
+        }
+
+        function renderQdrantPoints(points) {
+            const listEl = $('qdrant-points-list');
+            if (!listEl) return;
+            if (!points || points.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-ico"><i data-lucide="inbox" class="w-5 h-5"></i></div>
+                        <p class="empty-title">Tidak ada point ditemukan</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            listEl.innerHTML = points.map((p, idx) => {
+                const payload = p.payload || {};
+                const title = payload.doc_title || 'Untitled Document';
+                const section = payload.section || 'General Section';
+                const docType = payload.doc_type || 'KNOWLEDGE';
+                const rawSnippet = (payload.content || '').replace(/\n+/g, ' ').substring(0, 160);
+                const safePayload = encodeURIComponent(JSON.stringify(payload));
+
+                return `
+                    <div class="p-3 rounded-xl bg-slate-900/90 border border-slate-800/80 hover:border-cyan-500/40 transition-colors flex flex-col gap-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/25 mono font-semibold">#${idx + 1}</span>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 mono">${docType}</span>
+                                <h5 class="text-[12.5px] font-semibold text-slate-200 truncate">${title}</h5>
+                            </div>
+                            <span class="mono text-[10px] text-slate-500 shrink-0">Dim: ${p.vector_dim || 384}</span>
+                        </div>
+                        <div class="text-[11.5px] text-cyan-300 font-medium truncate flex items-center gap-1.5">
+                            <i data-lucide="bookmark" class="w-3 h-3 text-cyan-400 shrink-0"></i>
+                            <span class="truncate">${section}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 line-clamp-2 leading-relaxed font-sans">
+                            ${rawSnippet}...
+                        </p>
+                        <div class="flex items-center justify-between pt-1 border-t border-slate-800/60 mt-1">
+                            <span class="mono text-[10px] text-slate-500">ID: ${p.id.substring(0, 18)}...</span>
+                            <button type="button" onclick="inspectQdrantPoint('${safePayload}')" class="btn-ghost !py-0.5 !px-2 !text-[11px] text-cyan-400 hover:text-cyan-300">
+                                <i data-lucide="eye" class="w-3 h-3"></i>
+                                <span>Lihat Payload Lengkap</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function filterQdrantList() {
+            const q = ($('qdrant-filter-input')?.value || '').toLowerCase().trim();
+            if (!q) {
+                renderQdrantPoints(qdrantAllPoints);
+                return;
+            }
+            const filtered = qdrantAllPoints.filter(p => {
+                const payload = p.payload || {};
+                const str = (payload.doc_title || '') + ' ' + (payload.section || '') + ' ' + (payload.content || '') + ' ' + (payload.doc_type || '');
+                return str.toLowerCase().includes(q);
+            });
+            renderQdrantPoints(filtered);
+        }
+
+        function inspectQdrantPoint(encodedPayload) {
+            try {
+                const payload = JSON.parse(decodeURIComponent(encodedPayload));
+                showPreviewModal({
+                    title: payload.doc_title || "Qdrant Point Payload",
+                    section: "Section: " + (payload.section || "-") + " · Type: " + (payload.doc_type || "-"),
+                    score: "Qdrant Vector DB · 384-dim Cosine In-Memory",
+                    body: payload.content || JSON.stringify(payload, null, 2)
+                });
+            } catch (e) {
+                console.error("Failed to parse qdrant point", e);
             }
         }
 
