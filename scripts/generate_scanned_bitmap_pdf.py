@@ -167,35 +167,45 @@ if __name__ == "__main__":
     smoke_output = "/home/ubuntu/apps/neural-analytics-chatbot/vault/02_Incident_History/Smoke_Test_Audit_Insiden_Fisik_Scan.pdf"
     sections = [
         {
-            "title": "1. LAPORAN PEMERIKSAAN FISIK & INVESTIGASI SWITCHER",
+            "title": "1. LAPORAN PEMERIKSAAN FORENSIK INSIDEN SWITCHING & VA BCA",
             "lines": [
-                "Berdasarkan instruksi Direktur Kepatuhan & Operasional, telah dilakukan audit forensik terhadap sistem Payment Gateway switching.",
-                "Ditemukan selisih saldo tertahan sebanyak 1.428 transaksi pada jendela pemeliharaan switch sentral.",
-                "Penyebab utama: Terputusnya session TLS port 8443 antara server Switcher dan Core Banking Mandiri/BCA."
+                "Berdasarkan tiket insiden eskalasi #INC-20260912-BCA, Divisi Kepatuhan IT & Security Audit telah melaksanakan pemeriksaan fisik log settlement kanal pembayaran.",
+                "Terjadi lonjakan kendala masif pada kanal Virtual Account BCA (VA_BCA) pada periode 12 September 2026 pukul 14:15 WIB hingga 15 September 2026 pukul 09:45 WIB.",
+                "Dampak Kuantitatif: Failure rate melonjak dari baseline normal 3.4% menjadi 28.4%, dengan total transaksi gagal sebanyak 14.820 transaksi dan estimasi volume nilai tertahan mencapai Rp 18,4 Miliar.",
+                "Kode Kegagalan Utama: Didominasi oleh ERR_GATEWAY_TIMEOUT (92,4% dari total kegagalan) akibat terputusnya socket koneksi antarmuka API ke host perbankan."
             ]
         },
         {
-            "title": "2. TINDAKAN PENYELESAIAN & PROSEDUR KOREKTIF (SLA 15 MENIT)",
+            "title": "2. INVESTIGASI AKAR MASALAH (ROOT CAUSE ANALYSIS)",
             "lines": [
-                "a. Tim L3 Network Security telah melakukan flush routing table dan failover ke dedicated fiber optics jalur sekunder.",
-                "b. Seluruh transaksi tertahan (pending) otomatis diselesaikan melalui mekanisme dual-query inquiry sebelum batas akhir cut-off.",
-                "c. Rekonsiliasi manual disetujui dengan pengembalian dana (refund) instan 100% tanpa potongan biaya switching."
+                "Penyebab utama insiden: Migrasi fisik perangkat switch inti (Core Switch DC) di pusat data mitra tanpa pemberitahuan maintenance window sebelumnya.",
+                "Kondisi ini memicu packet loss sebesar 42% pada segmen VPN IPSEC dedicated, menyebabkan worker timeout setelah 30 detik penantian callback.",
+                "Sistem antrean Kafka mengalami consumer lag hingga 1.800.000 pesan, menahan notifikasi status pembayaran berhasil ke merchant e-commerce."
             ]
         },
         {
-            "title": "3. KESIMPULAN & PENETAPAN AUDITOR",
+            "title": "3. TINDAKAN PENYELESAIAN OPERASIONAL & KEPATUHAN SLA 15 MENIT",
             "lines": [
-                "Dokumen ini diterbitkan sebagai bukti fisik sah pemeriksaan berkas insiden Q3 2026.",
-                "Seluruh metrik dan log telah diverifikasi memenuhi standar ISO 27001 dan regulasi transaksi Bank Indonesia."
+                "a. Tim L2/L3 mengaktifkan failover darurat ke secondary routing link melalui backup gateway Mandiri dan QRIS dalam waktu 14 menit sejak deteksi anomali.",
+                "b. Pelaksanaan dual-inquiry query manual ke API perbankan untuk memverifikasi 14.820 mutasi nasabah sebelum eksekusi auto-settlement.",
+                "c. Kebijakan kompensasi ganti rugi: Seluruh biaya switching dibebaskan dan proses auto-refund bagi transaksi debet gantung selesai dalam 1x24 jam kerja."
+            ]
+        },
+        {
+            "title": "4. PENGESAHAN AUDITOR INDEPENDEN & STATUS PENUTUPAN KASUS",
+            "lines": [
+                "Berkas audit fisik ini dinyatakan SAH dan memenuhi standar audit ISO 27001 serta ketentuan regulasi Bank Indonesia (PBI No. 23/6/PBI/2021).",
+                "Status Rekomendasi: Tiket #INC-20260912-BCA ditutup dengan kewajiban penambahan redundansi multi-switch active-active pada DC sekunder."
             ]
         }
     ]
     
     create_photorealistic_scanned_pdf(
         output_pdf_path=smoke_output,
-        title="BERITA ACARA AUDIT FISIK INSIDEN GATEWAY & SETTLEMENT",
-        doc_number="BA-AUDIT/PHYSICAL-SCAN/2026-Q3/001",
-        audit_date="05 November 2026",
+        title="BERITA ACARA AUDIT FORENSIK INSIDEN SETTLEMENT & VA BCA",
+        doc_number="BA-AUDIT/BCA-GATEWAY/2026-Q3/0891-L3",
+        audit_date="16 September 2026",
         sections=sections,
-        stamp_text="AUDIT FISIK L3 - TERVERIFIKASI"
+        stamp_text="AUDIT FORENSIK L3 - RESMI",
+        stamp_color=(185, 28, 28, 210)
     )
