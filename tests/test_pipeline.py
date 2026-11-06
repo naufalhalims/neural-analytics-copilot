@@ -131,12 +131,19 @@ class TestNeuralAnalyticsCore:
         data = resp.json()
         assert data.get("status") == "success", "Response /api/qdrant/points harus success"
         assert data.get("collection_name") == "operational_knowledge", "Collection wajib operational_knowledge"
-        assert data.get("total_points", 0) > 0, "Points di Qdrant collection wajib > 0"
+        assert data.get("total_points", 0) >= 29, "Points di Qdrant collection wajib >= 29"
         assert "points" in data and isinstance(data["points"], list), "Field points harus berupa list"
         first_point = data["points"][0]
         assert "id" in first_point and "payload" in first_point, "Point harus memiliki id dan payload"
         assert data.get("vector_dim") == 384, "Vector dimension wajib 384 untuk all-MiniLM-L6-v2"
         assert "pca_x" in first_point and "pca_y" in first_point, "Point wajib memiliki koordinat 2D PCA projection"
+
+        # Verifikasi bahwa file PDF tambahan (Scan & Non-Scan) berhasil terindeks
+        all_titles = [p.get("payload", {}).get("doc_title", "") for p in data["points"]]
+        has_failover_pdf = any("SOP_Keamanan_Siber_Failover_Gateway_v4.pdf" in t for t in all_titles)
+        has_qris_scan = any("Audit_Forensik_QRIS_Switcher_Scan.pdf" in t for t in all_titles)
+        assert has_failover_pdf, "PDF Non-Scan failover gateway wajib terindeks di Qdrant"
+        assert has_qris_scan, "PDF Scanned-Style QRIS switcher wajib terindeks di Qdrant"
 
     def test_06_persona_system_tone_switch(self):
         """Memverifikasi sistem menyesuaikan persona aktif dari UI session dan mengisolasi cache key per persona."""

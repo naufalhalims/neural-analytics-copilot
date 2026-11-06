@@ -1127,6 +1127,20 @@
                             </p>
                         </div>
 
+                        <!-- Daftar Berkas File PDF / Dokumen di Vault -->
+                        <div class="section-card flex flex-col gap-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="section-label">
+                                    <i data-lucide="folder-git-2" class="w-3.5 h-3.5 text-blue-400"></i>
+                                    Katalog Berkas Dokumen &amp; PDF Vault (<span id="vault-docs-count">11 Berkas</span>)
+                                </span>
+                                <span class="text-[11px] text-slate-500">PDF Scan &bull; PDF Digital &bull; Markdown &bull; Word</span>
+                            </div>
+                            <div id="qdrant-docs-catalog" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11.5px]">
+                                <!-- Populated dynamically by JS -->
+                            </div>
+                        </div>
+
                         <div class="section-card flex flex-col gap-3">
                             <div class="flex items-center justify-between gap-3">
                                 <span class="section-label">
@@ -2649,6 +2663,7 @@
                     if ($('qdrant-points-badge')) $('qdrant-points-badge').innerText = `${data.total_points} Points`;
                     if ($('qdrant-card-total')) $('qdrant-card-total').innerText = data.total_points;
                     renderQdrantScatterPlot(qdrantAllPoints);
+                    renderVaultDocsCatalog(qdrantAllPoints);
                     renderQdrantPoints(qdrantAllPoints);
                 } else {
                     listEl.innerHTML = `<div class="empty-state"><p class="empty-title text-rose-400">Gagal memuat: ${data.message || 'Error'}</p></div>`;
@@ -2656,6 +2671,70 @@
             } catch (err) {
                 listEl.innerHTML = `<div class="empty-state"><p class="empty-title text-rose-400">Koneksi API error: ${err.message}</p></div>`;
             }
+        }
+
+        function renderVaultDocsCatalog(points) {
+            const catalogEl = $('qdrant-docs-catalog');
+            if (!catalogEl) return;
+            
+            // Kumpulkan file unik beserta ekstensi dan klasifikasi tipe scan/non-scan
+            const docsMap = {};
+            points.forEach(p => {
+                const title = p.payload?.doc_title || 'Unknown File';
+                const docType = p.payload?.doc_type || 'KNOWLEDGE';
+                if (!docsMap[title]) {
+                    docsMap[title] = { title, docType, chunkCount: 0 };
+                }
+                docsMap[title].chunkCount++;
+            });
+
+            const docList = Object.values(docsMap);
+            if ($('vault-docs-count')) $('vault-docs-count').innerText = `${docList.length} Berkas`;
+
+            catalogEl.innerHTML = docList.map(doc => {
+                const isScan = doc.title.toLowerCase().includes('scan');
+                const isPdf = doc.title.toLowerCase().endsWith('.pdf');
+                const isDocx = doc.title.toLowerCase().endsWith('.docx');
+                const isMd = doc.title.toLowerCase().endsWith('.md');
+                
+                let iconName = 'file-text';
+                let tagColor = 'bg-slate-800 text-slate-300 border-slate-700';
+                let tagLabel = 'DIGITAL';
+                
+                if (isScan && isPdf) {
+                    iconName = 'scanner';
+                    tagColor = 'bg-rose-500/10 text-rose-400 border-rose-500/30';
+                    tagLabel = 'SCAN (OCR LAYER)';
+                } else if (isPdf) {
+                    iconName = 'file-type-2';
+                    tagColor = 'bg-blue-500/10 text-blue-400 border-blue-500/30';
+                    tagLabel = 'PDF DIGITAL';
+                } else if (isDocx) {
+                    iconName = 'file-spreadsheet';
+                    tagColor = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30';
+                    tagLabel = 'WORD DOCX';
+                } else if (isMd) {
+                    iconName = 'file-code';
+                    tagColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+                    tagLabel = 'MARKDOWN';
+                }
+
+                return `
+                    <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800/80 hover:border-slate-700 flex items-center justify-between gap-2.5 transition-colors">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 text-slate-300">
+                                <i data-lucide="${iconName}" class="w-3.5 h-3.5"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h6 class="text-[12px] font-medium text-slate-200 truncate" title="${doc.title}">${doc.title}</h6>
+                                <p class="text-[10px] text-slate-500 truncate">${doc.docType} &bull; ${doc.chunkCount} Vector Chunks</p>
+                            </div>
+                        </div>
+                        <span class="text-[9.5px] px-1.5 py-0.5 rounded border mono font-semibold shrink-0 ${tagColor}">${tagLabel}</span>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
         }
 
         function renderQdrantScatterPlot(points) {
