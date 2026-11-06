@@ -145,7 +145,7 @@ class RAGEngine:
         return "INCIDENT_LOG"
 
     def ingest_documents(self, docs_dir: str = "vault/"):
-        """Membaca file di folder vault/ (rekursif subfolder) dan meng-index chunk ke Qdrant + BM25."""
+        """Membaca file di folder vault/ (rekursif subfolder) dan meng-index chunk ke Qdrant + BM25 secara vectorized batch."""
         doc_files = []
         for root, _, files in os.walk(docs_dir):
             for file in files:
@@ -154,9 +154,9 @@ class RAGEngine:
                 if any(file.lower().endswith(ext) for ext in [".md", ".pdf", ".docx", ".txt", ".json", ".csv"]):
                     doc_files.append(os.path.join(root, file))
 
-        points = []
         print(f"[*] Memulai ingest {len(doc_files)} dokumen operasional dari Dedicated Vault '{docs_dir}' (MD/PDF/DOCX)...")
 
+        prepared_chunks = []
         for file_path in doc_files:
             file_name = os.path.basename(file_path)
             doc_type = self._classify_doc_type(file_name)
@@ -172,26 +172,41 @@ class RAGEngine:
                     continue
                 header = sec_text.split("\n")[0][:60].strip() or f"Bagian {idx_sec + 1}"
                 chunk_text = f"Dokumen: {file_name}\nBagian: {header}\n\n{sec_text}"
-
-                vector = self.encoder.encode(chunk_text).tolist()
-                point_id = str(uuid.uuid4())
-
-                payload = {
-                    "doc_title": file_name,
+                prepared_chunks.append({
+                    "file_name": file_name,
                     "doc_type": doc_type,
-                    "section": header,
-                    "content": chunk_text
-                }
-                points.append(models.PointStruct(id=point_id, vector=vector, payload=payload))
-
-                # Simpan metadata untuk BM25 Lexical Index
-                tokens = re.findall(r"\w+", chunk_text.lower())
-                self.corpus_chunks.append({
-                    "id": point_id,
-                    "tokens": tokens,
-                    "length": len(tokens),
-                    "payload": payload
+                    "header": header,
+                    "chunk_text": chunk_text
                 })
+
+        if not prepared_chunks:
+            return
+
+        # Vectorized batch encoding untuk kecepatan tinggi
+        print(f"[*] Menghasilkan embeddings untuk {len(prepared_chunks)} chunks via vectorized batch...")
+        all_texts = [c["chunk_text"] for c in prepared_chunks]
+        all_vectors = self.encoder.encode(all_texts, batch_size=64, convert_to_numpy=True, show_progress_bar=False)
+
+        points = []
+        for idx, c in enumerate(prepared_chunks):
+            point_id = str(uuid.uuid4())
+            vector = all_vectors[idx].tolist()
+            payload = {
+                "doc_title": c["file_name"],
+                "doc_type": c["doc_type"],
+                "section": c["header"],
+                "content": c["chunk_text"]
+            }
+            points.append(models.PointStruct(id=point_id, vector=vector, payload=payload))
+
+            # Simpan metadata untuk BM25 Lexical Index
+            tokens = re.findall(r"\w+", c["chunk_text"].lower())
+            self.corpus_chunks.append({
+                "id": point_id,
+                "tokens": tokens,
+                "length": len(tokens),
+                "payload": payload
+            })
 
         # Build BM25 Index statistics
         if self.corpus_chunks:
@@ -203,7 +218,9 @@ class RAGEngine:
                     self.doc_freqs[tok] += 1
 
         if points:
-            self.client.upsert(collection_name=self.collection_name, points=points)
+            # Batch upsert ke Qdrant (chunks of 250 points)
+            for i in range(0, len(points), 250):
+                self.client.upsert(collection_name=self.collection_name, points=points[i:i+250])
             print(f"[+] Berhasil meng-index {len(points)} chunks ke Qdrant & BM25 Inverted Index.")
 
     def search_bm25(self, query: str, top_k: int = 5, doc_type_filter: str = None) -> List[Dict[str, Any]]:

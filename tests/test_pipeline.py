@@ -126,7 +126,7 @@ class TestNeuralAnalyticsCore:
 
     def test_12_qdrant_points_explorer_contract(self):
         """Memverifikasi contract endpoint /api/qdrant/points untuk inspeksi vector DB."""
-        resp = client.get("/api/qdrant/points?limit=50")
+        resp = client.get("/api/qdrant/points?limit=500")
         assert resp.status_code == 200, "Endpoint /api/qdrant/points wajib merespon 200 OK"
         data = resp.json()
         assert data.get("status") == "success", "Response /api/qdrant/points harus success"

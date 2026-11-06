@@ -506,7 +506,7 @@ async def get_kpis(dataset: Optional[str] = "default"):
         return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
 
 @app.get("/api/qdrant/points")
-async def get_qdrant_points(limit: int = 50, offset: int = 0):
+async def get_qdrant_points(limit: int = 1000, offset: int = 0):
     """Mengambil rincian points, vector status, dan 2D PCA embedding projection dari Qdrant."""
     try:
         import numpy as np

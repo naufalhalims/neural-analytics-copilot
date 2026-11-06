@@ -2656,7 +2656,7 @@
             const listEl = $('qdrant-points-list');
             if (!listEl) return;
             try {
-                const res = await fetch('/api/qdrant/points?limit=100');
+                const res = await fetch('/api/qdrant/points?limit=1000');
                 const data = await res.json();
                 if (data.status === 'success') {
                     qdrantAllPoints = data.points || [];
