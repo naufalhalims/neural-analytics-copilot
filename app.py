@@ -507,8 +507,11 @@ async def get_kpis(dataset: Optional[str] = "default"):
 
 @app.get("/api/qdrant/points")
 async def get_qdrant_points(limit: int = 50, offset: int = 0):
-    """Mengambil rincian points dan vector status dari Qdrant in-memory knowledge store."""
+    """Mengambil rincian points, vector status, dan 2D PCA embedding projection dari Qdrant."""
     try:
+        import numpy as np
+        from sklearn.decomposition import PCA
+
         col_name = rag_engine.collection_name
         total_count = rag_engine.client.count(collection_name=col_name).count
         scroll_res = rag_engine.client.scroll(
@@ -516,15 +519,34 @@ async def get_qdrant_points(limit: int = 50, offset: int = 0):
             limit=limit,
             offset=offset,
             with_payload=True,
-            with_vectors=False
+            with_vectors=True
         )
+        raw_points = scroll_res[0]
+
+        # Hitung 2D PCA Projection untuk visualisasi scatter plot semantik
+        coords_2d = []
+        if raw_points and len(raw_points) > 1:
+            try:
+                vectors = np.array([p.vector for p in raw_points])
+                pca = PCA(n_components=2, random_state=42)
+                reduced = pca.fit_transform(vectors)
+                coords_2d = [[round(float(pt[0]), 4), round(float(pt[1]), 4)] for pt in reduced]
+            except Exception as pe:
+                print(f"[!] PCA projection error: {pe}")
+                coords_2d = [[0.0, 0.0] for _ in raw_points]
+        else:
+            coords_2d = [[0.0, 0.0] for _ in raw_points]
+
         points = []
-        for p in scroll_res[0]:
+        for idx, p in enumerate(raw_points):
             points.append({
                 "id": str(p.id),
                 "payload": p.payload or {},
                 "vector_dim": rag_engine._get_embedding_dim(),
+                "pca_x": coords_2d[idx][0] if idx < len(coords_2d) else 0.0,
+                "pca_y": coords_2d[idx][1] if idx < len(coords_2d) else 0.0,
             })
+
         return JSONResponse({
             "status": "success",
             "collection_name": col_name,

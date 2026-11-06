@@ -136,6 +136,7 @@ class TestNeuralAnalyticsCore:
         first_point = data["points"][0]
         assert "id" in first_point and "payload" in first_point, "Point harus memiliki id dan payload"
         assert data.get("vector_dim") == 384, "Vector dimension wajib 384 untuk all-MiniLM-L6-v2"
+        assert "pca_x" in first_point and "pca_y" in first_point, "Point wajib memiliki koordinat 2D PCA projection"
 
     def test_06_persona_system_tone_switch(self):
         """Memverifikasi sistem menyesuaikan persona aktif dari UI session dan mengisolasi cache key per persona."""

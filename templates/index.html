@@ -1106,6 +1106,27 @@
                             </div>
                         </div>
 
+                        <!-- 2D PCA Vector Space Cluster Visualization -->
+                        <div class="section-card flex flex-col gap-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-2">
+                                    <span class="section-label">
+                                        <i data-lucide="scatter-chart" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                        Peta Ruang Vektor Semantik (2D PCA Projection)
+                                    </span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/25 mono">DIMENSI 384 &rarr; 2D</span>
+                                </div>
+                                <span class="text-[11px] text-slate-500 hidden sm:inline">Klik titik untuk melihat dokumen</span>
+                            </div>
+                            <div class="w-full h-64 md:h-72 rounded-xl bg-slate-950/80 border border-slate-800 p-2 relative flex items-center justify-center">
+                                <canvas id="qdrantScatterCanvas"></canvas>
+                            </div>
+                            <p class="panel-caption flex items-center gap-1.5 text-slate-400">
+                                <i data-lucide="info" class="w-3.5 h-3.5 text-cyan-400"></i>
+                                Titik-titik yang saling berdekatan merepresentasikan potongan teks dengan kemiripan semantik tinggi (Cosine Similarity terdekat).
+                            </p>
+                        </div>
+
                         <div class="section-card flex flex-col gap-3">
                             <div class="flex items-center justify-between gap-3">
                                 <span class="section-label">
@@ -2615,6 +2636,7 @@
            Qdrant Explorer Handlers
            --------------------------------------------------------------- */
         let qdrantAllPoints = [];
+        let qdrantScatterChart = null;
 
         async function loadQdrantExplorerData() {
             const listEl = $('qdrant-points-list');
@@ -2626,6 +2648,7 @@
                     qdrantAllPoints = data.points || [];
                     if ($('qdrant-points-badge')) $('qdrant-points-badge').innerText = `${data.total_points} Points`;
                     if ($('qdrant-card-total')) $('qdrant-card-total').innerText = data.total_points;
+                    renderQdrantScatterPlot(qdrantAllPoints);
                     renderQdrantPoints(qdrantAllPoints);
                 } else {
                     listEl.innerHTML = `<div class="empty-state"><p class="empty-title text-rose-400">Gagal memuat: ${data.message || 'Error'}</p></div>`;
@@ -2633,6 +2656,107 @@
             } catch (err) {
                 listEl.innerHTML = `<div class="empty-state"><p class="empty-title text-rose-400">Koneksi API error: ${err.message}</p></div>`;
             }
+        }
+
+        function renderQdrantScatterPlot(points) {
+            const canvas = $('qdrantScatterCanvas');
+            if (!canvas || typeof Chart === 'undefined') return;
+            const ctx = canvas.getContext('2d');
+            if (qdrantScatterChart) qdrantScatterChart.destroy();
+
+            // Kategori warna per tipe dokumen
+            const colorMap = {
+                'SOP': { bg: 'rgba(56, 189, 248, 0.75)', border: '#38bdf8' },
+                'INCIDENT_LOG': { bg: 'rgba(244, 63, 94, 0.75)', border: '#f43f5e' },
+                'SYSTEM_CONFIG': { bg: 'rgba(168, 85, 247, 0.75)', border: '#a855f7' },
+                'LEARNED_INSIGHTS': { bg: 'rgba(52, 211, 153, 0.75)', border: '#34d399' },
+                'KNOWLEDGE': { bg: 'rgba(251, 191, 36, 0.75)', border: '#fbbf24' }
+            };
+
+            const datasetsMap = {};
+            points.forEach((p) => {
+                const docType = p.payload?.doc_type || 'KNOWLEDGE';
+                if (!datasetsMap[docType]) {
+                    const col = colorMap[docType] || { bg: 'rgba(148, 163, 184, 0.75)', border: '#94a3b8' };
+                    datasetsMap[docType] = {
+                        label: docType,
+                        data: [],
+                        backgroundColor: col.bg,
+                        borderColor: col.border,
+                        pointRadius: 6,
+                        pointHoverRadius: 9,
+                        borderWidth: 1.5
+                    };
+                }
+                datasetsMap[docType].data.push({
+                    x: p.pca_x ?? 0,
+                    y: p.pca_y ?? 0,
+                    pointObj: p
+                });
+            });
+
+            qdrantScatterChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: Object.values(datasetsMap)
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { size: 10, family: "'Inter', sans-serif" },
+                                boxWidth: 10
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#38bdf8',
+                            bodyColor: '#e2e8f0',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            padding: 10,
+                            callbacks: {
+                                title: (ctx) => {
+                                    const raw = ctx[0].raw?.pointObj;
+                                    return raw?.payload?.doc_title || 'Document Chunk';
+                                },
+                                label: (ctx) => {
+                                    const raw = ctx.raw?.pointObj;
+                                    const sec = raw?.payload?.section || '-';
+                                    return `Section: ${sec} (x: ${ctx.parsed.x}, y: ${ctx.parsed.y})`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#64748b', font: { size: 9 } },
+                            title: { display: true, text: 'PCA Komponen 1 (Semantic Latent Space)', color: '#64748b', font: { size: 10 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' },
+                            ticks: { color: '#64748b', font: { size: 9 } },
+                            title: { display: true, text: 'PCA Komponen 2', color: '#64748b', font: { size: 10 } }
+                        }
+                    },
+                    onClick: (evt, elements) => {
+                        if (!elements || elements.length === 0) return;
+                        const first = elements[0];
+                        const datasetIndex = first.datasetIndex;
+                        const index = first.index;
+                        const ptData = qdrantScatterChart.data.datasets[datasetIndex].data[index];
+                        if (ptData && ptData.pointObj) {
+                            inspectQdrantPoint(encodeURIComponent(JSON.stringify(ptData.pointObj.payload || {})));
+                        }
+                    }
+                }
+            });
         }
 
         function renderQdrantPoints(points) {
