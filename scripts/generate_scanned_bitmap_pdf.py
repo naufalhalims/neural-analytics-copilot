@@ -31,7 +31,7 @@ def create_photorealistic_scanned_pdf(
 ):
     os.makedirs(os.path.dirname(output_pdf_path), exist_ok=True)
     
-    # 1. Canvas Dimensions (A4 at 150 DPI = 1240 x 1754 px for crystal clear display without huge file size)
+    # 1. Canvas Dimensions (A4 at 150 DPI = 1240 x 1754 px)
     dpi = 150
     w = int(8.27 * dpi)
     h = int(11.69 * dpi)
@@ -46,18 +46,18 @@ def create_photorealistic_scanned_pdf(
     
     draw = ImageDraw.Draw(img)
     
-    # Load default or clean bitmap fonts
+    # Proporsional Enterprise Typography (Besar, Tegas, Nyaman Dibaca)
     try:
-        font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
-        font_meta = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf", 14)
-        font_h2 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 16)
-        font_body = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 13)
-        font_stamp = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
+        font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 26)
+        font_meta = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Oblique.ttf", 15)
+        font_h2 = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
+        font_body = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 15.5)
+        font_stamp = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
     except Exception:
         font_title = font_h2 = font_stamp = ImageFont.load_default()
         font_meta = font_body = ImageFont.load_default()
 
-    # Border frame dokumen resmi (agak pudar khas hasil fotokopi/scanner)
+    # Border frame dokumen resmi
     border_col = (100, 116, 139)
     draw.rectangle([45, 45, w - 45, h - 45], outline=border_col, width=2)
     draw.rectangle([50, 50, w - 50, h - 50], outline=border_col, width=1)
@@ -65,13 +65,13 @@ def create_photorealistic_scanned_pdf(
     # Header Dokumen
     y = 75
     draw.text((w // 2, y), title, fill=(15, 23, 42), font=font_title, anchor="mt")
-    y += 32
+    y += 38
     draw.text((w // 2, y), f"Nomor Berkas: {doc_number}  |  Tanggal Audit: {audit_date}", fill=(71, 85, 105), font=font_meta, anchor="mt")
-    y += 26
+    y += 30
     
     # Garis pembatas tebal tipis
     draw.line([60, y, w - 60, y], fill=(148, 163, 184), width=2)
-    y += 20
+    y += 28
     
     # Text Chunks for Searchable OCR
     ocr_text_blocks = []
@@ -82,11 +82,10 @@ def create_photorealistic_scanned_pdf(
         body_lines = sec.get("lines", [])
         
         draw.text((65, y), h2_title, fill=(30, 41, 59), font=font_h2)
-        y += 24
+        y += 30
         
         sec_text_block = [h2_title]
         for line in body_lines:
-            # Wrap text to fit margins (~80 chars per line at this font size)
             words = line.split()
             current_line = []
             for word in words:
@@ -97,13 +96,13 @@ def create_photorealistic_scanned_pdf(
                     current_line.pop()
                     draw.text((70, y), " ".join(current_line), fill=(51, 65, 85), font=font_body)
                     sec_text_block.append(" ".join(current_line))
-                    y += 19
+                    y += 24
                     current_line = [word]
             if current_line:
                 draw.text((70, y), " ".join(current_line), fill=(51, 65, 85), font=font_body)
                 sec_text_block.append(" ".join(current_line))
-                y += 19
-        y += 14
+                y += 24
+        y += 20
         ocr_text_blocks.append("\n".join(sec_text_block))
 
     # Stempel Basah Otentik (Rubber Stamp) dengan rotasi & tekstur pudar
