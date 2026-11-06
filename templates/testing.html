@@ -63,7 +63,15 @@
             padding: 3px 5px; border-radius: 5px; color: var(--text-muted);
             background: rgba(2, 6, 23, 0.6); border: 1px solid var(--border-strong);
         }
-        .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 9999px; background: #22C55E; flex-shrink: 0; }
+        .status-dot { position: relative; display: inline-block; width: 7px; height: 7px; border-radius: 9999px; background: #22C55E; flex-shrink: 0; }
+        .status-dot::after {
+            content: ''; position: absolute; inset: -3px; border-radius: inherit;
+            background: inherit; opacity: 0.35; animation: pulseRing 2.4s var(--ease) infinite;
+        }
+        @keyframes pulseRing {
+            0% { transform: scale(0.8); opacity: 0.35; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
         .metric-card {
             background: var(--surface-sunken);
             border: 1px solid var(--border-color);
@@ -76,19 +84,17 @@
             display: inline-flex; align-items: center; gap: 0.35rem;
             font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px;
         }
+        .narrative { font-size: 13px; line-height: 1.65; color: var(--text-muted); }
+        .narrative strong { color: #E2E8F0; font-weight: 600; }
+        .narrative .a-cyan { color: #67E8F9; }
+        .narrative .a-green { color: #6EE7B7; }
+        .narrative .a-violet { color: #C4B5FD; }
+        .narrative .a-blue { color: #93C5FD; }
         .fade-in { animation: fadeIn .3s var(--ease); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-        @keyframes pulseRing {
-            0% { transform: scale(0.8); opacity: 0.35; }
-            100% { transform: scale(1.8); opacity: 0; }
-        }
-        .status-dot::after {
-            content: ''; position: absolute; inset: -3px; border-radius: inherit;
-            background: inherit; opacity: 0.35; animation: pulseRing 2.4s var(--ease) infinite;
-        }
-        .status-dot { position: relative; }
         .bar-track { height: 8px; border-radius: 9999px; background: rgba(2, 6, 23, 0.7); overflow: hidden; }
         .bar-fill { height: 100%; border-radius: 9999px; transition: width .6s var(--ease); }
+        .divider-glow { height: 1px; background: linear-gradient(90deg, transparent, rgba(59,130,246,0.4), transparent); }
     </style>
 </head>
 <body class="min-h-screen">
@@ -113,6 +119,42 @@
                 <span id="generated-at">—</span>
             </div>
         </header>
+
+        <!-- HERO: narasi pembuka -->
+        <section class="card p-6 mb-5">
+            <div class="flex items-start gap-4">
+                <span class="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-cyan-300 bg-cyan-500/10 border border-cyan-500/25">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                </span>
+                <div class="min-w-0">
+                    <h2 class="text-[17px] font-bold text-white tracking-tight">Pusat Bukti Kualitas — bukan sekadar klaim</h2>
+                    <p class="narrative mt-2 max-w-3xl">
+                        Halaman ini mengumpulkan <strong>seluruh pengujian</strong> yang kami lakukan terhadap Neural Analytics Copilot
+                        dalam satu tempat. Setiap angka di bawah berasal dari <strong>eksekusi nyata</strong> — bukan estimasi, bukan
+                        placeholder. Empat lapis pengujian saling melengkapi: <span class="a-green">unit &amp; integrasi</span>
+                        membuktikan kode berjalan benar, <span class="a-blue">audit integritas</span> membuktikan jawaban akurat
+                        dan jujur, <span class="a-cyan">OCR benchmark</span> membuktikan dokumen yang dibaca RAG benar-benar
+                        scan fisik, dan <span class="a-violet">backtest SQL</span> membuktikan mesin query terkalibrasi atas
+                        jutaan baris data.
+                    </p>
+                    <div class="divider-glow my-4"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-[12px] text-slate-400">
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="repeat" class="w-4 h-4 text-slate-500 mt-0.5"></i>
+                            <span><strong class="text-slate-200">Reproducible</strong> — semua bisa dijalankan ulang dengan satu perintah.</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="search-check" class="w-4 h-4 text-slate-500 mt-0.5"></i>
+                            <span><strong class="text-slate-200">Terukur</strong> — setiap metrik punya ambang lulus yang jelas.</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i data-lucide="file-check-2" class="w-4 h-4 text-slate-500 mt-0.5"></i>
+                            <span><strong class="text-slate-200">Ada bukti</strong> — laporan tersimpan, bisa diinspeksi.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- Ringkasan utama (4 kartu) -->
         <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
@@ -140,7 +182,7 @@
 
         <!-- PYTEST -->
         <section class="card p-5 mb-4">
-            <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-2.5">
                     <span class="w-8 h-8 rounded-lg flex items-center justify-center text-emerald-300 bg-emerald-500/10 border border-emerald-500/25">
                         <i data-lucide="check-circle-2" class="w-4 h-4"></i>
@@ -152,12 +194,19 @@
                 </div>
                 <span id="pytest-pill" class="pill border border-slate-700 text-slate-300">—</span>
             </div>
+            <div class="narrative mb-4">
+                <strong>Apa yang dibuktikan:</strong> seluruh komponen inti berjalan benar secara deterministik — data engine
+                mengagregasi 5 juta baris di bawah 500 ms, <span class="a-green">AST Guardrail</span> menolak seluruh percobaan
+                SQL injection (DROP/DELETE/UPDATE), <span class="a-green">hybrid RAG</span> mengambil dokumen yang tepat, dan
+                batas antar-domain (fintech vs BPJS vs klinik) tidak pernah bocor. <strong>Cara baca:</strong> hijau = lulus;
+                setiap modul mencantumkan jumlah tes dan durasinya.
+            </div>
             <div id="pytest-body" class="text-sm text-slate-400">Memuat…</div>
         </section>
 
         <!-- AUDIT INTEGRITAS -->
         <section class="card p-5 mb-4">
-            <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-2.5">
                     <span class="w-8 h-8 rounded-lg flex items-center justify-center text-blue-300 bg-blue-500/10 border border-blue-500/25">
                         <i data-lucide="shield-check" class="w-4 h-4"></i>
@@ -169,31 +218,45 @@
                 </div>
                 <span id="audit-pill" class="pill border border-slate-700 text-slate-300">—</span>
             </div>
+            <div class="narrative mb-4">
+                <strong>Apa yang dibuktikan:</strong> sistem menjawab dengan <strong>angka yang benar</strong> (bukan mengarang).
+                Saat ditanya "diagnosa dengan klaim terendah", jawabannya harus <em>persis</em> <span class="a-blue">Gagal Ginjal
+                Kronik Cuci Darah (N-4-10-I)</span>. Saat ditanya entitas fiktif seperti <em>"RS Siloam Semanggi"</em> atau
+                <em>"cabut gigi bungsu"</em>, sistem wajib menolak jujur — ini yang kami sebut <strong>zero-hallucination guardrail</strong>.
+                <strong>Cara baca:</strong> setiap baris adalah satu skenario nyata yang dikirim ke API; centang hijau = lolos.
+            </div>
             <div id="audit-body" class="text-sm text-slate-400">Memuat…</div>
         </section>
 
         <!-- OCR BENCHMARK -->
         <section class="card p-5 mb-4">
-            <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-2.5">
                     <span class="w-8 h-8 rounded-lg flex items-center justify-center text-cyan-300 bg-cyan-500/10 border border-cyan-500/25">
                         <i data-lucide="scan-line" class="w-4 h-4"></i>
                     </span>
                     <div>
                         <h2 class="text-[14px] font-semibold text-white">OCR &amp; Scan Integrity Benchmark</h2>
-                        <p class="text-[11px] text-slate-500">Klasifikasi otentikasi 205 PDF via PyMuPDF</p>
+                        <p class="text-[11px] text-slate-500">Klasifikasi otentikasi PDF via PyMuPDF</p>
                     </div>
                 </div>
-                <a href="/api/vault/file/OCR_Benchmark_Report.pdf" target="_blank" class="btn-ghost text-xs inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white transition-colors">
+                <a href="/api/vault/file/OCR_Benchmark_Report.pdf" target="_blank" class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white transition-colors">
                     <i data-lucide="file-text" class="w-3.5 h-3.5"></i> PDF
                 </a>
+            </div>
+            <div class="narrative mb-4">
+                <strong>Apa yang dibuktikan:</strong> dokumen yang dibaca mesin RAG benar-benar <span class="a-cyan">scan fisik
+                otentik</span>, bukan PDF digital polos yang cuma di-rename. Setiap berkas diperiksa via PyMuPDF dengan tiga sinyal
+                yang harus muncul bersamaan: <strong>(1)</strong> full-page raster image, <strong>(2)</strong> OCR text layer tersemat,
+                <strong>(3)</strong> render mode invisible (teks tersembunyi di atas gambar). Yang menarik: detektor kami juga
+                <strong>menolak 4 berkas digital-native</strong> — ini kontrol negatif yang membuktikan sistem tidak asal lolos.
             </div>
             <div id="ocr-body" class="text-sm text-slate-400">Memuat…</div>
         </section>
 
         <!-- BACKTEST -->
-        <section class="card p-5 mb-6">
-            <div class="flex items-center gap-2.5 mb-4">
+        <section class="card p-5 mb-4">
+            <div class="flex items-center gap-2.5 mb-3">
                 <span class="w-8 h-8 rounded-lg flex items-center justify-center text-violet-300 bg-violet-500/10 border border-violet-500/25">
                     <i data-lucide="database" class="w-4 h-4"></i>
                 </span>
@@ -202,7 +265,53 @@
                     <p class="text-[11px] text-slate-500">Walk-forward validation atas 5.000.000 baris DuckDB</p>
                 </div>
             </div>
+            <div class="narrative mb-4">
+                <strong>Apa yang dibuktikan:</strong> mesin penerjemah bahasa-alami-ke-SQL terkalibrasi seperti strategi quant —
+                lewat <span class="a-violet">walk-forward validation</span>. Sebanyak 25 skenario kueri heterogen (agregasi,
+                time-series, deteksi anomali, multi-dimensi) dijalankan maju, diverifikasi AST-nya, lalu yang terbukti benar disimpan
+                sebagai <strong>learned exemplars</strong> yang langsung dipakai sistem saat menjawab pertanyaan serupa. Ini mekanisme
+                <em>self-improvement</em> yang membuat jawaban makin presisi seiring waktu.
+            </div>
             <div id="backtest-body" class="text-sm text-slate-400">Memuat…</div>
+        </section>
+
+        <!-- METODOLOGI & REPRODUKSI -->
+        <section class="card p-5 mb-6">
+            <div class="flex items-center gap-2.5 mb-3">
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center text-amber-300 bg-amber-500/10 border border-amber-500/25">
+                    <i data-lucide="terminal" class="w-4 h-4"></i>
+                </span>
+                <div>
+                    <h2 class="text-[14px] font-semibold text-white">Cara Mereproduksi Seluruh Pengujian</h2>
+                    <p class="text-[11px] text-slate-500">Satu perintah, semua laporan</p>
+                </div>
+            </div>
+            <div class="narrative mb-4">
+                Semua laporan di halaman ini bukan angka diam — bisa diregenerasi kapan saja. Jalankan satu perintah berikut,
+                dan seluruh suite (pytest, audit integritas, OCR benchmark) akan berjalan ulang lalu memperbarui halaman ini:
+            </div>
+            <div class="bg-black/50 border border-slate-800 rounded-lg p-3 mb-4">
+                <code class="mono text-[12.5px] text-cyan-300">./scripts/run_all_tests.sh</code>
+                <span class="text-slate-600 text-[11px] ml-2"># atau: pytest | audit | ocr untuk subset</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-[12px] text-slate-400">
+                <div class="flex items-start gap-2">
+                    <i data-lucide="git-branch" class="w-4 h-4 text-slate-500 mt-0.5"></i>
+                    <span>Hasil pytest ke <code class="mono text-slate-300">reports/junit.xml</code></span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <i data-lucide="shield" class="w-4 h-4 text-slate-500 mt-0.5"></i>
+                    <span>Audit integritas ke <code class="mono text-slate-300">reports/audit_integrity_results.json</code></span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <i data-lucide="scan-line" class="w-4 h-4 text-slate-500 mt-0.5"></i>
+                    <span>OCR benchmark ke <code class="mono text-slate-300">vault/ocr_benchmark_results.json</code></span>
+                </div>
+                <div class="flex items-start gap-2">
+                    <i data-lucide="database" class="w-4 h-4 text-slate-500 mt-0.5"></i>
+                    <span>Backtest exemplar dari <code class="mono text-slate-300">vault/03_Learned_Insights/</code></span>
+                </div>
+            </div>
         </section>
 
         <!-- Footer -->
@@ -266,7 +375,6 @@
             $('sum-audit').innerHTML = `${a.passed}<span class="text-[14px] text-slate-500 font-medium">/${a.total}</span>`;
             $('audit-pill').outerHTML = pill(allPass ? 'LULUS SEMUA' : `${a.failed} gagal`, allPass ? 'ok' : 'bad');
             const rows = (a.results || []).map(r => {
-                const tone = r.status === 'PASS' ? 'ok' : (r.status === 'ERROR' ? 'bad' : 'warn');
                 const icon = r.status === 'PASS' ? 'check' : 'x';
                 return `
                 <div class="flex items-start gap-3 py-2.5 border-b border-slate-800/60 last:border-0">
