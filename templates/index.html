@@ -1451,6 +1451,78 @@
                             </code>
                         </div>
                     </div>
+
+                    <!-- TECH STACK -->
+                    <div class="border-t border-slate-800 pt-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-8 h-8 rounded-lg flex items-center justify-center text-emerald-300 bg-emerald-500/10 border border-emerald-500/25">
+                                <i data-lucide="package" class="w-4 h-4"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-semibold text-white">Tech Stack</h3>
+                                <p class="text-[11px] text-slate-500">Dibangun dari apa saja — backend, frontend, dokumen, infra</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                                <div class="flex items-center gap-2 mb-2.5">
+                                    <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-800 text-emerald-300">BACKEND</span>
+                                    <span class="text-[11px] text-slate-400 font-mono">Python</span>
+                                </div>
+                                <ul class="space-y-1.5 text-[12px] text-slate-300">
+                                    <li class="flex gap-2"><span class="text-emerald-400 font-mono shrink-0">FastAPI</span><span class="text-slate-500">framework web inti (async)</span></li>
+                                    <li class="flex gap-2"><span class="text-emerald-400 font-mono shrink-0">Uvicorn</span><span class="text-slate-500">ASGI server · port 8508</span></li>
+                                    <li class="flex gap-2"><span class="text-amber-400 font-mono shrink-0">DuckDB</span><span class="text-slate-500">SQL engine kolumnar in-process · 5 juta baris</span></li>
+                                    <li class="flex gap-2"><span class="text-violet-400 font-mono shrink-0">Qdrant</span><span class="text-slate-500">vector DB · hybrid RAG</span></li>
+                                    <li class="flex gap-2"><span class="text-cyan-400 font-mono shrink-0">NetworkX</span><span class="text-slate-500">graph RCA (sebab-akibat)</span></li>
+                                    <li class="flex gap-2"><span class="text-emerald-400 font-mono shrink-0">SQLGlot</span><span class="text-slate-500">AST parser · guardrail anti-injection</span></li>
+                                    <li class="flex gap-2"><span class="text-slate-400 font-mono shrink-0">sentence-transformers</span><span class="text-slate-500">embedding untuk Qdrant</span></li>
+                                    <li class="flex gap-2"><span class="text-slate-400 font-mono shrink-0">Pydantic</span><span class="text-slate-500">validasi model</span></li>
+                                    <li class="flex gap-2"><span class="text-slate-400 font-mono shrink-0">httpx</span><span class="text-slate-500">client ke LLM gateway (9router)</span></li>
+                                </ul>
+                            </div>
+                            <div class="p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                                <div class="flex items-center gap-2 mb-2.5">
+                                    <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-800 text-cyan-300">FRONTEND</span>
+                                    <span class="text-[11px] text-slate-400 font-mono">Vanilla JS + CDN</span>
+                                </div>
+                                <ul class="space-y-1.5 text-[12px] text-slate-300">
+                                    <li class="flex gap-2"><span class="text-cyan-400 font-mono shrink-0">Tailwind CSS</span><span class="text-slate-500">styling · design system "Midnight Obsidian"</span></li>
+                                    <li class="flex gap-2"><span class="text-cyan-400 font-mono shrink-0">Chart.js</span><span class="text-slate-500">grafik KPI</span></li>
+                                    <li class="flex gap-2"><span class="text-cyan-400 font-mono shrink-0">Cytoscape + Dagre</span><span class="text-slate-500">visualisasi RCA graph</span></li>
+                                    <li class="flex gap-2"><span class="text-cyan-400 font-mono shrink-0">Marked</span><span class="text-slate-500">render markdown jawaban</span></li>
+                                    <li class="flex gap-2"><span class="text-cyan-400 font-mono shrink-0">Lucide</span><span class="text-slate-500">ikon</span></li>
+                                    <li class="flex gap-2"><span class="text-slate-400 font-mono shrink-0">Jinja2</span><span class="text-slate-500">template engine (server-side)</span></li>
+                                </ul>
+                                <div class="border-t border-slate-800 mt-3 pt-3 space-y-1.5 text-[12px] text-slate-300">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-amber-950/80 border border-amber-800 text-amber-300">DOKUMEN</span>
+                                    </div>
+                                    <div class="flex gap-2"><span class="text-amber-400 font-mono shrink-0">PyMuPDF</span><span class="text-slate-500">verifikasi scan PDF + OCR benchmark</span></div>
+                                    <div class="flex gap-2"><span class="text-amber-400 font-mono shrink-0">ReportLab</span><span class="text-slate-500">generate PDF briefing eksekutif</span></div>
+                                    <div class="flex gap-2"><span class="text-slate-400 font-mono shrink-0">pypdf / python-docx</span><span class="text-slate-500">parsing dokumen input</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 p-4 rounded-xl border border-slate-800 bg-slate-900/50">
+                            <div class="flex items-center gap-2 mb-2.5">
+                                <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">INFRA &amp; DEPLOY</span>
+                            </div>
+                            <ul class="space-y-1.5 text-[12px] text-slate-300 grid grid-cols-1 md:grid-cols-2 gap-x-4">
+                                <li class="flex gap-2"><span class="text-slate-400 font-mono shrink-0">Docker</span><span class="text-slate-500">Dockerfile + docker-compose · port 8508</span></li>
+                                <li class="flex gap-2"><span class="text-slate-400 font-mono shrink-0">PM2</span><span class="text-slate-500">process manager (ecosystem.config.js)</span></li>
+                                <li class="flex gap-2"><span class="text-slate-400 font-mono shrink-0">Nginx reverse proxy</span><span class="text-slate-500">expose ke neural-demo.naufalhal.tech</span></li>
+                                <li class="flex gap-2"><span class="text-slate-400 font-mono shrink-0">GitHub Actions / gh CLI</span><span class="text-slate-500">deploy &amp; version control</span></li>
+                            </ul>
+                        </div>
+                        <div class="mt-3 p-4 rounded-xl border border-emerald-500/20 bg-emerald-950/20 text-[12px] text-slate-300 leading-relaxed">
+                            <strong class="text-emerald-300">Catatan arsitektur:</strong> LLM berjalan di <strong class="text-white">luar</strong> lewat gateway 9router
+                            (<code class="font-mono text-slate-300">ROUTER_URL</code>) — bisa diganti OpenAI / Groq / OpenRouter / Ollama tanpa ubah kode.
+                            Jika offline, sistem tetap berfungsi penuh dengan <em>rule-based + statistical fallback</em> deterministik.
+                            Database memakai <strong class="text-white">DuckDB</strong> (bukan Postgres/MySQL) — inilah yang membuat agregasi 5 juta baris
+                            selesai &lt;500ms tanpa server DB terpisah.
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="px-5 py-2.5 border-t border-slate-800/90 bg-slate-900/60 flex items-center justify-between shrink-0">
@@ -2983,7 +3055,7 @@
            Architecture Blueprint Modal Handlers
            --------------------------------------------------------------- */
         function openArchitectureModal() {
-            closeDomainMenu();
+            setDomainMenu(false);
             const modal = $('architecture-modal');
             if (modal) modal.classList.remove('hidden');
         }
