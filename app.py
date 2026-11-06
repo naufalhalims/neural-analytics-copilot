@@ -441,6 +441,140 @@ def get_tools_schema():
         "supported_engines": ["DuckDB 5M Parquet", "Qdrant In-Memory Vector Search", "Rolling Z-Score Anomaly Detector"]
     })
 
+
+# -------------------------------------------------------------------------
+# TESTING SUITE AGGREGATOR: kumpulkan seluruh hasil pengujian ke satu endpoint
+# -------------------------------------------------------------------------
+import xml.etree.ElementTree as ET
+
+REPORTS_DIR = os.path.join(BASE_DIR, "reports")
+
+
+def _read_json_report(filename: str):
+    """Baca file JSON laporan pengujian; kembalikan None jika tak ada."""
+    path = os.path.join(REPORTS_DIR, filename)
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception:
+        return None
+
+
+def _parse_junit(filename: str = "junit.xml"):
+    """Parse laporan pytest JUnit XML menjadi struktur ringkas."""
+    path = os.path.join(REPORTS_DIR, filename)
+    if not os.path.exists(path):
+        return None
+    try:
+        tree = ET.parse(path)
+        root = tree.getroot()
+        suites = []
+        total = 0
+        failures = 0
+        errors = 0
+        skipped = 0
+        elapsed = 0.0
+        for ts in root.iter("testsuite"):
+            total += int(ts.get("tests", 0))
+            failures += int(ts.get("failures", 0))
+            errors += int(ts.get("errors", 0))
+            skipped += int(ts.get("skipped", 0))
+            elapsed += float(ts.get("time", 0) or 0)
+        # Rincian per class
+        classes = {}
+        for tc in root.iter("testcase"):
+            cls = tc.get("classname", "unknown")
+            classes.setdefault(cls, {"tests": 0, "time": 0.0, "failures": 0})
+            classes[cls]["tests"] += 1
+            classes[cls]["time"] += float(tc.get("time", 0) or 0)
+            if list(tc):
+                classes[cls]["failures"] += 1
+        return {
+            "total": total,
+            "passed": total - failures - errors - skipped,
+            "failures": failures,
+            "errors": errors,
+            "skipped": skipped,
+            "elapsed_s": round(elapsed, 2),
+            "classes": [
+                {"name": k, "tests": v["tests"], "time": round(v["time"], 2), "failures": v["failures"]}
+                for k, v in sorted(classes.items())
+            ],
+            "generated_at": os.path.getmtime(path),
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/testing/summary")
+def testing_summary():
+    """Agregator hasil pengujian: pytest, audit integritas, OCR benchmark, backtest exemplar."""
+    junit = _parse_junit("junit.xml")
+    audit = _read_json_report("audit_integrity_results.json")
+    ocr = _read_json_report("ocr_benchmark_results.json") or (
+        _read_json_report("ocr_benchmark_results.json")
+    )
+
+    # OCR benchmark bisa ada di vault/ (hasil scripts/benchmark_ocr_all.py)
+    ocr_vault_path = os.path.join(VAULT_DIR, "ocr_benchmark_results.json")
+    if not ocr and os.path.exists(ocr_vault_path):
+        try:
+            with open(ocr_vault_path, "r", encoding="utf-8") as fh:
+                ocr = json.load(fh)
+        except Exception:
+            ocr = None
+
+    # Backtest exemplar
+    backtest = None
+    if os.path.exists(LEARNED_EXEMPLARS_PATH):
+        try:
+            with open(LEARNED_EXEMPLARS_PATH, "r", encoding="utf-8") as fh:
+                raw = json.load(fh)
+            backtest = {
+                "accuracy_pct": raw.get("accuracy_pct"),
+                "avg_latency_ms": raw.get("avg_latency_ms"),
+                "dataset_rows": raw.get("dataset_rows"),
+                "exemplars_count": len(raw.get("exemplars", [])),
+                "last_backtest_timestamp": raw.get("last_backtest_timestamp"),
+            }
+        except Exception:
+            backtest = None
+
+    # OCR kategori agregat
+    ocr_summary = None
+    if ocr:
+        cats = ocr.get("categories", {})
+        ocr_summary = {
+            "total_pdfs": ocr.get("total_pdfs"),
+            "categories": cats,
+            "authentic_scanned": cats.get("AUTHENTIC_SCANNED", 0),
+            "digital_native": cats.get("DIGITAL_NATIVE", 0),
+        }
+
+    return JSONResponse({
+        "status": "success",
+        "sections": {
+            "pytest": junit,
+            "audit_integrity": audit,
+            "ocr_benchmark": ocr_summary,
+            "backtest_exemplar": backtest,
+        },
+        "generated_at": time.strftime("%Y-%m-%d %H:%M:%S WIB"),
+    })
+
+
+@app.get("/testing", response_class=HTMLResponse)
+async def testing_page(request: Request):
+    """Halaman mandiri 'Testing Suite' — tidak mengganggu dashboard utama."""
+    return templates.TemplateResponse(
+        request=request,
+        name="testing.html",
+        context={"page_title": "Testing Suite — Neural Analytics Copilot"},
+    )
+
+
 @app.post("/api/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
     """Transkripsi Audio Suara Menggunakan Gemini Flash Audio via 9router dengan graceful fallback."""

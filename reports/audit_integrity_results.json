@@ -1,0 +1,89 @@
+{
+  "suite": "Audit Integritas Sistem (Ground-Truth & Robustness)",
+  "timestamp": "2026-11-06 13:58:22 WIB",
+  "total": 8,
+  "passed": 8,
+  "failed": 0,
+  "results": [
+    {
+      "id": "TEST-01",
+      "name": "Ground-Truth: Diagnosa Klaim Paling Rendah (BPJS)",
+      "status": "PASS",
+      "latency": 5019.860635045916,
+      "reply": "Berdasarkan data komputasi terverifikasi, diagnosa dengan nilai klaim paling rendah adalah **Gagal Ginjal Kronik Cuci Darah** (kode INA-CBG `N-4-10-I`) dengan akumulasi nilai klaim sebesar **Rp 16,74 Miliar**.\n\n### Rincian Metrik Klaim Diagnosa Terendah\n* **Nama Diagnosa**: Gagal Ginjal Kronik Cuci Darah\n* **Kode INA-CBG**: `N-4-10-I`\n* **Nilai Total Klaim**: Rp 16,74 Miliar\n* **Total Volume Klaim**: 14.238 berkas\n* **Volume Klaim Dispute**: 746 berkas\n* **Rasio Dispute (*Dispute Rate*)**: 5,24%\n\n### Perbandingan dengan Diagnosa Lainnya\nSebagai pembanding dalam repositori klaim aktif, nilai klaim terendah ini terpaut jauh di bawah diagnosa dengan nilai klaim tertinggi, yaitu **Gagal Jantung Kongestif Sedang** (`I-4-10-II`) yang mencapai **Rp 99,05 Miliar** dengan volume 14.118 klaim.\n\n### Rekomendasi Tindak Lanjut\n1. **Verifikasi Koding & Berkas Penjaminan**: PIC Tim Casemix dan Koder RS perlu memastikan kelengkapan dokumen pendukung terapi pengganti ginjal (hemodialisis) dan resume medis DPJP untuk menekan angka dispute yang saat ini berada di tingkat 5,24% (746 berkas pending/dispute) `[Ref: PMK No. 26/2021 tentang Tarif Pelayanan JKN]`.\n2. **Batas Waktu Perbaikan**: Sesuai ketentuan rekonsiliasi klaim BPJS Kesehatan, berkas yang memerlukan koding ulang (*recoding*) atau kelengkapan penunjang wajib diperbaiki maksimal dalam **14 hari kerja kalender** `[Ref: Verifikasi_Klaim_BPJS_022_Scan.pdf § 3.c]`.",
+      "table_len": 7,
+      "has_chart": true,
+      "sql": null
+    },
+    {
+      "id": "TEST-02",
+      "name": "Ground-Truth: Rumah Sakit dengan Klaim Paling Rendah (BPJS)",
+      "status": "PASS",
+      "latency": 7294.747016392648,
+      "reply": "RSUD Kota Bekasi mencatatkan total volume klaim paling rendah yakni sebanyak 19.856 klaim, sedangkan RS Handayani Pratama mencatatkan total nominal nilai klaim terendah sebesar Rp 87,36 Miliar.\n\n### Rincian Perbandingan Metrik Klaim Rumah Sakit\n\nBerdasarkan hasil agregasi data operasional klaim INA-CBG terverifikasi, berikut adalah posisi metrik terendah:\n\n| Rumah Sakit | Tipe RS | Total Volume Klaim | Nilai Klaim (Rp Miliar) | Klaim Dispute | Dispute Rate (%) |\n| :--- | :---: | :---: | :---: | :---: | :---: |\n| **RSUD Kota Bekasi** | Tipe B | **19.856** *(Terendah Volume)* | 86,83 | 1.022,0 | 5,15% |\n| **RS Handayani Pratama** | Tipe C | 19.962 | **87,36** *(Terendah Nilai)* | 952,0 | 4,77% |\n| **RSUP Persahabatan** | Tipe A | 20.029 | 87,73 | 944,0 | 4,71% |\n| **RSUP Dr. Sardjito** | Tipe A | 20.041 | 87,72 | 990,0 | 4,94% |\n| **RS Mitra Keluarga** | Tipe B | 20.112 | 88,27 | 1.017,0 | 5,06% |\n\n- **Berdasarkan Volume Klaim:** `RSUD Kota Bekasi` berada di urutan terendah dengan total **19.856 klaim** (nilai klaim tercatat Rp 86,83 Miliar dengan 1.022,0 klaim berstatus `FAILED`/dispute).\n- **Berdasarkan Nilai Klaim:** `RS Handayani Pratama` mencatatkan nilai nominal klaim terendah di angka **Rp 87,36 Miliar** (dengan volume 19.962 klaim dan 952,0 klaim berstatus `FAILED`/dispute).\n\n---\n\n### Rekomendasi Tindak Lanjut\n1. **PIC Tim Casemix & Koder RSUD Kota Bekasi:** Lakukan evaluasi administratif mendalam terhadap 1.022 berkas klaim yang berstatus dispute (tingkat dispute 5,15%), khususnya pemeriksaan kesesuaian koding diagnosis ICD-10 dan kelengkapan resume medis penunjang.\n2. **PIC Verifikator Medis Cabang:** Jalankan rekonsiliasi berkas pending sesuai batas waktu penanganan maksimal 14 hari kerja kalender `[Ref: Verifikasi_Klaim_BPJS_025_Scan.pdf § 3.c]`.",
+      "table_len": 5,
+      "has_chart": true,
+      "sql": null
+    },
+    {
+      "id": "TEST-03",
+      "name": "Negative Entity Trap: Diagnosa Fiktif / Cabut Gigi (BPJS)",
+      "status": "PASS",
+      "latency": 4877.067177090794,
+      "reply": "Total klaim dan nominal transaksi untuk spesifik tindakan pencabutan gigi bungsu **tidak tercatat di dalam repositori sistem analitik data saat ini**.\n\n### Catatan Hasil Audit Data Terstruktur\n1. **Agregasi Poli Terdaftar**: Basis data operasional layanan kesehatan yang tercatat hanya mencakup 6 departemen spesialis: `Kardiologi`, `Penyakit Dalam`, `Kebidanan`, `Bedah Umum`, `Paru`, dan `Nefrologi`. Tidak terdapat rincian klaim atau tindakan dari poli gigi/bedah mulut di dalam tabel transaksi klaim utama.\n2. **Dokumen Kasir Poli Gigi**: Pada catatan fisik kasir, hanya terdapat dokumen *Opname Kas Fisik & Audit Laci Kasir Poli Gigi* dengan total penerimaan POS sebesar **Rp 15.720.000,-**, namun dokumen tersebut tidak merinci itemisasi tindakan medis khusus cabut gigi bungsu `[Ref: BA-KLINIK/CASH-POS-2026/KAS-0007 § 1]`.\n\n### Rekomendasi Tindak Lanjut\n- **PIC**: Tim Casemix / IT SIMRS Rumah Sakit.\n- **Aksi**: Lakukan penarikan data koding prosedur spesifik (ICD-9-CM untuk ekstraksi gigi/odontektomi) dari basis data E-Klaim lokal untuk mendapatkan volume serta besaran tarif INA-CBG terkait.\n- **SLA**: 1 x 24 jam kerja.",
+      "table_len": 6,
+      "has_chart": true,
+      "sql": null
+    },
+    {
+      "id": "TEST-04",
+      "name": "Negative Hospital Trap: Rumah Sakit Fiktif (BPJS)",
+      "status": "PASS",
+      "latency": 7690.469545312226,
+      "reply": "Data total klaim spesifik untuk entitas **RS Siloam Semanggi** belum tercatat di sistem repositori data transaksi maupun dokumen berita acara yang tersedia saat ini.\n\n### Rincian Analisis Data & Konteks Audit\n* **Data Transaksi Terverifikasi (Klaim Rumah Sakit):** \n  Sistem transaksi mencatat data agregat untuk 5 fasilitas kesehatan berikut tanpa adanya pencatatan spesifik untuk RS Siloam Semanggi:\n  * **RSUD Kota Bekasi** (Tipe B): 19.856 total klaim (1.022 dispute / 5,15%)\n  * **RS Mitra Keluarga** (Tipe B): 20.112 total klaim (1.017 dispute / 5,06%)\n  * **RSUP Dr. Sardjito** (Tipe A): 20.041 total klaim (990 dispute / 4,94%)\n  * **RS Handayani Pratama** (Tipe C): 19.962 total klaim (952 dispute / 4,77%)\n  * **RSUP Persahabatan** (Tipe A): 20.029 total klaim (944 dispute / 4,71%)\n\n* **Dokumen Berita Acara Uji Petik:**\n  Dokumen audit yang tersedia hanya mencatat entitas agregat **RS Siloam** (tanpa penyebutan cabang spesifik Semanggi) dengan rincian uji petik berkas dispute sebagai berikut:\n  * `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0005]`: 92 berkas dispute (Rp 137,2 Juta) akibat Ketidaksesuaian Koding ICD-10.\n  * `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0040]`: 97 berkas dispute (Rp 287,7 Juta) akibat Kesesuaian Restriksi Obat Fornas.\n  * `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0020]`: 287 berkas dispute (Rp 201,7 Juta) akibat Kesesuaian Restriksi Obat Fornas.\n  * `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0045]`: 162 berkas dispute (Rp 309,2 Juta) akibat Ketidaksesuaian Koding ICD-10.\n\n### Rekomendasi Tindak Lanjut\n1. **PIC Verifikator Medis / Tim Casemix RS:** Lakukan penarikan data mentah klaim pada aplikasi E-Klaim INA-CBG khusus kode faskes RS Siloam Semanggi untuk memfilter volume klaim per cabang.\n2. **SLA Penyelesaian:** Rekonsiliasi dan verifikasi berkas klaim pending/dispute wajib diselesaikan maksimal 14 hari kerja kalender sejak tanggal berita acara diterbitkan `[Ref: PMK No. 26/2021]`.",
+      "table_len": 5,
+      "has_chart": true,
+      "sql": null
+    },
+    {
+      "id": "TEST-05",
+      "name": "Domain Boundary Isolation: Fintech Query in BPJS dataset",
+      "status": "PASS",
+      "latency": 6.905290298163891,
+      "reply": "⚠️ **Domain Tidak Sesuai (Cross-Domain Guardrail)**\n\nPertanyaan ini terdeteksi mengenai transaksi perbankan / Payment Gateway (Fintech). Sistem analisis BPJS Healthcare aktif mengkhususkan diri pada data klaim rumah sakit, tarif INA-CBG, dan dispute Fornas.\n\nUntuk mendapatkan jawaban yang akurat dari dataset yang relevan, silakan beralih ke domain:\n👉 **[Fintech & Banking (5M Rows)](/)** melalui menu **'🌐 Ganti Dataset Showcase'** di header atas.",
+      "table_len": 0,
+      "has_chart": false,
+      "sql": null
+    },
+    {
+      "id": "TEST-06",
+      "name": "Domain Boundary Isolation: BPJS Query in Fintech dataset",
+      "status": "PASS",
+      "latency": 1.806328073143959,
+      "reply": "⚠️ **Domain Tidak Sesuai (Cross-Domain Guardrail)**\n\nPertanyaan ini terdeteksi mengenai klaim layanan kesehatan dan tarif INA-CBG. Sistem analisis Fintech aktif mengkhususkan diri pada data transaksi pembayaran 5M baris.\n\nUntuk mendapatkan jawaban yang akurat dari dataset yang relevan, silakan beralih ke domain:\n👉 **[Healthcare Claims BPJS (100k Rows)](/bpjs)** melalui menu **'🌐 Ganti Dataset Showcase'** di header atas.",
+      "table_len": 0,
+      "has_chart": false,
+      "sql": null
+    },
+    {
+      "id": "TEST-07",
+      "name": "Studio Table Payload Completeness Check",
+      "status": "PASS",
+      "latency": 13120.116842910647,
+      "reply": "Total volume klaim layanan kesehatan tercatat sebanyak 100.000 berkas di 6 poli spesialis, dengan akumulasi nilai klaim mencapai Rp437,91 Miliar dan rerata rasio dispute sebesar 4,93% (4.885 berkas tertahan/dispute). Poli Kardiologi mendominasi volume dan nilai klaim tertinggi, sedangkan Poli Nefrologi mencatatkan rasio dispute tertinggi.\n\n### Tabel Rekapitulasi Klaim INA-CBG per Poli Spesialis\n\n| Poli Spesialis | Total Klaim (Berkas) | Klaim Dispute (Berkas) | Dispute Rate (%) | Nilai Klaim (Miliar Rp) |\n| :--- | :---: | :---: | :---: | :---: |\n| **Kardiologi** | 28.390 | 1.369 | 4,82% | 161,49 |\n| **Penyakit Dalam** | 14.414 | 742 | 5,15% | 45,61 |\n| **Kebidanan** | 14.403 | 696 | 4,83% | 85,65 |\n| **Bedah Umum** | 14.294 | 677 | 4,74% | 71,53 |\n| **Paru** | 14.261 | 695 | 4,87% | 56,89 |\n| **Nefrologi** | 14.238 | 746 | 5,24% | 16,74 |\n| **Total** | **100.000** | **4.885** | **4,93%** *(rerata)* | **437,91** |\n\n---\n\n### Temuan Analisis & Audit Operasional\n1. **Konsentrasi Nilai Finansial pada Kardiologi:**\n   Poli Kardiologi mengelola porsi terbesar dengan 28.390 klaim bernilai Rp161,49 Miliar (setara ~36,88% dari total eksposur klaim), dengan 1.369 berkas tertahan akibat dispute koding maupun kelengkapan berkas klinis.\n2. **Titik Kerentanan Dispute Tertinggi:**\n   Poli Nefrologi (5,24%) dan Poli Penyakit Dalam (5,15%) menunjukkan persentase dispute tertinggi melampaui ambang batas rata-rata. Merujuk pada temuan audit verifikasi medis, potensi ketidaksesuaian koding ICD-10 pada diagnosa sekunder dan pelampauan hari rawat inap (*Length of Stay* / LOS) menjadi pemicu utama berkas pending `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0001 § 1 & 2]` `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0011 § 1]`.\n\n---\n\n### Rekomendasi Tindak Lanjut\n1. **Recoding Berkas Dispute (Tim Casemix RS):**\n   Lakukan koding ulang (*recoding*) dan audit sampling berkas rekam medis bersama Komite Medis terhadap 4.885 berkas yang berstatus dispute guna memvalidasi kaidah koding ICD-10 dan mengunggah dokumen penunjang diagnostik ke E-Klaim `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0001 § 3.b]`.\n   - **PIC:** Tim Koder Casemix & Komite Medis Rumah Sakit.\n   - **Tenggat Waktu (SLA):** Maksimal 14 hari kerja kalender sejak status dispute diterbitkan `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0001 § 3.c]`.\n2. **Audit Kepatuhan Plafon Hari Rawat (Tim Verifikator Internal):**\n   Lakukan peninjauan reguler terhadap clinical pathway pada rawat inap Nefrologi dan Penyakit Dalam untuk mencegah ekses hari rawat inap (*LOS Exceeded*) yang berujung penolakan klaim tarif INA-CBG PMK No. 26/2021 `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0011 § 1]`.\n   - **PIC:** Manajer Pelayanan Medis / Verifikator Internal.\n   - **Tenggat Waktu:** Evaluasi mingguan setiap siklus batch penagihan klaim BPJS.",
+      "table_len": 6,
+      "has_chart": true,
+      "sql": null
+    },
+    {
+      "id": "TEST-08",
+      "name": "Studio Chart Payload Completeness Check",
+      "status": "PASS",
+      "latency": 2.028027083724737,
+      "reply": "Total volume klaim layanan kesehatan tercatat sebanyak 100.000 berkas di 6 poli spesialis, dengan akumulasi nilai klaim mencapai Rp437,91 Miliar dan rerata rasio dispute sebesar 4,93% (4.885 berkas tertahan/dispute). Poli Kardiologi mendominasi volume dan nilai klaim tertinggi, sedangkan Poli Nefrologi mencatatkan rasio dispute tertinggi.\n\n### Tabel Rekapitulasi Klaim INA-CBG per Poli Spesialis\n\n| Poli Spesialis | Total Klaim (Berkas) | Klaim Dispute (Berkas) | Dispute Rate (%) | Nilai Klaim (Miliar Rp) |\n| :--- | :---: | :---: | :---: | :---: |\n| **Kardiologi** | 28.390 | 1.369 | 4,82% | 161,49 |\n| **Penyakit Dalam** | 14.414 | 742 | 5,15% | 45,61 |\n| **Kebidanan** | 14.403 | 696 | 4,83% | 85,65 |\n| **Bedah Umum** | 14.294 | 677 | 4,74% | 71,53 |\n| **Paru** | 14.261 | 695 | 4,87% | 56,89 |\n| **Nefrologi** | 14.238 | 746 | 5,24% | 16,74 |\n| **Total** | **100.000** | **4.885** | **4,93%** *(rerata)* | **437,91** |\n\n---\n\n### Temuan Analisis & Audit Operasional\n1. **Konsentrasi Nilai Finansial pada Kardiologi:**\n   Poli Kardiologi mengelola porsi terbesar dengan 28.390 klaim bernilai Rp161,49 Miliar (setara ~36,88% dari total eksposur klaim), dengan 1.369 berkas tertahan akibat dispute koding maupun kelengkapan berkas klinis.\n2. **Titik Kerentanan Dispute Tertinggi:**\n   Poli Nefrologi (5,24%) dan Poli Penyakit Dalam (5,15%) menunjukkan persentase dispute tertinggi melampaui ambang batas rata-rata. Merujuk pada temuan audit verifikasi medis, potensi ketidaksesuaian koding ICD-10 pada diagnosa sekunder dan pelampauan hari rawat inap (*Length of Stay* / LOS) menjadi pemicu utama berkas pending `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0001 § 1 & 2]` `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0011 § 1]`.\n\n---\n\n### Rekomendasi Tindak Lanjut\n1. **Recoding Berkas Dispute (Tim Casemix RS):**\n   Lakukan koding ulang (*recoding*) dan audit sampling berkas rekam medis bersama Komite Medis terhadap 4.885 berkas yang berstatus dispute guna memvalidasi kaidah koding ICD-10 dan mengunggah dokumen penunjang diagnostik ke E-Klaim `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0001 § 3.b]`.\n   - **PIC:** Tim Koder Casemix & Komite Medis Rumah Sakit.\n   - **Tenggat Waktu (SLA):** Maksimal 14 hari kerja kalender sejak status dispute diterbitkan `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0001 § 3.c]`.\n2. **Audit Kepatuhan Plafon Hari Rawat (Tim Verifikator Internal):**\n   Lakukan peninjauan reguler terhadap clinical pathway pada rawat inap Nefrologi dan Penyakit Dalam untuk mencegah ekses hari rawat inap (*LOS Exceeded*) yang berujung penolakan klaim tarif INA-CBG PMK No. 26/2021 `[Ref: BA-BPJS/VERIF-MEDIS-2026/RS-0011 § 1]`.\n   - **PIC:** Manajer Pelayanan Medis / Verifikator Internal.\n   - **Tenggat Waktu:** Evaluasi mingguan setiap siklus batch penagihan klaim BPJS.",
+      "table_len": 6,
+      "has_chart": true,
+      "sql": null
+    }
+  ]
+}

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#090D16">
+    <title>Testing Suite — Neural Analytics Copilot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace']
+                    }
+                }
+            }
+        };
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-main: #090D16;
+            --card-bg: rgba(15, 23, 42, 0.80);
+            --surface-sunken: rgba(2, 6, 23, 0.55);
+            --border-color: rgba(30, 41, 59, 0.80);
+            --border-strong: rgba(51, 65, 85, 0.75);
+            --text-main: #E2E8F0;
+            --text-muted: #94A3B8;
+            --text-faint: #64748B;
+            --radius-card: 14px;
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        html { color-scheme: dark; }
+        body {
+            background-color: var(--bg-main);
+            background-image: radial-gradient(1200px 500px at 50% -10%, rgba(59, 130, 246, 0.07), transparent 60%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        ::selection { background: rgba(59, 130, 246, 0.35); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.22); border-radius: 4px; }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .mono, .num { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+        .kbd {
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1;
+            padding: 3px 5px; border-radius: 5px; color: var(--text-muted);
+            background: rgba(2, 6, 23, 0.6); border: 1px solid var(--border-strong);
+        }
+        .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 9999px; background: #22C55E; flex-shrink: 0; }
+        .metric-card {
+            background: var(--surface-sunken);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.1rem;
+        }
+        .metric-label { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+        .metric-value { font-size: 26px; font-weight: 700; line-height: 1.15; }
+        .pill {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px;
+        }
+        .fade-in { animation: fadeIn .3s var(--ease); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+        @keyframes pulseRing {
+            0% { transform: scale(0.8); opacity: 0.35; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+        .status-dot::after {
+            content: ''; position: absolute; inset: -3px; border-radius: inherit;
+            background: inherit; opacity: 0.35; animation: pulseRing 2.4s var(--ease) infinite;
+        }
+        .status-dot { position: relative; }
+        .bar-track { height: 8px; border-radius: 9999px; background: rgba(2, 6, 23, 0.7); overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 9999px; transition: width .6s var(--ease); }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="max-w-6xl mx-auto px-4 md:px-6 py-6">
+
+        <!-- Header -->
+        <header class="flex items-center justify-between gap-4 mb-6">
+            <div class="flex items-center gap-3">
+                <a href="/" class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/50">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                    Kembali ke Dashboard
+                </a>
+                <span class="text-slate-700">/</span>
+                <h1 class="text-[15px] font-semibold tracking-tight text-slate-100 flex items-center gap-2">
+                    <i data-lucide="flask-conical" class="w-4 h-4 text-cyan-400"></i>
+                    Testing Suite
+                    <span class="inline-flex items-center gap-1.5 text-[10px] font-medium text-emerald-400/90"><span class="status-dot"></span>Live</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-2 text-[11px] text-slate-500">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span id="generated-at">—</span>
+            </div>
+        </header>
+
+        <!-- Ringkasan utama (4 kartu) -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+            <div class="metric-card">
+                <div class="metric-label flex items-center gap-1.5"><i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-400"></i>Unit &amp; Integrasi</div>
+                <div id="sum-pytest" class="metric-value text-emerald-300">—</div>
+                <p class="text-[11px] text-slate-500 mt-1">pytest · 25 kasus</p>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label flex items-center gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-blue-400"></i>Audit Integritas</div>
+                <div id="sum-audit" class="metric-value text-blue-300">—</div>
+                <p class="text-[11px] text-slate-500 mt-1">ground-truth &amp; robustness</p>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label flex items-center gap-1.5"><i data-lucide="scan-line" class="w-3.5 h-3.5 text-cyan-400"></i>OCR Scan</div>
+                <div id="sum-ocr" class="metric-value text-cyan-300">—</div>
+                <p class="text-[11px] text-slate-500 mt-1">PDF di vault</p>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label flex items-center gap-1.5"><i data-lucide="database" class="w-3.5 h-3.5 text-violet-400"></i>Backtest SQL</div>
+                <div id="sum-backtest" class="metric-value text-violet-300">—</div>
+                <p class="text-[11px] text-slate-500 mt-1">learned exemplars</p>
+            </div>
+        </section>
+
+        <!-- PYTEST -->
+        <section class="card p-5 mb-4">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-lg flex items-center justify-center text-emerald-300 bg-emerald-500/10 border border-emerald-500/25">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-[14px] font-semibold text-white">Automated Test Suite (pytest)</h2>
+                        <p class="text-[11px] text-slate-500">Pipeline · Domain Integrity · Context Compactor</p>
+                    </div>
+                </div>
+                <span id="pytest-pill" class="pill border border-slate-700 text-slate-300">—</span>
+            </div>
+            <div id="pytest-body" class="text-sm text-slate-400">Memuat…</div>
+        </section>
+
+        <!-- AUDIT INTEGRITAS -->
+        <section class="card p-5 mb-4">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-lg flex items-center justify-center text-blue-300 bg-blue-500/10 border border-blue-500/25">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-[14px] font-semibold text-white">Audit Integritas Sistem</h2>
+                        <p class="text-[11px] text-slate-500">Ground-truth · Negative entity trap · Cross-domain guardrail</p>
+                    </div>
+                </div>
+                <span id="audit-pill" class="pill border border-slate-700 text-slate-300">—</span>
+            </div>
+            <div id="audit-body" class="text-sm text-slate-400">Memuat…</div>
+        </section>
+
+        <!-- OCR BENCHMARK -->
+        <section class="card p-5 mb-4">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-8 h-8 rounded-lg flex items-center justify-center text-cyan-300 bg-cyan-500/10 border border-cyan-500/25">
+                        <i data-lucide="scan-line" class="w-4 h-4"></i>
+                    </span>
+                    <div>
+                        <h2 class="text-[14px] font-semibold text-white">OCR &amp; Scan Integrity Benchmark</h2>
+                        <p class="text-[11px] text-slate-500">Klasifikasi otentikasi 205 PDF via PyMuPDF</p>
+                    </div>
+                </div>
+                <a href="/api/vault/file/OCR_Benchmark_Report.pdf" target="_blank" class="btn-ghost text-xs inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:text-white transition-colors">
+                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i> PDF
+                </a>
+            </div>
+            <div id="ocr-body" class="text-sm text-slate-400">Memuat…</div>
+        </section>
+
+        <!-- BACKTEST -->
+        <section class="card p-5 mb-6">
+            <div class="flex items-center gap-2.5 mb-4">
+                <span class="w-8 h-8 rounded-lg flex items-center justify-center text-violet-300 bg-violet-500/10 border border-violet-500/25">
+                    <i data-lucide="database" class="w-4 h-4"></i>
+                </span>
+                <div>
+                    <h2 class="text-[14px] font-semibold text-white">Backtest Text-to-SQL Alignment</h2>
+                    <p class="text-[11px] text-slate-500">Walk-forward validation atas 5.000.000 baris DuckDB</p>
+                </div>
+            </div>
+            <div id="backtest-body" class="text-sm text-slate-400">Memuat…</div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-[11px] text-slate-600 pb-4">
+            Testing Suite Neural Analytics Copilot · halaman terpisah dari dashboard · hasil di-generate dari <code class="mono text-slate-500">reports/</code> &amp; vault
+        </footer>
+    </div>
+
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        lucide.createIcons();
+
+        function pill(text, tone) {
+            const map = {
+                ok: 'border-emerald-500/30 bg-emerald-950/40 text-emerald-400',
+                warn: 'border-amber-500/30 bg-amber-950/40 text-amber-400',
+                bad: 'border-rose-500/30 bg-rose-950/40 text-rose-400',
+                neutral: 'border-slate-700 text-slate-300',
+            };
+            return `<span class="pill border ${map[tone] || map.neutral}">${esc(text)}</span>`;
+        }
+
+        function fmtPct(n) { return (n === null || n === undefined) ? '—' : Number(n).toLocaleString('id-ID') + '%'; }
+        function fmtNum(n) { return (n === null || n === undefined) ? '—' : Number(n).toLocaleString('id-ID'); }
+
+        // ---- PYTEST ----
+        function renderPytest(p) {
+            if (!p || p.error) {
+                $('pytest-body').innerHTML = '<p class="text-amber-400">Laporan pytest belum tersedia. Jalankan <code class="mono">scripts/run_all_tests.sh</code>.</p>';
+                return;
+            }
+            const allPass = p.failures === 0 && p.errors === 0;
+            $('sum-pytest').innerHTML = `${p.passed}<span class="text-[14px] text-slate-500 font-medium">/${p.total}</span>`;
+            $('pytest-pill').outerHTML = pill(allPass ? 'LULUS SEMUA' : `${p.failures + p.errors} gagal`, allPass ? 'ok' : 'bad');
+            const clsRows = (p.classes || []).map(c => `
+                <div class="flex items-center justify-between py-2 border-b border-slate-800/60 last:border-0">
+                    <div class="min-w-0">
+                        <div class="mono text-[12px] text-slate-300 truncate">${esc(c.name)}</div>
+                        <div class="text-[11px] text-slate-500">${c.tests} tes · ${c.time.toFixed(2)}s</div>
+                    </div>
+                    ${c.failures > 0 ? pill('gagal', 'bad') : pill('lulus', 'ok')}
+                </div>`).join('');
+            $('pytest-body').innerHTML = `
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                    <div class="metric-card"><div class="metric-label">Lulus</div><div class="metric-value text-emerald-300">${p.passed}</div></div>
+                    <div class="metric-card"><div class="metric-label">Gagal</div><div class="metric-value ${p.failures ? 'text-rose-300' : 'text-slate-400'}">${p.failures}</div></div>
+                    <div class="metric-card"><div class="metric-label">Durasi</div><div class="metric-value text-slate-200 text-[20px]">${p.elapsed_s}s</div></div>
+                </div>
+                <div class="text-[11px] uppercase tracking-[.08em] font-semibold text-slate-500 mb-2">Rincian per modul</div>
+                ${clsRows}`;
+        }
+
+        // ---- AUDIT ----
+        function renderAudit(a) {
+            if (!a) {
+                $('audit-body').innerHTML = '<p class="text-amber-400">Audit integritas belum dijalankan. Jalankan <code class="mono">scripts/run_all_tests.sh audit</code>.</p>';
+                return;
+            }
+            const allPass = a.passed === a.total;
+            $('sum-audit').innerHTML = `${a.passed}<span class="text-[14px] text-slate-500 font-medium">/${a.total}</span>`;
+            $('audit-pill').outerHTML = pill(allPass ? 'LULUS SEMUA' : `${a.failed} gagal`, allPass ? 'ok' : 'bad');
+            const rows = (a.results || []).map(r => {
+                const tone = r.status === 'PASS' ? 'ok' : (r.status === 'ERROR' ? 'bad' : 'warn');
+                const icon = r.status === 'PASS' ? 'check' : 'x';
+                return `
+                <div class="flex items-start gap-3 py-2.5 border-b border-slate-800/60 last:border-0">
+                    <span class="mt-0.5 w-5 h-5 rounded-full flex items-center justify-center ${r.status === 'PASS' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'}">
+                        <i data-lucide="${icon}" class="w-3 h-3"></i>
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-[12.5px] font-medium text-slate-200">${esc(r.name)}</span>
+                            <span class="mono text-[11px] text-slate-500 shrink-0">${typeof r.latency === 'number' ? r.latency.toFixed(0) + ' ms' : '—'}</span>
+                        </div>
+                        <div class="mono text-[11px] text-slate-600 truncate mt-0.5">${esc(r.id)}</div>
+                    </div>
+                </div>`;
+            }).join('');
+            $('audit-body').innerHTML = `
+                <div class="text-[11px] text-slate-500 mb-3">${esc(a.timestamp || '')}</div>
+                ${rows}`;
+            lucide.createIcons();
+        }
+
+        // ---- OCR ----
+        function renderOcr(o) {
+            if (!o) {
+                $('ocr-body').innerHTML = '<p class="text-amber-400">Benchmark OCR belum dijalankan. Jalankan <code class="mono">scripts/run_all_tests.sh ocr</code>.</p>';
+                return;
+            }
+            const cats = o.categories || {};
+            const auth = o.authentic_scanned || 0;
+            const total = o.total_pdfs || 0;
+            const pct = total ? (auth / total * 100) : 0;
+            $('sum-ocr').innerHTML = `${auth}<span class="text-[14px] text-slate-500 font-medium">/${total}</span>`;
+            const barColor = pct >= 98 ? '#10B981' : (pct >= 90 ? '#F59E0B' : '#EF4444');
+            $('ocr-body').innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[12px] text-slate-300">Authentic Searchable Scanned PDF</span>
+                    <span class="mono text-[12px] text-cyan-300">${auth} / ${total} (${pct.toFixed(1)}%)</span>
+                </div>
+                <div class="bar-track mb-4"><div class="bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    ${Object.entries(cats).map(([k, v]) => {
+                        const label = { AUTHENTIC_SCANNED: 'Authentic', DIGITAL_NATIVE: 'Digital Native', SCANNED_VISIBLE_TEXT: 'Scan + Teks', PURE_IMAGE: 'Pure Image', ERROR: 'Error' }[k] || k;
+                        const color = k === 'AUTHENTIC_SCANNED' ? 'text-emerald-300' : 'text-amber-300';
+                        return `<div class="metric-card"><div class="metric-label">${esc(label)}</div><div class="metric-value ${color}">${v}</div></div>`;
+                    }).join('')}
+                </div>
+                <p class="text-[11px] text-slate-500 mt-4">4 berkas <code class="mono">DIGITAL_NATIVE</code> dipakai sebagai kontrol negatif — bukti detektor tidak asal lolos.</p>`;
+        }
+
+        // ---- BACKTEST ----
+        function renderBacktest(b) {
+            if (!b) {
+                $('backtest-body').innerHTML = '<p class="text-amber-400">Data backtest exemplar belum tersedia.</p>';
+                return;
+            }
+            $('sum-backtest').innerHTML = fmtPct(b.accuracy_pct);
+            $('backtest-body').innerHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="metric-card"><div class="metric-label">Akurasi</div><div class="metric-value text-violet-300">${fmtPct(b.accuracy_pct)}</div></div>
+                    <div class="metric-card"><div class="metric-label">Latensi rata-rata</div><div class="metric-value text-slate-200 text-[20px]">${b.avg_latency_ms ?? '—'} ms</div></div>
+                    <div class="metric-card"><div class="metric-label">Baris data</div><div class="metric-value text-slate-200 text-[20px]">${fmtNum(b.dataset_rows)}</div></div>
+                    <div class="metric-card"><div class="metric-label">Exemplar</div><div class="metric-value text-slate-200 text-[20px]">${b.exemplars_count ?? '—'}</div></div>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-3">Terakhir dijalankan: ${esc(b.last_backtest_timestamp || '—')}</p>`;
+        }
+
+        async function load() {
+            try {
+                const res = await fetch('/api/testing/summary');
+                const data = await res.json();
+                if (data.status !== 'success') throw new Error('bad response');
+                const s = data.sections;
+                renderPytest(s.pytest);
+                renderAudit(s.audit_integrity);
+                renderOcr(s.ocr_benchmark);
+                renderBacktest(s.backtest_exemplar);
+                $('generated-at').innerText = data.generated_at;
+            } catch (e) {
+                $('generated-at').innerText = 'gagal memuat laporan';
+                document.querySelectorAll('[id$="-body"]').forEach(el => {
+                    if (el.innerText === 'Memuat…') el.innerText = 'Gagal memuat — pastikan server berjalan.';
+                });
+            }
+        }
+        load();
+    </script>
+</body>
+</html>

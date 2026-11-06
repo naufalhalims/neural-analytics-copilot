@@ -145,3 +145,18 @@ print("📊 RINGKASAN HASIL AUDIT:")
 pass_count = sum(1 for r in results if r["status"] == "PASS")
 print(f"Total Uji: {len(results)} | Lulus: {pass_count} | Gagal/Temuan: {len(results) - pass_count}")
 print("="*75)
+
+# Persist hasil ke JSON untuk ditampilkan di halaman /testing
+import os as _os
+_OUT_DIR = "/home/ubuntu/apps/neural-analytics-chatbot/reports"
+_os.makedirs(_OUT_DIR, exist_ok=True)
+with open(_os.path.join(_OUT_DIR, "audit_integrity_results.json"), "w") as _f:
+    json.dump({
+        "suite": "Audit Integritas Sistem (Ground-Truth & Robustness)",
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S WIB"),
+        "total": len(results),
+        "passed": pass_count,
+        "failed": len(results) - pass_count,
+        "results": results
+    }, _f, ensure_ascii=False, indent=2)
+print(f"[+] Hasil tersimpan: {_os.path.join(_OUT_DIR, 'audit_integrity_results.json')}")

@@ -1,0 +1,1444 @@
+{
+  "total_pdfs": 205,
+  "categories": {
+    "AUTHENTIC_SCANNED": 201,
+    "DIGITAL_NATIVE": 4
+  },
+  "files": {
+    "02_Incident_History/Audit_Forensik_QRIS_Switcher_Scan.pdf": {
+      "category": "DIGITAL_NATIVE",
+      "n_images": 0,
+      "coverage": 0.0,
+      "n_chars": 1777,
+      "pages": 1
+    },
+    "02_Incident_History/Smoke_Test_Audit_Insiden_Fisik_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 2183,
+      "pages": 1
+    },
+    "02_Incident_History/Audit_Insiden_Settlement_Bank_Mandiri_Scan.pdf": {
+      "category": "DIGITAL_NATIVE",
+      "n_images": 0,
+      "coverage": 0.0,
+      "n_chars": 1550,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_024_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1695,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_044_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1699,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_007_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1702,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_041_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1721,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_011_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1726,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_019_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1702,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_013_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1696,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_043_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1703,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_015_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1687,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_047_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1727,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_029_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1720,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_009_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1681,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_037_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1697,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_042_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1692,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_010_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1712,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_027_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1687,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_040_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1717,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_022_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1712,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_036_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1696,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_001_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1696,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_002_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1694,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_045_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1682,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_020_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1698,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_016_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1716,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_035_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1727,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_018_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1691,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_046_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1713,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_038_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1695,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_017_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1720,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_025_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1696,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_023_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1726,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_032_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1699,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_026_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1694,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_006_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1691,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_028_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1716,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_021_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1681,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_033_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1682,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_012_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1695,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_048_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1696,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_030_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1691,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_008_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1698,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_050_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1695,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_004_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1716,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_014_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1694,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_034_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1713,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_003_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1687,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_039_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1688,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_049_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1697,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_005_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1720,
+      "pages": 1
+    },
+    "02_Incident_History/saas_scans/SLA_Breach_Audit_031_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1702,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_CREDIT_CARD_042_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1751,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_QRIS_GOPAY_009_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1748,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_MANDIRI_014_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1747,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_CREDIT_CARD_024_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1746,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_CREDIT_CARD_048_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1746,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BCA_037_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1732,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_QRIS_GOPAY_045_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1748,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BCA_019_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1729,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_CREDIT_CARD_030_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1751,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BCA_049_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1732,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BRI_010_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1731,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_QRIS_GOPAY_021_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1747,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BNI_035_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1729,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_CREDIT_CARD_018_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1751,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BRI_028_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1726,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BNI_041_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1731,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BRI_004_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1724,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BCA_001_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1729,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BNI_029_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1732,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_QRIS_GOPAY_015_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1745,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BNI_005_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1730,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_MANDIRI_002_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1745,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_QRIS_GOPAY_033_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1748,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BCA_043_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1729,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BRI_046_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1731,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_MANDIRI_026_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1747,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_MANDIRI_044_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1742,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_MANDIRI_032_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1742,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_MANDIRI_020_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1742,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BRI_040_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1726,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BRI_034_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1731,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BRI_022_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1731,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BRI_016_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1726,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_CREDIT_CARD_006_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1749,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BCA_013_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1732,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BNI_017_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1732,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BCA_007_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1727,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BNI_011_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1728,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BCA_025_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1732,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_MANDIRI_038_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1747,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_MANDIRI_008_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1740,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_QRIS_GOPAY_003_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1743,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_CREDIT_CARD_036_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1746,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_CREDIT_CARD_012_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1746,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BCA_031_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1728,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BNI_047_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1729,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_QRIS_GOPAY_027_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1745,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_MANDIRI_050_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1747,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_VA_BNI_023_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1729,
+      "pages": 1
+    },
+    "02_Incident_History/fintech_scans/Audit_Forensik_Switching_QRIS_GOPAY_039_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1745,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_006_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1721,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_022_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1685,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_048_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1706,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_024_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1685,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_013_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1703,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_014_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1682,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_004_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1684,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_003_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1710,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_010_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1679,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_033_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1703,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_032_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1688,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_042_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1685,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_011_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1729,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_007_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1693,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_040_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1681,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_028_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1706,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_046_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1721,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_038_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1702,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_049_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1682,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_018_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1703,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_005_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1678,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_045_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1679,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_037_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1684,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_027_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1693,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_044_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1685,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_030_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1679,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_047_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1693,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_002_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1684,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_001_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1720,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_020_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1682,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_015_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1687,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_026_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1721,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_031_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1729,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_036_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1723,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_008_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1706,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_023_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1711,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_041_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1721,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_043_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1711,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_039_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1689,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_017_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1685,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_029_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1682,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_021_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1721,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_034_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1682,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_012_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1688,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_025_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1679,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_050_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1679,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_035_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1687,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_016_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1724,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_009_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1682,
+      "pages": 1
+    },
+    "02_Incident_History/bpjs_scans/Verifikasi_Klaim_BPJS_019_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1690,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_004_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1612,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_005_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1642,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_050_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1642,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_018_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1634,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_007_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_035_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1641,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_031_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_021_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1610,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_039_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1613,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_045_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1643,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_036_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_029_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1612,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_012_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1610,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_016_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_047_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_027_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1610,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_022_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_028_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1633,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_010_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1642,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_042_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1610,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_019_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1612,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_037_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_013_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1633,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_011_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_003_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1634,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_034_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1612,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_049_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1612,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_015_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1643,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_014_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1612,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_030_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1643,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_006_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1610,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_025_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1642,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_041_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_032_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_024_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1613,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_017_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_026_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_044_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1612,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_033_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1634,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_001_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1608,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_048_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1634,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_023_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1633,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_008_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1633,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_002_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1608,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_009_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1613,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_040_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1642,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_043_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1633,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_038_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1633,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_020_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1642,
+      "pages": 1
+    },
+    "02_Incident_History/klinik_scans/Opname_Kas_Klinik_046_Scan.pdf": {
+      "category": "AUTHENTIC_SCANNED",
+      "n_images": 1,
+      "coverage": 100.0,
+      "n_chars": 1609,
+      "pages": 1
+    },
+    "01_SOP_and_Policies/SOP_Mitigasi_Bank_Partner_v1.pdf": {
+      "category": "DIGITAL_NATIVE",
+      "n_images": 0,
+      "coverage": 0.0,
+      "n_chars": 987,
+      "pages": 1
+    },
+    "01_SOP_and_Policies/SOP_Keamanan_Siber_Failover_Gateway_v4.pdf": {
+      "category": "DIGITAL_NATIVE",
+      "n_images": 0,
+      "coverage": 0.0,
+      "n_chars": 1416,
+      "pages": 1
+    }
+  }
+}
