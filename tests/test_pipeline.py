@@ -145,6 +145,24 @@ class TestNeuralAnalyticsCore:
         assert has_failover_pdf, "PDF Non-Scan failover gateway wajib terindeks di Qdrant"
         assert has_qris_scan, "PDF Scanned-Style QRIS switcher wajib terindeks di Qdrant"
 
+    def test_13_vault_file_viewer_endpoint_contract(self):
+        """Memverifikasi endpoint /api/vault/file/{file_name} menyajikan PDF asli dengan content-type yang tepat."""
+        # Uji file PDF digital
+        resp_pdf = client.get("/api/vault/file/SOP_Keamanan_Siber_Failover_Gateway_v4.pdf")
+        assert resp_pdf.status_code == 200, "File PDF SOP Keamanan Siber harus berhasil disajikan"
+        assert resp_pdf.headers.get("content-type") == "application/pdf", "Content-Type wajib application/pdf"
+        assert resp_pdf.content.startswith(b"%PDF-"), "Header binary harus valid PDF"
+
+        # Uji file PDF scan
+        resp_scan = client.get("/api/vault/file/Audit_Forensik_QRIS_Switcher_Scan.pdf")
+        assert resp_scan.status_code == 200, "File PDF Audit Forensik QRIS Scan harus berhasil disajikan"
+        assert resp_scan.headers.get("content-type") == "application/pdf"
+        assert resp_scan.content.startswith(b"%PDF-")
+
+        # Uji pencegahan path traversal attack
+        resp_hack = client.get("/api/vault/file/../../etc/passwd")
+        assert resp_hack.status_code == 404, "Path traversal wajib dicegah dan merespon 404"
+
     def test_06_persona_system_tone_switch(self):
         """Memverifikasi sistem menyesuaikan persona aktif dari UI session dan mengisolasi cache key per persona."""
         roles = ["kasir", "finance", "sre"]

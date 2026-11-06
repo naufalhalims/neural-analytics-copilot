@@ -571,6 +571,26 @@ async def get_graph(highlight: Optional[str] = None, dynamic: Optional[bool] = F
     )
     return JSONResponse({"status": "success", "elements": elements, "highlight": highlight, "dynamic": dynamic, "dataset": dataset or "default"})
 
+@app.api_route("/api/vault/file/{file_name}", methods=["GET", "HEAD"])
+async def get_vault_file(file_name: str):
+    """Menyajikan file asli dari dedicated vault (PDF, DOCX, MD) langsung ke browser dengan keamanan path traversal."""
+    try:
+        from fastapi.responses import FileResponse
+        safe_name = os.path.basename(file_name)
+        target_path = None
+        for root, _, files in os.walk(VAULT_DIR):
+            if safe_name in files:
+                target_path = os.path.join(root, safe_name)
+                break
+        
+        if not target_path or not os.path.exists(target_path):
+            return JSONResponse({"status": "error", "message": f"Berkas '{safe_name}' tidak ditemukan di vault."}, status_code=404)
+        
+        media_type = "application/pdf" if safe_name.lower().endswith(".pdf") else "text/plain"
+        return FileResponse(target_path, media_type=media_type, filename=safe_name)
+    except Exception as e:
+        return JSONResponse({"status": "error", "message": str(e)}, status_code=500)
+
 @app.post("/api/vault/reindex")
 async def reindex_vault():
     """Trigger hot-reindex instan untuk Isolated Dedicated Vault secara idempoten."""
