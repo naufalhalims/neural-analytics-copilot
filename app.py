@@ -381,8 +381,12 @@ async def try_llm_text_to_sql(
 async def index(request: Request):
     """Halaman Dashboard Utama Midnight Obsidian dengan Multi-Domain Context."""
     path_lower = request.url.path.lower().strip("/")
+    host_lower = (request.headers.get("host") or "").lower()
+    
     active_domain = "default"
-    if "bpjs" in path_lower:
+    if "belleandkate" in host_lower:
+        active_domain = "belleandkate"
+    elif "bpjs" in path_lower:
         active_domain = "bpjs"
     elif "saas" in path_lower:
         active_domain = "saas"

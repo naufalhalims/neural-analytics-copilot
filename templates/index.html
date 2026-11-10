@@ -654,6 +654,13 @@
                 <span class="hidden sm:inline">Blueprint Arsitektur</span>
             </button>
 
+            <!-- Tautan Cepat Finance Ledger OS -->
+            <a href="https://finance.naufalhal.tech" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg border border-emerald-500/30 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm ml-0.5" title="Buka Portal Keuangan Eksekutif (finance.naufalhal.tech)">
+                <i data-lucide="wallet" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span class="hidden md:inline">Finance OS</span>
+                <i data-lucide="external-link" class="w-3 h-3 text-emerald-500/80"></i>
+            </a>
+
             <!-- Workspace / Dataset Switcher -->
             <div class="relative ml-1" id="domain-dropdown-container">
                 <button id="domain-dropdown-btn" type="button" onclick="toggleDomainMenu(event)" class="ws-btn" aria-haspopup="menu" aria-expanded="false" aria-controls="domain-dropdown-menu" title="Ganti Dataset Showcase (Ctrl + K)">
@@ -710,6 +717,14 @@
                     </a>
 
                     <div class="border-t border-slate-800 my-1"></div>
+                    <a href="https://finance.naufalhal.tech" target="_blank" rel="noopener noreferrer" role="menuitem" class="ws-item">
+                        <span class="ws-ico">💰</span>
+                        <span class="min-w-0 flex-1">
+                            <span class="flex items-center justify-between gap-2 text-[12.5px] font-medium text-emerald-400">Finance Ledger OS <span class="badge border border-emerald-500/30 text-emerald-400 bg-emerald-950/40 text-[9px] px-1.5 py-0.5 rounded">Portal</span></span>
+                            <span class="block text-[11px] text-slate-400 truncate">finance.naufalhal.tech &bull; Cashflow &amp; PnL</span>
+                        </span>
+                        <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-500"></i>
+                    </a>
                     <button type="button" onclick="openArchitectureModal()" role="menuitem" class="ws-item text-left w-full">
                         <span class="ws-ico">📐</span>
                         <span class="min-w-0 flex-1">
@@ -831,6 +846,15 @@
                     <div class="msg-row">
                         <div class="avatar-ai"><i data-lucide="bot" class="w-4 h-4"></i></div>
                         <div class="msg-ai">
+                            {% if active_domain == 'belleandkate' %}
+                            <p class="font-semibold text-slate-50 mb-1.5">Halo! Selamat datang di Belle&amp;Kate Luxury Intelligence.</p>
+                            <p class="text-slate-300">
+                                Asisten analitik siap mengevaluasi 2.392 inventori pre-loved luxury (Rp 147,5 Miliar GMV), perputaran aging stock, serta perbandingan performa brand Hermès, Chanel, Louis Vuitton, dan Dior.
+                            </p>
+                            <p class="text-slate-500 text-[12.5px] mt-2">
+                                Grafik komposisi brand &amp; tabel kueri inventori tampil otomatis di <strong class="text-slate-300 font-medium">Analytics Studio</strong> di panel kanan.
+                            </p>
+                            {% else %}
                             <p class="font-semibold text-slate-50 mb-1.5">Halo! Selamat datang di Pusat Analitik &amp; Layanan Operasional.</p>
                             <p class="text-slate-300">
                                 Saya membantu memeriksa data dari basis data 5 juta transaksi, menelusuri penyebab kendala operasional, serta mencari rujukan dokumen SOP dan laporan insiden resmi.
@@ -838,6 +862,7 @@
                             <p class="text-slate-500 text-[12.5px] mt-2">
                                 Grafik dan bukti kueri tampil otomatis di <strong class="text-slate-300 font-medium">Analytics Studio</strong> pada panel kanan.
                             </p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -1237,6 +1262,46 @@
                 </div>
             </section>
 
+        </div>
+    </div>
+
+    <!-- ===================================================================
+         MODAL: Security Authentication Gate (Interview Access)
+         =================================================================== -->
+    <div id="auth-gate-modal" class="fixed inset-0 z-[999] hidden flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl transition-all duration-300">
+        <div class="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/95 p-6 shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="flex items-center gap-3 mb-4">
+                <span class="w-10 h-10 rounded-xl flex items-center justify-center text-amber-300 bg-amber-500/10 border border-amber-500/25 shrink-0">
+                    <i data-lucide="lock" class="w-5 h-5"></i>
+                </span>
+                <div>
+                    <h3 class="text-base font-semibold text-white tracking-tight">Executive Access Required</h3>
+                    <p class="text-xs text-slate-400">Belle&amp;Kate Luxury Intelligence &bull; SCBD</p>
+                </div>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                Sistem ini dilindungi untuk verifikasi kandidat wawancara offline dan manajemen inventori. Silakan masukkan password akses.
+            </p>
+            <form id="auth-gate-form" onsubmit="handleAuthSubmit(event)" class="space-y-3.5">
+                <div>
+                    <label for="auth-gate-password" class="block text-[11px] font-medium text-slate-400 mb-1">Akses Kunci</label>
+                    <input type="password" id="auth-gate-password" placeholder="Masukkan password akses..." autocomplete="current-password" autofocus required
+                           class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 transition-colors font-mono" />
+                </div>
+                <div id="auth-gate-error" class="hidden text-xs text-rose-400 font-medium flex items-center gap-1.5 pt-0.5">
+                    <i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0"></i>
+                    <span>Password salah. Akses ditolak.</span>
+                </div>
+                <button type="submit" id="auth-gate-btn" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-semibold text-xs tracking-wide transition-all shadow-lg shadow-amber-500/20 cursor-pointer flex items-center justify-center gap-2">
+                    <span>Buka Akses Dashboard</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </form>
+            <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[10.5px] text-slate-500">
+                <span>Domain: belleandkate.naufalhal.tech</span>
+                <span class="font-mono text-amber-500/80">Offline Candidate Gate</span>
+            </div>
         </div>
     </div>
 
@@ -2129,10 +2194,18 @@
 
         function clearChatHistoryUI() {
             const chatBox = $('chat-messages');
-            chatBox.innerHTML = welcomeHTML(
-                'Sesi baru telah dimulai.',
-                'Silakan ajukan pertanyaan mengenai data transaksi dari basis data 5 juta transaksi, investigasi kendala, atau pedoman operasional SOP.'
-            );
+            let welcomeTitle = 'Sesi baru telah dimulai.';
+            let welcomeDesc = 'Silakan ajukan pertanyaan mengenai data transaksi dari basis data 5 juta transaksi, investigasi kendala, atau pedoman operasional SOP.';
+            
+            if (activeDomain === 'belleandkate') {
+                welcomeTitle = 'Selamat datang di Belle&Kate Luxury Intelligence.';
+                welcomeDesc = 'Asisten analitik siap mengevaluasi 2.392 inventori pre-loved luxury (Rp 147,5 Miliar GMV), perputaran aging stock, serta perbandingan performa brand Hermès, Chanel, Louis Vuitton, dan Dior.';
+            } else if (activeDomain === 'klinik') {
+                welcomeTitle = 'Sistem Analitik Kasir Klinik Pratama.';
+                welcomeDesc = 'Memeriksa rekapitulasi setoran kas tunai 100% fisik bidan, selisih struk pembatalan, dan tarif layanan kebidanan.';
+            }
+
+            chatBox.innerHTML = welcomeHTML(welcomeTitle, welcomeDesc);
             lucide.createIcons();
         }
 
@@ -3329,10 +3402,11 @@
                                 display: true,
                                 color: '#CBD5E1',
                                 font: { family: 'Inter', size: tickSize, weight: '500', lineHeight: 1.25 },
-                                maxRotation: 0,
-                                minRotation: 0,
-                                autoSkip: false,
-                                padding: 8
+                                maxRotation: inline ? 35 : 0,
+                                minRotation: inline ? 35 : 0,
+                                autoSkip: true,
+                                maxTicksLimit: inline ? 6 : 10,
+                                padding: 6
                             }
                         },
                         y: {
@@ -3391,10 +3465,68 @@
         isSidebarOpen = window.innerWidth >= 1440;
         applySidebarState();
 
+        /* ---------------------------------------------------------------
+           Authentication Gate for Offline Interview (belleandkate domain)
+           --------------------------------------------------------------- */
+        const AUTH_STORAGE_KEY = 'bk_offline_interview_auth_v1';
+        const AUTH_PASSWORD_PLAIN = 'InterviewOffline';
+
+        function checkAuthenticationGate() {
+            const isBK = (activeDomain === 'belleandkate') || 
+                         (window.location.hostname.includes('belleandkate')) ||
+                         (window.location.pathname.includes('belleandkate'));
+            if (!isBK) return;
+
+            const isAuthed = sessionStorage.getItem(AUTH_STORAGE_KEY) === 'true';
+            const modal = $('auth-gate-modal');
+            if (!modal) return;
+
+            if (!isAuthed) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    const pwd = $('auth-gate-password');
+                    if (pwd) pwd.focus();
+                }, 100);
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const input = $('auth-gate-password');
+            const err = $('auth-gate-error');
+            const val = input ? input.value : '';
+
+            if (val === AUTH_PASSWORD_PLAIN) {
+                sessionStorage.setItem(AUTH_STORAGE_KEY, 'true');
+                if (err) err.classList.add('hidden');
+                const modal = $('auth-gate-modal');
+                if (modal) {
+                    modal.classList.add('opacity-0');
+                    setTimeout(() => {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('opacity-0');
+                        lucide.createIcons();
+                    }, 250);
+                }
+            } else {
+                if (err) {
+                    err.classList.remove('hidden');
+                    lucide.createIcons();
+                }
+                if (input) {
+                    input.classList.add('border-rose-500');
+                    input.select();
+                }
+            }
+        }
+
         loadKPIs();
         initSessions();
         renderDomainDefaultStudio();
         resetDefaultQuickPrompts();
+        checkAuthenticationGate();
     </script>
 </body>
 </html>
