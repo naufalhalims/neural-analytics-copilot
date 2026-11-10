@@ -37,18 +37,22 @@ class AnomalyEngine:
         """Mendeteksi tanggal dan kanal yang mengalami lonjakan tingkat kegagalan secara statistik."""
         if self._cached_spikes is not None:
             return self._cached_spikes
-        query = """
-        SELECT 
-            strftime(timestamp, '%Y-%m-%d') as tx_date,
-            channel,
-            COUNT(*) as total_tx,
-            SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) as failed_tx,
-            ROUND(AVG(CASE WHEN status = 'FAILED' THEN 1.0 ELSE 0.0 END) * 100, 2) as fail_rate_pct
-        FROM transactions
-        GROUP BY 1, 2
-        ORDER BY 1, 2
-        """
-        df = self.conn.execute(query).df()
+        # Parse timestamp string or timestamp type safely
+        try:
+            query = """
+            SELECT 
+                strftime(CAST(timestamp AS TIMESTAMP), '%Y-%m-%d') as tx_date,
+                channel,
+                COUNT(*) as total_tx,
+                SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) as failed_tx,
+                ROUND(AVG(CASE WHEN status = 'FAILED' THEN 1.0 ELSE 0.0 END) * 100, 2) as fail_rate_pct
+            FROM transactions
+            GROUP BY 1, 2
+            ORDER BY 1, 2
+            """
+            df = self.conn.execute(query).df()
+        except Exception:
+            return []
 
         anomalies = []
 
@@ -74,7 +78,7 @@ class AnomalyEngine:
                 top_err_query = f"""
                 SELECT failure_code, COUNT(*) as cnt 
                 FROM transactions 
-                WHERE strftime(timestamp, '%Y-%m-%d') = '{row['tx_date']}' 
+                WHERE strftime(CAST(timestamp AS TIMESTAMP), '%Y-%m-%d') = '{row['tx_date']}' 
                   AND channel = '{channel_name}' 
                   AND status = 'FAILED'
                 GROUP BY 1 

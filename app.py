@@ -232,6 +232,14 @@ DOMAIN_DATASETS = {
         "parquet_path": os.path.join(BASE_DIR, "data", "test_datasets", "klinik_pratama_pos.parquet"),
         "badge": "🩺 Klinik Kasir 25k",
         "description": "25k Rekapitulasi Kasir Fisik Laci & Tindakan Kebidanan"
+    },
+    "belleandkate": {
+        "id": "belleandkate",
+        "title": "Belle&Kate Luxury Inventory (2.4k Items)",
+        "subtitle": "2.392 Inventori Luxury Pre-loved (Rp 147.5 Miliar GMV)",
+        "parquet_path": os.path.join(BASE_DIR, "data", "multi_domain", "belleandkate_inventory.parquet"),
+        "badge": "👜 Luxury 147M",
+        "description": "2.4k Tas & Aksesori Hermès, Chanel, LV, Dior & SCBD Inventory"
     }
 }
 
@@ -296,6 +304,7 @@ async def try_llm_text_to_sql(
         "bpjs": "Kolom hospital_name, hospital_type (channel: 'Tipe A', 'Tipe B', 'Tipe C'), ina_cbg_code, diagnosis_name, department (merchant_category), hospital_bill_amount, amount, status ('SUCCESS', 'FAILED', 'PENDING'), raw_status ('APPROVED', 'DISPUTED', 'REJECTED', 'PENDING_VERIFIKASI'), failure_code (alasan dispute).",
         "saas": "Kolom tenant_name, channel ('Enterprise Tier', 'Growth Tier', 'Starter Tier'), endpoint ('/v1/payments/charge', '/v1/kyc/verify-identity', '/v1/disbursement/transfer', '/v1/credit-scoring/evaluate'), merchant_category, amount (biaya Rp per call), status ('SUCCESS', 'FAILED'), http_code (200, 429, 500, 504), failure_code.",
         "klinik": "Kolom no_struk, layanan, kategori (merchant_category: 'KB', 'Administrasi', 'Surat', 'Tindakan', 'Kebidanan'), tarif_layanan, amount, channel ('TUNAI_CASH'), petugas_bidan ('Bidan Siti', 'Bidan Rina', 'Bidan Nur', 'Bidan Maya'), status_pembayaran ('LUNAS', 'BATAL_REFUND', 'PENDING_VERIFIKASI'), status ('SUCCESS', 'FAILED'), timestamp.",
+        "belleandkate": "Tabel inventori luxury Belle&Kate. Kolom: merchant_category (Brand Luxury: 'Hermes', 'Chanel', 'Louis Vuitton', 'Dior', 'Gucci', 'Bottega Veneta', 'Prada', dll), channel (Kondisi barang: 'Pristine', 'Never Used', 'Excellent', 'Very Good', 'Good', 'Fair'), amount (Harga jual sekarang dalam Rupiah), original_price (Harga retail/asli), discount_pct (Persentase diskon), status ('SUCCESS' / active ready stock, 'FAILED' / inactive), sku, title (Nama produk/tipe tas/sepatu/jam tangan), timestamp.",
     }
     hint = domain_hints.get(domain_key, domain_hints["default"])
     prev_ctx = f"\nPertanyaan sebelumnya: {last_user_query}" if last_user_query else ""
@@ -367,6 +376,8 @@ async def try_llm_text_to_sql(
 @app.get("/KLINIK", response_class=HTMLResponse)
 @app.get("/klinik", response_class=HTMLResponse)
 @app.get("/wismajaya", response_class=HTMLResponse)
+@app.get("/belleandkate", response_class=HTMLResponse)
+@app.get("/luxury", response_class=HTMLResponse)
 async def index(request: Request):
     """Halaman Dashboard Utama Midnight Obsidian dengan Multi-Domain Context."""
     path_lower = request.url.path.lower().strip("/")
@@ -377,6 +388,8 @@ async def index(request: Request):
         active_domain = "saas"
     elif "klinik" in path_lower or "wismajaya" in path_lower:
         active_domain = "klinik"
+    elif "belleandkate" in path_lower or "luxury" in path_lower:
+        active_domain = "belleandkate"
         
     return templates.TemplateResponse(
         request=request, 
@@ -781,6 +794,9 @@ async def chat_handler(payload: ChatRequest):
         return JSONResponse({"status": "error", "reply": "Pesan tidak boleh kosong."})
         
     lower_query = user_query.lower()
+    active_dataset = (payload.dataset or "").lower()
+    if not active_dataset or active_dataset not in DOMAIN_DATASETS:
+        active_dataset = "default"
     
     # 0. Prompt Injection, Jailbreak, & Negative Entity Paradox Defense Shield
     jailbreak_signals = [
@@ -833,15 +849,15 @@ async def chat_handler(payload: ChatRequest):
             "sparring_pills": ["Status transaksi", "Rujukan SOP"]
         })
 
-    active_dataset = payload.dataset.lower() if payload.dataset else "default"
     active_sql_engine = SQL_ENGINES.get(active_dataset, sql_engine)
 
     # 0. Cross-Domain Leakage Detection & Guardrail
     cross_domain_redirect = None
-    fintech_keywords = ["virtual account", "va_bca", "va bca", "va mandiri", "va bri", "qris", "kartu kredit", "gopay", "payment gateway", "gmv", "omset"]
+    fintech_keywords = ["virtual account", "va_bca", "va bca", "va mandiri", "va bri", "qris", "kartu kredit", "gopay", "payment gateway"]
     bpjs_keywords = ["ina-cbg", "ina cbg", "klaim rs", "cuci darah", "hemodialisa", "nefrologi", "fornas", "koder medis", "rawat inap", "los exceeded", "sardjito", "klinik pratama", "mitra keluarga"]
     saas_keywords = ["api gateway", "rate limit", "throttling", "endpoint", "tenant b2b", "http 429", "http 504", "latency api"]
     klinik_keywords = ["kasir klinik", "petugas bidan", "uang fisik", "pecahan uang", "setoran fisik", "kasir tunai"]
+    belleandkate_keywords = ["luxury", "hermes", "chanel", "louis vuitton", "dior", "tas", "pre-loved", "birkin", "kelly", "ardine", "belle&kate", "belleandkate"]
 
     if active_dataset == "bpjs" and any(k in lower_query for k in fintech_keywords):
         cross_domain_redirect = ("Fintech & Banking (5M Rows)", "/", "Pertanyaan ini terdeteksi mengenai transaksi perbankan / Payment Gateway (Fintech). Sistem analisis BPJS Healthcare aktif mengkhususkan diri pada data klaim rumah sakit, tarif INA-CBG, dan dispute Fornas.")
@@ -969,7 +985,7 @@ Untuk mendapatkan jawaban yang akurat dari dataset yang relevan, silakan beralih
             }
             if "channel" in cols and any("BCA" in str(r.get("channel", "")) for r in sql_result["data"]):
                 target_channel_highlight = "VA_BCA"
-    elif any(k in lower_query for k in ["rincian kegagalan transaksi per kanal", "kegagalan transaksi per kanal", "kegagalan per kanal", "gagal per kanal"]):
+    elif active_dataset == "default" and any(k in lower_query for k in ["rincian kegagalan transaksi per kanal", "kegagalan transaksi per kanal", "kegagalan per kanal", "gagal per kanal"]):
         sql = "SELECT channel, COUNT(*) as total_tx, SUM(CASE WHEN status='FAILED' THEN 1 ELSE 0 END) as failed_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct, ROUND(SUM(amount)/1000000000, 2) as volume_miliar FROM transactions GROUP BY channel ORDER BY fail_rate_pct DESC"
         sql_result = active_sql_engine.execute_query(sql)
         if sql_result["success"]:
@@ -980,7 +996,7 @@ Untuk mendapatkan jawaban yang akurat dari dataset yang relevan, silakan beralih
                 "data": [r["fail_rate_pct"] for r in sql_result["data"]],
                 "label": "Tingkat Kegagalan (%)"
             }
-    elif any(k in lower_query for k in ["distribusi transaksi sukses vs gagal", "sukses vs gagal", "transaksi sukses vs gagal"]):
+    elif active_dataset == "default" and any(k in lower_query for k in ["distribusi transaksi sukses vs gagal", "sukses vs gagal", "transaksi sukses vs gagal"]):
         sql = "SELECT merchant_category, SUM(CASE WHEN status='SUCCESS' THEN 1 ELSE 0 END) as sukses_tx, SUM(CASE WHEN status='FAILED' THEN 1 ELSE 0 END) as gagal_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct FROM transactions GROUP BY merchant_category ORDER BY sukses_tx DESC"
         sql_result = active_sql_engine.execute_query(sql)
         if sql_result["success"]:
@@ -1070,13 +1086,28 @@ Untuk mendapatkan jawaban yang akurat dari dataset yang relevan, silakan beralih
                 chart_title = "Distribusi Penerimaan Kasir Tunai per Kategori Layanan Klinik"
             sql_result = active_sql_engine.execute_query(sql)
             chart_payload = build_chart_from_sql_result(sql_result, chart_title)
+        elif active_dataset == "belleandkate":
+            if any(k in lower_query for k in ["brand", "merek", "termahal", "gmv", "katalog", "nilai"]):
+                sql = "SELECT merchant_category as brand, COUNT(*) as total_item, ROUND(SUM(amount)/1000000000, 2) as total_gmv_miliar, ROUND(AVG(amount)/1000000, 2) as avg_price_juta, ROUND(MAX(amount)/1000000, 2) as max_price_juta FROM transactions GROUP BY merchant_category ORDER BY total_gmv_miliar DESC LIMIT 10"
+                chart_title = "Distribusi GMV & Rata-rata Harga per Brand Luxury Belle&Kate (Rp Miliar)"
+            elif any(k in lower_query for k in ["kondisi", "condition", "channel", "pre-loved", "baru"]):
+                sql = "SELECT channel as kondisi_barang, COUNT(*) as total_item, ROUND(SUM(amount)/1000000000, 2) as total_gmv_miliar, ROUND(AVG(amount)/1000000, 2) as avg_price_juta FROM transactions GROUP BY channel ORDER BY total_gmv_miliar DESC"
+                chart_title = "Komposisi Inventori Berdasarkan Kondisi Barang"
+            elif any(k in lower_query for k in ["diskon", "promo", "potongan"]):
+                sql = "SELECT title, merchant_category as brand, ROUND(amount/1000000, 2) as harga_juta, ROUND(original_price/1000000, 2) as harga_asli_juta, ROUND(discount_pct, 1) as diskon_pct FROM transactions WHERE discount_pct > 0 ORDER BY discount_pct DESC LIMIT 10"
+                chart_title = "Top 10 Barang Diskon Terbesar Belle&Kate"
+            else:
+                sql = "SELECT merchant_category as brand, COUNT(*) as total_item, ROUND(SUM(amount)/1000000000, 2) as total_gmv_miliar, ROUND(AVG(amount)/1000000, 2) as avg_price_juta FROM transactions GROUP BY merchant_category ORDER BY total_gmv_miliar DESC LIMIT 7"
+                chart_title = "Nilai Inventori per Brand Utama (Rp Miliar)"
+            sql_result = active_sql_engine.execute_query(sql)
+            chart_payload = build_chart_from_sql_result(sql_result, chart_title)
         if is_why_question:
             anom_eng = ANOMALY_ENGINES.get(active_dataset)
             if anom_eng:
                 anomalies = anom_eng.detect_channel_spikes()
                 if anomalies:
                     target_channel_highlight = anomalies[0]["channel"]
-    elif is_category_question:
+    elif active_dataset == "default" and is_category_question:
         sql = "SELECT merchant_category, COUNT(*) as total_tx, SUM(CASE WHEN status='FAILED' THEN 1 ELSE 0 END) as failed_tx, ROUND(AVG(CASE WHEN status='FAILED' THEN 1.0 ELSE 0.0 END)*100, 2) as fail_rate_pct, ROUND(SUM(amount)/1000000000, 2) as volume_miliar FROM transactions GROUP BY merchant_category ORDER BY total_tx DESC"
         sql_result = active_sql_engine.execute_query(sql)
         if sql_result["success"]:

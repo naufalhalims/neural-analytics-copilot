@@ -700,6 +700,14 @@
                         </span>
                         <i data-lucide="check" class="w-3.5 h-3.5 ws-check"></i>
                     </a>
+                    <a href="/belleandkate" role="menuitem" data-domain="belleandkate" class="ws-item">
+                        <span class="ws-ico">👜</span>
+                        <span class="min-w-0 flex-1">
+                            <span class="flex items-center justify-between gap-2 text-[12.5px] font-medium text-amber-300">Belle&amp;Kate Luxury <span class="num text-[10.5px] text-amber-500 font-semibold">Rp 147.5M</span></span>
+                            <span class="block text-[11px] text-slate-400 truncate">2.4k Tas Hermès, Chanel &amp; Aging Ledger</span>
+                        </span>
+                        <i data-lucide="check" class="w-3.5 h-3.5 ws-check"></i>
+                    </a>
 
                     <div class="border-t border-slate-800 my-1"></div>
                     <button type="button" onclick="openArchitectureModal()" role="menuitem" class="ws-item text-left w-full">
@@ -1945,6 +1953,11 @@
                 ['🏥', 'SOP Fisik Kas Wisma Jaya', 'Mengapa klinik menerapkan 100% cash-only dan bagaimana SOP pencatatan selisih kas fisik?'],
                 ['👶', 'Pasien Lab Kehamilan', 'Berapa jumlah pasien umum yang melakukan pemeriksaan lab kehamilan bulan ini?']
             ],
+            belleandkate: [
+                ['👜', 'Ringkasan GMV & Brand Termahal', 'Berapa total nilai GMV seluruh inventori dan brand apa yang menyumbang nilai tertinggi?'],
+                ['⏳', 'Aging & Liquidity Risk', 'Berapa jumlah tas Hermès dan Chanel yang berstatus ready stock serta rata-rata harganya?'],
+                ['🏷️', 'Diskon & Peluang Promo', 'Tampilkan barang dengan diskon tertinggi yang siap dipromosikan tim Client Advisor!']
+            ],
             kasir: [
                 ['🛒', 'Pelanggan Muter-muter & Saldo Kepotong', 'Pelanggan bayar pake VA BCA muter-muter dan uang kepotong di kasir, harus bagaimana?'],
                 ['⏱️', 'Komplain Refund Pelanggan 1 Jam', 'Kalo pembeli komplain uangnya belum balik setelah 1 jam, apa langkah sesuai SOP?'],
@@ -2047,6 +2060,17 @@
                     label: 'Setoran Kas (Rp)'
                 });
                 initOrUpdateCytoscape('TUNAI_CASH');
+            } else if (activeDomain === 'belleandkate') {
+                if (initialSubtitle) initialSubtitle.innerText = 'Live Catalog & Inventory Analytics Belle&Kate (Rp 147.5M GMV)';
+                $('studio-chart-title').innerText = 'Total Nilai Inventori per Brand Luxury (Rp)';
+                renderStudioChart({
+                    type: 'bar',
+                    title: 'Total Nilai Inventori per Brand Luxury (Rp Miliar)',
+                    labels: ['Hermès', 'Chanel', 'Louis Vuitton', 'Dior', 'Gucci', 'Bottega Veneta', 'Prada'],
+                    data: [97415949000, 17429880000, 6367675000, 5175700000, 1441925000, 873150000, 865700000],
+                    label: 'Nilai Inventori (Rp)'
+                });
+                initOrUpdateCytoscape('Hermes');
             } else {
                 if (initialSubtitle) initialSubtitle.innerText = 'Menampilkan visualisasi data transaksi & dokumen SOP fintech';
                 $('studio-chart-title').innerText = 'Kinerja & Tingkat Kendala Pembayaran';
